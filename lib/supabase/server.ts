@@ -12,14 +12,13 @@ export function createServerSupabaseClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options as any)
             );
           } catch {
-            // Server Component から呼ばれた場合は set できないが、
-            // セッション更新は middleware で行うため問題ない
+            // Server Component から呼ばれた場合は set できない
           }
         },
       },
