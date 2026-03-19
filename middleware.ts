@@ -1,19 +1,13 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+export function middleware(request: NextRequest) {
+  // MVPでは認証チェックをシンプルに通す
+  // 認証ガードは (app)/layout.tsx で行う
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * 以下を除くすべてのパスにマッチ:
-     * - _next/static (静的ファイル)
-     * - _next/image (画像最適化)
-     * - favicon.ico
-     * - 画像ファイル
-     */
     "/((?!_next/static|_next/image|favicon.ico|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
