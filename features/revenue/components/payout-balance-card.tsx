@@ -1,3 +1,5 @@
+"use client";
+
 import { TrendingUp, Send, Wallet } from "lucide-react";
 import { GoldCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
