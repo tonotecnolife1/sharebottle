@@ -14,7 +14,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
@@ -22,19 +22,17 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options as any)
           );
         },
       },
     }
   );
 
-  // セッション更新（これにより期限切れトークンが自動リフレッシュされる）
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 認証必須ページへの未ログインアクセスをリダイレクト
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/my-bottles") ||
     request.nextUrl.pathname.startsWith("/revenue") ||
@@ -47,7 +45,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ログイン済みユーザーがログインページにアクセスした場合
   if (user && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/my-bottles";
