@@ -1,22 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_JP, Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
   variable: "--font-noto",
-  display: "swap",
-});
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -38,10 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="ja"
-      className={`${notoSansJP.variable} ${geist.variable} ${geistMono.variable}`}
-    >
+    <html lang="ja" className={notoSansJP.variable}>
       <body className="font-sans noise-texture">
         {children}
       </body>
