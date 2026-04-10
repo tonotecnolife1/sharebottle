@@ -85,6 +85,16 @@
     );
   }
 
+  /* iOS safe-area padding — keeps fixed bottom UI clear of the
+     iPhone home indicator while keeping a 1rem minimum on devices
+     without a safe area. */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
   /* Subtle pearl page bg with a warm sheen */
   .pearl-sheen {
     background: radial-gradient(

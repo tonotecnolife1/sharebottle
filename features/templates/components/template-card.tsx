@@ -4,7 +4,7 @@ import { Check, Copy } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
-import { cn } from "@/lib/utils";
+import { cn, copyToClipboard } from "@/lib/utils";
 import { recordFollowLogAction } from "../actions";
 import type { Template } from "../data/templates";
 
@@ -27,11 +27,7 @@ export function TemplateCard({
   const handleCopy = () => {
     if (disabled || !customerId) return;
     startTransition(async () => {
-      try {
-        await navigator.clipboard.writeText(filled);
-      } catch {
-        // Older browsers without clipboard API — no-op
-      }
+      await copyToClipboard(filled);
       await recordFollowLogAction({
         customerId,
         templateType: template.category,

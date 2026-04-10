@@ -34,7 +34,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="sticky bottom-0 px-4 pt-3 pb-5 bg-gradient-to-t from-pearl via-pearl/95 to-transparent">
+    <div className="sticky bottom-0 px-4 pt-3 pb-safe bg-gradient-to-t from-pearl via-pearl/95 to-transparent">
       <div className="flex items-end gap-2 rounded-2xl border border-amethyst-border bg-pearl-warm shadow-soft-card px-3 py-2">
         <textarea
           value={text}

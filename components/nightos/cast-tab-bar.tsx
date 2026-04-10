@@ -47,7 +47,7 @@ export function CastTabBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
-      <div className="mx-auto max-w-[520px] px-4 pb-4 pointer-events-auto">
+      <div className="mx-auto max-w-[520px] px-4 pb-safe pointer-events-auto">
         <div className="rounded-full bg-pearl-warm/95 backdrop-blur-md border border-pearl-soft shadow-elevated-light flex items-center justify-around px-2 py-2">
           {TABS.map((tab) => {
             const active = tab.match(pathname);

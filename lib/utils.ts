@@ -28,3 +28,43 @@ export function formatTime(dateStr: string): string {
   const d = new Date(dateStr);
   return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
+
+/**
+ * Copy text to clipboard.
+ *
+ * Uses `navigator.clipboard` when available (HTTPS / localhost), and falls
+ * back to a hidden textarea + `document.execCommand('copy')` so LAN demos
+ * over plain HTTP (e.g. 192.168.x.x:3000) still work.
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+
+  // Modern secure-context API
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through to legacy path
+    }
+  }
+
+  // Legacy fallback — works on LAN HTTP and old browsers
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.opacity = "0";
+    textarea.setAttribute("readonly", "");
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
+}
