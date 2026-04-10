@@ -131,12 +131,12 @@ export const mockBottles: Bottle[] = [
 // 渡辺浩二: 来店20回, 最終 2026-02-28 (19日前 → 誕生日3/25間近)
 // 佐藤健一: 来店8回, 最終 2026-03-12 (7日前)
 export const mockVisits: Visit[] = [
-  // 田中太郎 — 過去12回
+  // 田中太郎 — VIPは毎週ペースで来ていたのが12日空いている → 要フォロー
   ...generateVisitSeries({
     customer_id: "cust1",
     cast_id: "cast1",
     lastVisit: "2026-03-07",
-    intervalDays: 14,
+    intervalDays: 7,
     count: 12,
     is_nominated: true,
   }),
@@ -200,10 +200,10 @@ export const mockCastMemos: CastMemo[] = [
     id: "memo1",
     customer_id: "cust1",
     cast_id: "cast1",
-    last_topic: "息子さんの大学受験（不合格だった → 触れない）",
+    last_topic: "4月のゴルフ旅行の計画",
     service_tips:
-      "最初は仕事の話から入る。2杯目以降にプライベート。山崎12年ロックが定番。",
-    next_topics: "春のゴルフ旅行の話。新しく開業したクライアント先。",
+      "最初は仕事の話から入る。2杯目以降にプライベート。山崎12年ロックが定番。息子さんの受験の話題は避ける（店舗メモ参照）。",
+    next_topics: "春のゴルフ旅行の持ち物、新しく開業したクライアント先",
     visit_notes: null,
     updated_at: "2026-03-07T23:30:00+09:00",
   },
