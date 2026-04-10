@@ -20,6 +20,7 @@ import type {
 
 interface Props {
   customers: Customer[];
+  initialCustomerId?: string;
 }
 
 type HearingState =
@@ -33,7 +34,7 @@ type HearingState =
       originalText: string;
     };
 
-export function ChatWindow({ customers }: Props) {
+export function ChatWindow({ customers, initialCustomerId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -44,7 +45,7 @@ export function ChatWindow({ customers }: Props) {
   const [hearing, setHearing] = useState<HearingState>({ phase: "idle" });
   const [selectedCustomerId, setSelectedCustomerId] = useState<
     string | undefined
-  >();
+  >(initialCustomerId);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 

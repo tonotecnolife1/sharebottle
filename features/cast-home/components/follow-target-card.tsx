@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Cake, Clock, Sparkles, Wine } from "lucide-react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
@@ -20,7 +21,11 @@ export function FollowTargetCard({ target }: { target: FollowTarget }) {
   const { customer, bottle, lastTopic } = target;
 
   return (
-    <Card className="p-4 active:scale-[0.995] transition-transform">
+    <Link
+      href={`/cast/customers/${customer.id}`}
+      className="block active:scale-[0.995] transition-transform"
+    >
+      <Card className="p-4">
       {/* Reason line */}
       <div className="flex items-center gap-2 mb-2">
         <Badge tone={reasonBadgeTone[target.reason]}>
@@ -60,6 +65,7 @@ export function FollowTargetCard({ target }: { target: FollowTarget }) {
           </div>
         )}
       </dl>
-    </Card>
+      </Card>
+    </Link>
   );
 }
