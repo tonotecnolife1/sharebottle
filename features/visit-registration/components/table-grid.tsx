@@ -1,0 +1,45 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { MOCK_TABLES } from "@/lib/nightos/store-mock-data";
+
+interface Props {
+  value: string | null;
+  onChange: (id: string | null) => void;
+}
+
+export function TableGrid({ value, onChange }: Props) {
+  return (
+    <div className="space-y-2">
+      <div className="text-label-md text-ink font-medium">テーブル</div>
+      <div className="grid grid-cols-4 gap-2">
+        {MOCK_TABLES.map((t) => {
+          const active = value === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onChange(active ? null : t.id)}
+              className={cn(
+                "h-16 rounded-btn border text-center transition-all active:scale-95",
+                active
+                  ? "bg-gradient-rose-gold text-pearl border-roseGold shadow-glow-rose"
+                  : "bg-pearl-warm border-pearl-soft text-ink hover:border-champagne-dark",
+              )}
+            >
+              <div className="text-label-md font-semibold">{t.label}</div>
+              <div
+                className={cn(
+                  "text-[10px]",
+                  active ? "text-pearl/80" : "text-ink-muted",
+                )}
+              >
+                {t.seats}席
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

@@ -4,8 +4,10 @@ import type {
   CastHomeData,
   CastMemo,
   Customer,
+  CustomerCategory,
   CustomerContext,
   FollowLog,
+  Visit,
 } from "@/types/nightos";
 import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
 import {
@@ -16,6 +18,12 @@ import {
   mockCustomers,
   mockVisits,
 } from "./mock-data";
+import {
+  MOCK_FOLLOW_RATE,
+  MOCK_NOMINATION_TREND,
+  MOCK_REPEAT_TREND,
+} from "./store-mock-data";
+import { CURRENT_STORE_ID } from "./constants";
 
 // ─────────────────────────────────────────────────────────────
 // NIGHTOS queries with a mock-data fallback.
@@ -67,7 +75,90 @@ export async function getCastById(castId: string): Promise<Cast | null> {
   return mockCasts.find((c) => c.id === castId) ?? null;
 }
 
-// ═══════════════ Mutations (mock only for PR-2) ═══════════════
+// ═══════════════ Store-side queries ═══════════════
+
+export async function getAllCasts(): Promise<Cast[]> {
+  if (!isSupabaseConfigured()) return [...mockCasts];
+  return [...mockCasts];
+}
+
+/**
+ * All customers in the store, sorted so recently-visited ones are on top
+ * (matches spec: "最近の来店客が上位表示").
+ */
+export async function getAllCustomers(): Promise<Customer[]> {
+  if (!isSupabaseConfigured()) return getAllCustomersMock();
+  return getAllCustomersMock();
+}
+
+function getAllCustomersMock(): Customer[] {
+  const latestVisit = new Map<string, number>();
+  for (const v of mockVisits) {
+    const t = new Date(v.visited_at).getTime();
+    const prev = latestVisit.get(v.customer_id) ?? 0;
+    if (t > prev) latestVisit.set(v.customer_id, t);
+  }
+  return [...mockCustomers].sort((a, b) => {
+    const av = latestVisit.get(a.id) ?? 0;
+    const bv = latestVisit.get(b.id) ?? 0;
+    return bv - av;
+  });
+}
+
+export interface StoreDashboardData {
+  totalNominations: number;
+  totalSales: number;
+  averageRepeatRate: number;
+  averageFollowRate: number;
+  nominationTrend: typeof MOCK_NOMINATION_TREND;
+  repeatTrend: typeof MOCK_REPEAT_TREND;
+  castStats: {
+    cast: Cast;
+    followRate: number;
+    customerCount: number;
+    monthlyVisits: number;
+  }[];
+}
+
+export async function getStoreDashboardData(): Promise<StoreDashboardData> {
+  if (!isSupabaseConfigured()) return getStoreDashboardDataMock();
+  return getStoreDashboardDataMock();
+}
+
+function getStoreDashboardDataMock(): StoreDashboardData {
+  const castStats = mockCasts.map((cast) => {
+    const customers = mockCustomers.filter((c) => c.cast_id === cast.id);
+    const visits = mockVisits.filter((v) => v.cast_id === cast.id);
+    return {
+      cast,
+      followRate: MOCK_FOLLOW_RATE[cast.id] ?? 0,
+      customerCount: customers.length,
+      monthlyVisits: visits.length,
+    };
+  });
+
+  const totalNominations = mockCasts.reduce(
+    (s, c) => s + c.nomination_count,
+    0,
+  );
+  const totalSales = mockCasts.reduce((s, c) => s + c.monthly_sales, 0);
+  const averageRepeatRate =
+    mockCasts.reduce((s, c) => s + c.repeat_rate, 0) / mockCasts.length;
+  const averageFollowRate =
+    castStats.reduce((s, c) => s + c.followRate, 0) / castStats.length;
+
+  return {
+    totalNominations,
+    totalSales,
+    averageRepeatRate,
+    averageFollowRate,
+    nominationTrend: MOCK_NOMINATION_TREND,
+    repeatTrend: MOCK_REPEAT_TREND,
+    castStats,
+  };
+}
+
+// ═══════════════ Mutations (mock only for PR-2/PR-3) ═══════════════
 
 export interface CastMemoInput {
   last_topic: string | null;
@@ -152,6 +243,93 @@ function recordFollowLogMock(args: {
   // eslint-disable-next-line no-console
   console.log("[nightos] follow_log recorded (mock):", log);
   return log;
+}
+
+// ═══════════════ Store-side create mutations ═══════════════
+
+export interface CreateCustomerInput {
+  name: string;
+  birthday: string | null;
+  job: string | null;
+  favorite_drink: string | null;
+  category: CustomerCategory;
+  store_memo: string | null;
+  cast_id: string;
+}
+
+export async function createCustomer(
+  input: CreateCustomerInput,
+): Promise<Customer> {
+  if (!isSupabaseConfigured()) return createCustomerMock(input);
+  return createCustomerMock(input);
+}
+
+function createCustomerMock(input: CreateCustomerInput): Customer {
+  const customer: Customer = {
+    id: `cust_${Date.now()}`,
+    store_id: CURRENT_STORE_ID,
+    cast_id: input.cast_id,
+    name: input.name,
+    birthday: input.birthday,
+    job: input.job,
+    favorite_drink: input.favorite_drink,
+    category: input.category,
+    store_memo: input.store_memo,
+    created_at: new Date().toISOString(),
+  };
+  mockCustomers.push(customer);
+  return customer;
+}
+
+export interface CreateVisitInput {
+  customer_id: string;
+  cast_id: string;
+  table_name: string | null;
+  is_nominated: boolean;
+}
+
+export async function createVisit(input: CreateVisitInput): Promise<Visit> {
+  if (!isSupabaseConfigured()) return createVisitMock(input);
+  return createVisitMock(input);
+}
+
+function createVisitMock(input: CreateVisitInput): Visit {
+  const visit: Visit = {
+    id: `visit_${Date.now()}`,
+    store_id: CURRENT_STORE_ID,
+    customer_id: input.customer_id,
+    cast_id: input.cast_id,
+    table_name: input.table_name,
+    is_nominated: input.is_nominated,
+    visited_at: new Date().toISOString(),
+  };
+  mockVisits.push(visit);
+  return visit;
+}
+
+export interface CreateBottleInput {
+  customer_id: string;
+  brand: string;
+  total_glasses: number;
+}
+
+export async function createBottle(input: CreateBottleInput): Promise<Bottle> {
+  if (!isSupabaseConfigured()) return createBottleMock(input);
+  return createBottleMock(input);
+}
+
+function createBottleMock(input: CreateBottleInput): Bottle {
+  const bottle: Bottle = {
+    id: `btl_${Date.now()}`,
+    store_id: CURRENT_STORE_ID,
+    customer_id: input.customer_id,
+    brand: input.brand,
+    total_glasses: input.total_glasses,
+    remaining_glasses: input.total_glasses,
+    kept_at: new Date().toISOString(),
+  };
+  mockBottles.push(bottle);
+  return bottle;
 }
 
 // ═══════════════ Mock implementations ═══════════════
