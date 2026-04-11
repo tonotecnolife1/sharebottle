@@ -125,6 +125,9 @@ export interface ChatMessage {
   // Present only on assistant messages when the backend stored a chatId
   id?: string;
   feedback?: "helpful" | "not_helpful" | null;
+  // True when this assistant reply came from the deterministic stub
+  // (ANTHROPIC_API_KEY unset or Claude call errored out)
+  isStub?: boolean;
 }
 
 export type Intent = "follow" | "serving" | "strategy" | "freeform";
@@ -151,4 +154,6 @@ export interface RuriMamaRequest {
 
 export interface RuriMamaResponse {
   reply: string;
+  /** True when the reply came from the deterministic stub path. */
+  isStub: boolean;
 }

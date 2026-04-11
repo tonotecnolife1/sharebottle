@@ -9,6 +9,11 @@ interface Props {
 
 export default async function RuriMamaPage({ searchParams }: Props) {
   const customers = await getCustomersForCast(CURRENT_CAST_ID);
+  // Detect server-side whether we're in stub mode. The chat window shows a
+  // persistent banner starting from the very first render instead of only
+  // after the user sends their first message.
+  const isStubMode = !process.env.ANTHROPIC_API_KEY;
+
   return (
     <div className="flex flex-col h-dvh animate-fade-in">
       <PageHeader
@@ -20,6 +25,7 @@ export default async function RuriMamaPage({ searchParams }: Props) {
       <ChatWindow
         customers={customers}
         initialCustomerId={searchParams.customerId}
+        initialIsStubMode={isStubMode}
       />
     </div>
   );

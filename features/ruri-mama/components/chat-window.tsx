@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Info, Sparkles } from "lucide-react";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
@@ -21,6 +21,12 @@ import type {
 interface Props {
   customers: Customer[];
   initialCustomerId?: string;
+  /**
+   * True when the server detected no ANTHROPIC_API_KEY at page render.
+   * The banner starts visible; it also flips to true if any individual
+   * API response reports isStub:true (e.g. Claude call errored out).
+   */
+  initialIsStubMode?: boolean;
 }
 
 type HearingState =
@@ -34,7 +40,11 @@ type HearingState =
       originalText: string;
     };
 
-export function ChatWindow({ customers, initialCustomerId }: Props) {
+export function ChatWindow({
+  customers,
+  initialCustomerId,
+  initialIsStubMode = false,
+}: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -47,6 +57,7 @@ export function ChatWindow({ customers, initialCustomerId }: Props) {
     string | undefined
   >(initialCustomerId);
   const [loading, setLoading] = useState(false);
+  const [stubMode, setStubMode] = useState(initialIsStubMode);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -142,9 +153,10 @@ export function ChatWindow({ customers, initialCustomerId }: Props) {
         throw new Error(`API error: ${res.status}`);
       }
       const data: RuriMamaResponse = await res.json();
+      if (data.isStub) setStubMode(true);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply },
+        { role: "assistant", content: data.reply, isStub: data.isStub },
       ]);
     } catch (err) {
       console.error(err);
@@ -166,8 +178,23 @@ export function ChatWindow({ customers, initialCustomerId }: Props) {
 
   return (
     <div className="flex flex-col h-dvh">
+      {/* Stub-mode banner */}
+      {stubMode && (
+        <div className="px-4 pt-3">
+          <div className="flex items-start gap-2 rounded-btn bg-amber/10 border border-amber/40 text-ink px-3 py-2 text-body-sm">
+            <Info size={14} className="mt-0.5 text-amber shrink-0" />
+            <div className="leading-relaxed">
+              <span className="font-semibold">デモ応答モード</span>です。
+              本物の瑠璃ママ（Claude AI）を有効にするには、Vercel の
+              環境変数に <code className="font-mono text-xs">ANTHROPIC_API_KEY</code> を設定して
+              再デプロイしてください。
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Customer picker sticky below header */}
-      <div className="px-4 pt-4 pb-2 bg-pearl/80 backdrop-blur-sm">
+      <div className="px-4 pt-3 pb-2 bg-pearl/80 backdrop-blur-sm">
         <CustomerContextPicker
           customers={customers}
           selectedId={selectedCustomerId}
