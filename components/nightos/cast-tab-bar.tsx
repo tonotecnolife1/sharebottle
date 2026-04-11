@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, MessageSquare, Sparkles } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Home, LogOut, MessageSquare, Sparkles } from "lucide-react";
+import { clearRole } from "@/lib/nightos/role-store";
 import { cn } from "@/lib/utils";
 
-type TabKey = "home" | "templates" | "ruri-mama";
-
 interface Tab {
-  key: TabKey;
+  key: string;
   label: string;
-  href: string;
   icon: typeof Home;
-  match: (pathname: string) => boolean;
+  href?: string;
+  match?: (pathname: string) => boolean;
+  action?: "logout";
 }
 
 const TABS: Tab[] = [
@@ -37,10 +37,17 @@ const TABS: Tab[] = [
     icon: Sparkles,
     match: (p) => p.startsWith("/cast/ruri-mama"),
   },
+  {
+    key: "switch",
+    label: "切替",
+    icon: LogOut,
+    action: "logout",
+  },
 ];
 
 export function CastTabBar() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
 
   // Hide on the full-screen Ruri-Mama chat — the chat has its own sticky input.
   if (pathname.startsWith("/cast/ruri-mama")) return null;
@@ -50,14 +57,12 @@ export function CastTabBar() {
       <div className="mx-auto max-w-[520px] px-4 pb-safe pointer-events-auto">
         <div className="rounded-full bg-pearl-warm/95 backdrop-blur-md border border-pearl-soft shadow-elevated-light flex items-center justify-around px-2 py-2">
           {TABS.map((tab) => {
-            const active = tab.match(pathname);
+            const active = tab.match ? tab.match(pathname) : false;
             const Icon = tab.icon;
-            return (
-              <Link
-                key={tab.key}
-                href={tab.href}
+            const content = (
+              <div
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center gap-0.5 h-12 rounded-full transition-all",
+                  "flex flex-col items-center justify-center gap-0.5 h-12 rounded-full transition-all",
                   active
                     ? "bg-amethyst-muted text-amethyst-dark"
                     : "text-ink-muted hover:text-ink-secondary",
@@ -67,6 +72,27 @@ export function CastTabBar() {
                 <span className="text-[10px] font-medium tracking-wide">
                   {tab.label}
                 </span>
+              </div>
+            );
+            if (tab.action === "logout") {
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => {
+                    clearRole();
+                    router.push("/");
+                  }}
+                  className="flex-1"
+                  aria-label="ロールを切り替え"
+                >
+                  {content}
+                </button>
+              );
+            }
+            return (
+              <Link key={tab.key} href={tab.href!} className="flex-1">
+                {content}
               </Link>
             );
           })}
