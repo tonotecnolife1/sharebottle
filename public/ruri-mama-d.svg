@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <radialGradient id="bgD" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#3d2f3a" />
+      <stop offset="60%" stop-color="#2b232a" />
+      <stop offset="100%" stop-color="#1a1118" />
+    </radialGradient>
+    <linearGradient id="petal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e4a3b0" />
+      <stop offset="50%" stop-color="#c98d80" />
+      <stop offset="100%" stop-color="#a6695c" />
+    </linearGradient>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e8d28a" />
+      <stop offset="50%" stop-color="#c9a84c" />
+      <stop offset="100%" stop-color="#a6800f" />
+    </linearGradient>
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdfcf9" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#fdfcf9" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="100" cy="100" r="100" fill="url(#bgD)" />
+  <circle cx="100" cy="100" r="100" fill="url(#centerGlow)" />
+
+  <!-- Outer gold ring (luxury brand feel) -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#c9a84c" stroke-width="0.7" opacity="0.5" />
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.3" />
+
+  <!-- Camellia (椿) flower — top decoration -->
+  <g transform="translate(100 60)">
+    <!-- 5 petals around center -->
+    <g transform="rotate(0)">
+      <ellipse cx="0" cy="-12" rx="8" ry="11" fill="url(#petal)" />
+    </g>
+    <g transform="rotate(72)">
+      <ellipse cx="0" cy="-12" rx="8" ry="11" fill="url(#petal)" />
+    </g>
+    <g transform="rotate(144)">
+      <ellipse cx="0" cy="-12" rx="8" ry="11" fill="url(#petal)" />
+    </g>
+    <g transform="rotate(216)">
+      <ellipse cx="0" cy="-12" rx="8" ry="11" fill="url(#petal)" />
+    </g>
+    <g transform="rotate(288)">
+      <ellipse cx="0" cy="-12" rx="8" ry="11" fill="url(#petal)" />
+    </g>
+    <!-- Inner petals (smaller, brighter) -->
+    <g transform="rotate(36)">
+      <ellipse cx="0" cy="-7" rx="4" ry="6" fill="#f2c9d1" />
+    </g>
+    <g transform="rotate(108)">
+      <ellipse cx="0" cy="-7" rx="4" ry="6" fill="#f2c9d1" />
+    </g>
+    <g transform="rotate(180)">
+      <ellipse cx="0" cy="-7" rx="4" ry="6" fill="#f2c9d1" />
+    </g>
+    <g transform="rotate(252)">
+      <ellipse cx="0" cy="-7" rx="4" ry="6" fill="#f2c9d1" />
+    </g>
+    <g transform="rotate(324)">
+      <ellipse cx="0" cy="-7" rx="4" ry="6" fill="#f2c9d1" />
+    </g>
+    <!-- Stamen (gold center) -->
+    <circle cx="0" cy="0" r="4" fill="#c9a84c" />
+    <circle cx="0" cy="0" r="2.2" fill="#e8d28a" />
+    <!-- Tiny stamen dots -->
+    <circle cx="-1.5" cy="-0.8" r="0.5" fill="#fdfcf9" />
+    <circle cx="1.5" cy="-0.8" r="0.5" fill="#fdfcf9" />
+    <circle cx="0" cy="1.4" r="0.5" fill="#fdfcf9" />
+  </g>
+
+  <!--
+    Monogram: a stylized "R" / "瑠" hint at the bottom.
+    We'll use a script-like serif R because "瑠" is hard to render
+    consistently without specifying a font face.
+  -->
+  <text x="100" y="148" text-anchor="middle"
+        font-family="'Cormorant Garamond', 'Times New Roman', serif"
+        font-size="56" font-weight="500" font-style="italic"
+        fill="url(#goldText)">
+    R
+  </text>
+
+  <!-- Tiny RURI MAMA tagline -->
+  <text x="100" y="172" text-anchor="middle"
+        font-family="'Cormorant Garamond', 'Times New Roman', serif"
+        font-size="9" font-weight="400" letter-spacing="3"
+        fill="#c9a84c" opacity="0.85">
+    RURI MAMA
+  </text>
+
+  <!-- Falling petals -->
+  <g opacity="0.5">
+    <g transform="translate(35 110) rotate(20)">
+      <ellipse cx="0" cy="0" rx="2.5" ry="3.5" fill="#e4a3b0" />
+    </g>
+    <g transform="translate(165 95) rotate(-30)">
+      <ellipse cx="0" cy="0" rx="2" ry="3" fill="#e4a3b0" />
+    </g>
+    <g transform="translate(40 150) rotate(45)">
+      <ellipse cx="0" cy="0" rx="1.8" ry="2.5" fill="#f2c9d1" />
+    </g>
+    <g transform="translate(160 145) rotate(-15)">
+      <ellipse cx="0" cy="0" rx="2" ry="3" fill="#f2c9d1" />
+    </g>
+  </g>
+</svg>

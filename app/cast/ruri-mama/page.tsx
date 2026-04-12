@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { ChatWindow } from "@/features/ruri-mama/components/chat-window";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
@@ -21,6 +23,16 @@ export default async function RuriMamaPage({ searchParams }: Props) {
         subtitle="銀座30年の経験者"
         showBack
         tone="ruri"
+        right={
+          <Link
+            href="/cast/avatars"
+            className="p-1.5 rounded-full hover:bg-white/15 text-pearl"
+            aria-label="瑠璃ママのイラストを変更"
+            title="イラストを変更"
+          >
+            <ImageIcon size={18} />
+          </Link>
+        }
       />
       <ChatWindow
         customers={customers}
