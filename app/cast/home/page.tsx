@@ -3,6 +3,7 @@ import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 import { FollowTargetList } from "@/features/cast-home/components/follow-target-list";
 import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
+import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 
@@ -11,6 +12,7 @@ export default async function CastHomePage() {
 
   return (
     <div className="animate-fade-in">
+      <VisitNotificationPoller castId={data.cast.id} />
       <PageHeader
         title={`おかえりなさい、${data.cast.name}`}
         subtitle="今日のフォロー対象と瑠璃ママが待っています"

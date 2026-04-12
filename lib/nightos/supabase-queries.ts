@@ -401,6 +401,103 @@ export async function deleteScreenshot(id: string): Promise<void> {
 
 // ═══════════════ Mock implementations ═══════════════
 
+// ═══════════════ Cast personal stats ═══════════════
+
+export interface CastStatsData {
+  cast: Cast;
+  monthly: {
+    nominationCount: number;
+    sales: number;
+    repeatRate: number;
+    followRate: number;
+  };
+  targets: {
+    nominationGoal: number;
+    salesGoal: number;
+  };
+  /** Last 14 days of nomination counts for THIS cast only. */
+  nominationTrend: { date: string; count: number }[];
+  /** Last 4 weeks of repeat rate for THIS cast only. */
+  repeatTrend: { week: string; label: string; rate: number }[];
+  /** A 0..1 follow streak score for the last 7 days. */
+  followStreakDays: number;
+}
+
+export async function getCastStatsData(castId: string): Promise<CastStatsData> {
+  if (!isSupabaseConfigured()) return getCastStatsDataMock(castId);
+  return getCastStatsDataMock(castId);
+}
+
+function getCastStatsDataMock(castId: string): CastStatsData {
+  const cast = mockCasts.find((c) => c.id === castId);
+  if (!cast) throw new Error(`Cast not found: ${castId}`);
+
+  // Pick the matching column from the store-side trend fixtures
+  const trendKey = (castId === "cast1" ? "cast1" : "cast2") as
+    | "cast1"
+    | "cast2";
+  const nominationTrend = MOCK_NOMINATION_TREND.map((p) => ({
+    date: p.date,
+    count: p[trendKey],
+  }));
+  const repeatTrend = MOCK_REPEAT_TREND.map((p) => ({
+    week: p.week,
+    label: p.label,
+    rate: p[trendKey],
+  }));
+  // Per-cast targets — could come from a settings table eventually.
+  // For VIPs-heavy casts (あかり) the goals are higher.
+  const targets =
+    castId === "cast1"
+      ? { nominationGoal: 25, salesGoal: 2_400_000 }
+      : { nominationGoal: 20, salesGoal: 1_800_000 };
+
+  // Mock follow streak — generated from MOCK_FOLLOW_RATE
+  const followRate = MOCK_FOLLOW_RATE[castId] ?? 0;
+  const followStreakDays = Math.round(followRate * 7);
+
+  return {
+    cast,
+    monthly: {
+      nominationCount: cast.nomination_count,
+      sales: cast.monthly_sales,
+      repeatRate: cast.repeat_rate,
+      followRate,
+    },
+    targets,
+    nominationTrend,
+    repeatTrend,
+    followStreakDays,
+  };
+}
+
+/**
+ * Returns visits for a cast that happened after `sinceIso`.
+ * Used by the cast home polling notification widget.
+ */
+export async function getRecentVisitsForCast(
+  castId: string,
+  sinceIso: string,
+): Promise<Visit[]> {
+  if (!isSupabaseConfigured()) {
+    return getRecentVisitsForCastMock(castId, sinceIso);
+  }
+  return getRecentVisitsForCastMock(castId, sinceIso);
+}
+
+function getRecentVisitsForCastMock(
+  castId: string,
+  sinceIso: string,
+): Visit[] {
+  const since = new Date(sinceIso).getTime();
+  return mockVisits
+    .filter((v) => v.cast_id === castId && new Date(v.visited_at).getTime() > since)
+    .sort(
+      (a, b) =>
+        new Date(b.visited_at).getTime() - new Date(a.visited_at).getTime(),
+    );
+}
+
 function getCastHomeDataMock(castId: string): CastHomeData {
   const cast = mockCasts.find((c) => c.id === castId);
   if (!cast) {
