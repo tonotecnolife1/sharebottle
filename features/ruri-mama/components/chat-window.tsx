@@ -153,7 +153,11 @@ export function ChatWindow({
         throw new Error(`API error: ${res.status}`);
       }
       const data: RuriMamaResponse = await res.json();
-      if (data.isStub) setStubMode(true);
+      // The API response is authoritative — if it says we're NOT in stub
+      // mode, clear the banner even if the initial SSR detection thought
+      // we were. This handles the case where the env var was set after the
+      // deployment started but before the first request.
+      setStubMode(data.isStub);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.reply, isStub: data.isStub },
