@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Info, Sparkles } from "lucide-react";
+import { Info, Plus, Sparkles } from "lucide-react";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
@@ -9,6 +9,7 @@ import { ChatInput } from "./chat-input";
 import { ChipOptions } from "./chip-options";
 import { CustomerContextPicker } from "./customer-context-picker";
 import { FeedbackButtons } from "./feedback-buttons";
+import { IntentPicker } from "./intent-picker";
 import { MessageBubble } from "./message-bubble";
 import type {
   ChatMessage,
@@ -21,42 +22,47 @@ import type {
 interface Props {
   customers: Customer[];
   initialCustomerId?: string;
-  /**
-   * True when the server detected no ANTHROPIC_API_KEY at page render.
-   * The banner starts visible; it also flips to true if any individual
-   * API response reports isStub:true (e.g. Claude call errored out).
-   */
   initialIsStubMode?: boolean;
 }
 
-type HearingState =
-  | { phase: "idle" }
+type Phase =
+  | { name: "intent-pick" }
   | {
-      phase: "hearing";
+      name: "hearing";
       intent: Intent;
       flow: HearingFlow;
       step: number;
       answers: Record<string, string>;
-      originalText: string;
-    };
+      /** Set when the user reached hearing by typing free text — that text
+       *  is used as the user message instead of a synthesized one. */
+      originalText?: string;
+    }
+  | { name: "freeform" }
+  | { name: "loading" }
+  | { name: "responded" };
+
+const GREETING: ChatMessage = {
+  role: "assistant",
+  content:
+    "いらっしゃい。下から相談したいことを選んでね。\n顧客のお名前を選んでおくと、もっと具体的に答えられるわよ。",
+};
+
+const FREEFORM_PROMPT: ChatMessage = {
+  role: "assistant",
+  content:
+    "下の入力欄に話しかけるか、書いてみて。マイクのアイコンをタップすると音声入力もできるわよ。",
+};
 
 export function ChatWindow({
   customers,
   initialCustomerId,
   initialIsStubMode = false,
 }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-        "いらっしゃい。今日はどんなことで悩んでるの？\n顧客のお名前を選んでおくと、カルテを見ながら具体的に答えられるわよ。",
-    },
-  ]);
-  const [hearing, setHearing] = useState<HearingState>({ phase: "idle" });
+  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
+  const [phase, setPhase] = useState<Phase>({ name: "intent-pick" });
   const [selectedCustomerId, setSelectedCustomerId] = useState<
     string | undefined
   >(initialCustomerId);
-  const [loading, setLoading] = useState(false);
   const [stubMode, setStubMode] = useState(initialIsStubMode);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -65,103 +71,41 @@ export function ChatWindow({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, hearing, loading]);
+  }, [messages, phase]);
 
-  const handleUserSend = (text: string) => {
-    const userMsg: ChatMessage = { role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
+  const lookupCustomerName = (id: string | undefined): string | null =>
+    id ? (customers.find((c) => c.id === id)?.name ?? null) : null;
 
-    const intent = detectIntent(text);
-    const flow = HEARING_FLOWS[intent];
-    if (intent === "freeform" || flow.steps.length === 0) {
-      // No hearing — go straight to API
-      void callApi(text, intent, {});
-      return;
-    }
-    setHearing({
-      phase: "hearing",
-      intent,
-      flow,
-      step: 0,
-      answers: {},
-      originalText: text,
-    });
-  };
-
-  const handleChipPick = (value: string) => {
-    if (hearing.phase !== "hearing") return;
-    const { flow, step, answers, originalText, intent } = hearing;
-    const stepDef = flow.steps[step];
-    const nextAnswers = { ...answers, [stepDef.id]: value };
-    const nextStep = step + 1;
-
-    if (nextStep >= flow.steps.length) {
-      setHearing({ phase: "idle" });
-      void callApi(originalText, intent, nextAnswers);
-    } else {
-      setHearing({
-        ...hearing,
-        step: nextStep,
-        answers: nextAnswers,
-      });
-    }
-  };
-
-  const handleSkipHearing = () => {
-    if (hearing.phase !== "hearing") {
-      // Triggered from the chat input when no hearing is active — fire the
-      // most recent user text with freeform intent.
-      const lastUser = [...messages].reverse().find((m) => m.role === "user");
-      if (lastUser) {
-        void callApi(lastUser.content, "freeform", {});
-      }
-      return;
-    }
-    const { originalText, intent } = hearing;
-    setHearing({ phase: "idle" });
-    void callApi(originalText, intent, {});
-  };
+  // ─────────────────────────────────────────────────────────────
+  // API call helpers
+  // ─────────────────────────────────────────────────────────────
 
   const callApi = async (
-    userText: string,
     intent: Intent,
     hearingContext: Record<string, string>,
+    messagesToSend: ChatMessage[],
   ) => {
-    setLoading(true);
+    setPhase({ name: "loading" });
     try {
-      // Build history excluding the stub initial assistant greeting when
-      // it's the only previous message (first turn).
-      const history = messages.filter((_, i) => i !== 0 || messages.length > 1);
-      const payloadMessages: ChatMessage[] = [
-        ...history,
-        { role: "user", content: userText },
-      ];
-
       const res = await fetch("/api/ruri-mama", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: payloadMessages,
+          messages: messagesToSend.filter((m) => m !== GREETING && m !== FREEFORM_PROMPT),
           customerId: selectedCustomerId,
           hearingContext,
           castId: CURRENT_CAST_ID,
           intent,
         }),
       });
-
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data: RuriMamaResponse = await res.json();
-      // The API response is authoritative — if it says we're NOT in stub
-      // mode, clear the banner even if the initial SSR detection thought
-      // we were. This handles the case where the env var was set after the
-      // deployment started but before the first request.
       setStubMode(data.isStub);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.reply, isStub: data.isStub },
       ]);
+      setPhase({ name: "responded" });
     } catch (err) {
       console.error(err);
       setMessages((prev) => [
@@ -172,17 +116,144 @@ export function ChatWindow({
             "ごめんなさい、今ちょっと電波が悪いみたい。もう一度送ってくれる？",
         },
       ]);
-    } finally {
-      setLoading(false);
+      setPhase({ name: "responded" });
     }
   };
 
+  /** Adds a NEW user message, then fires the API call with the updated history. */
+  const sendNewMessage = (
+    text: string,
+    intent: Intent,
+    hearingContext: Record<string, string>,
+  ) => {
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
+    void callApi(intent, hearingContext, updated);
+  };
+
+  /** Reuses the existing last user message (used after the typed-text → hearing path). */
+  const continueWithExisting = (
+    intent: Intent,
+    hearingContext: Record<string, string>,
+  ) => {
+    void callApi(intent, hearingContext, messages);
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // Event handlers
+  // ─────────────────────────────────────────────────────────────
+
+  const handleIntentPick = (intent: Intent) => {
+    if (intent === "freeform") {
+      // Switch to freeform input mode and add an inviting prompt
+      setMessages((prev) => [...prev, FREEFORM_PROMPT]);
+      setPhase({ name: "freeform" });
+      return;
+    }
+    const flow = HEARING_FLOWS[intent];
+    if (flow.steps.length === 0) {
+      // No hearing — synthesize text and call API immediately
+      const synthesized = synthesizeIntentText(
+        intent,
+        {},
+        lookupCustomerName(selectedCustomerId),
+      );
+      sendNewMessage(synthesized, intent, {});
+      return;
+    }
+    setPhase({ name: "hearing", intent, flow, step: 0, answers: {} });
+  };
+
+  const handleChipPick = (value: string) => {
+    if (phase.name !== "hearing") return;
+    const { flow, step, answers, intent, originalText } = phase;
+    const stepDef = flow.steps[step];
+    const nextAnswers = { ...answers, [stepDef.id]: value };
+    const nextStep = step + 1;
+
+    if (nextStep >= flow.steps.length) {
+      // Last chip → fire the API call
+      if (originalText) {
+        // The user typed real text earlier; use it as the user message
+        continueWithExisting(intent, nextAnswers);
+      } else {
+        const synthesized = synthesizeIntentText(
+          intent,
+          nextAnswers,
+          lookupCustomerName(selectedCustomerId),
+        );
+        sendNewMessage(synthesized, intent, nextAnswers);
+      }
+    } else {
+      setPhase({ ...phase, step: nextStep, answers: nextAnswers });
+    }
+  };
+
+  const handleSkipHearing = () => {
+    if (phase.name !== "hearing") return;
+    const { intent, originalText } = phase;
+    if (originalText) {
+      continueWithExisting(intent, {});
+    } else {
+      const synthesized = synthesizeIntentText(
+        intent,
+        {},
+        lookupCustomerName(selectedCustomerId),
+      );
+      sendNewMessage(synthesized, intent, {});
+    }
+  };
+
+  const handleUserSend = (text: string) => {
+    // Free-form / responded / freeform → just send the text as-is
+    if (phase.name === "freeform" || phase.name === "responded") {
+      sendNewMessage(text, "freeform", {});
+      return;
+    }
+    // intent-pick (or any other state with input enabled) — detect intent
+    const intent = detectIntent(text);
+    const flow = HEARING_FLOWS[intent];
+    if (intent === "freeform" || flow.steps.length === 0) {
+      sendNewMessage(text, intent, {});
+      return;
+    }
+    // Show the typed text as a user message and start the hearing flow
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    setPhase({
+      name: "hearing",
+      intent,
+      flow,
+      step: 0,
+      answers: {},
+      originalText: text,
+    });
+  };
+
+  const handleNewConsultation = () => {
+    setPhase({ name: "intent-pick" });
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────
+
   const currentHearingStep =
-    hearing.phase === "hearing" ? hearing.flow.steps[hearing.step] : null;
+    phase.name === "hearing" ? phase.flow.steps[phase.step] : null;
+  const isInputDisabled =
+    phase.name === "hearing" || phase.name === "loading";
+
+  const placeholder =
+    phase.name === "hearing"
+      ? "上の選択肢から選んでね"
+      : phase.name === "freeform"
+        ? "話しかけてもOK・書いてもOK"
+        : phase.name === "responded"
+          ? "続けて相談する場合はここに"
+          : "下から選ぶか、自由に書いてもOK";
 
   return (
     <div className="flex flex-col h-dvh">
-      {/* Stub-mode banner */}
       {stubMode && (
         <div className="px-4 pt-3">
           <div className="flex items-start gap-2 rounded-btn bg-amber/10 border border-amber/40 text-ink px-3 py-2 text-body-sm">
@@ -197,7 +268,6 @@ export function ChatWindow({
         </div>
       )}
 
-      {/* Customer picker sticky below header */}
       <div className="px-4 pt-3 pb-2 bg-pearl/80 backdrop-blur-sm">
         <CustomerContextPicker
           customers={customers}
@@ -206,7 +276,6 @@ export function ChatWindow({
         />
       </div>
 
-      {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
@@ -214,9 +283,15 @@ export function ChatWindow({
         {messages.map((m, i) => (
           <div key={i} className="space-y-2">
             <MessageBubble message={m} />
-            {m.role === "assistant" && i > 0 && <FeedbackButtons />}
+            {m.role === "assistant" && i > 0 && m !== FREEFORM_PROMPT && (
+              <FeedbackButtons />
+            )}
           </div>
         ))}
+
+        {phase.name === "intent-pick" && (
+          <IntentPicker onPick={handleIntentPick} />
+        )}
 
         {currentHearingStep && (
           <ChipOptions
@@ -227,23 +302,81 @@ export function ChatWindow({
           />
         )}
 
-        {loading && (
+        {phase.name === "loading" && (
           <div className="flex items-center gap-2 text-ink-muted text-body-sm pl-2">
             <Sparkles size={14} className="text-amethyst animate-shimmer" />
             瑠璃ママが考え中…
+          </div>
+        )}
+
+        {phase.name === "responded" && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={handleNewConsultation}
+              className="flex items-center gap-1.5 px-5 h-10 rounded-full bg-pearl-warm border border-amethyst-border text-amethyst-dark text-label-md font-medium shadow-soft-card active:scale-95 hover:bg-amethyst-muted"
+            >
+              <Plus size={14} />
+              新しい相談を始める
+            </button>
           </div>
         )}
       </div>
 
       <ChatInput
         onSend={handleUserSend}
-        disabled={loading || hearing.phase === "hearing"}
-        placeholder={
-          hearing.phase === "hearing"
-            ? "上の選択肢から選んでね"
-            : "どんなことでも瑠璃ママに相談してね…"
-        }
+        disabled={isInputDisabled}
+        placeholder={placeholder}
       />
     </div>
   );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Synthesizes a natural-sounding user message from chip selections,
+// so chip-only flows still produce a user-message with enough context
+// for Claude (the API route also adds a [ヒアリング回答] section
+// independently — this synthesis is what shows up as the cast's
+// visible message in the chat).
+// ═══════════════════════════════════════════════════════════════
+
+function synthesizeIntentText(
+  intent: Intent,
+  answers: Record<string, string>,
+  customerName: string | null,
+): string {
+  const subject = customerName ? `${customerName}さん` : "お客様";
+
+  if (intent === "follow") {
+    const purpose = answers.purpose ?? "メッセージ";
+    const moodLabel: Record<string, string> = {
+      盛り上がった: "前回は盛り上がった様子でした。",
+      落ち着いた: "前回は落ち着いた感じでした。",
+      元気なかった: "前回は少し元気がない様子でした。",
+      覚えてない: "前回の様子は覚えていません。",
+    };
+    const toneLabel: Record<string, string> = {
+      親しみやすく: "親しみやすいトーンで送りたいです。",
+      丁寧に: "丁寧なトーンで送りたいです。",
+      甘えた感じ: "少し甘えた感じで送りたいです。",
+      お任せ: "トーンはお任せします。",
+    };
+    const mood = answers.mood ? (moodLabel[answers.mood] ?? "") : "";
+    const tone = answers.tone ? (toneLabel[answers.tone] ?? "") : "";
+    return `${subject}に「${purpose}」のLINEを送りたいです。${mood}${tone}`.trim();
+  }
+
+  if (intent === "serving") {
+    const situation = answers.situation ?? "対応に困っています";
+    return `今、${subject}との接客中です。状況は「${situation}」。どうしたらいい？`;
+  }
+
+  if (intent === "strategy") {
+    const period = answers.period ?? "最近";
+    const cause = answers.cause ?? "気になることがある";
+    const frequency = answers.frequency ?? "未確認";
+    return `営業戦略の相談です。${period}くらいから「${cause}」という状況です。フォロー頻度は「${frequency}」。アドバイスください。`;
+  }
+
+  return `${subject}について相談したいことがあります。`;
 }
