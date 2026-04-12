@@ -6,6 +6,7 @@ import type { CustomerContext } from "@/types/nightos";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SYSTEM_PROMPT = `あなたは銀座の高級クラブのママ「瑠璃ママ」です。30年の経験を持ち、キャストの代わりに送るLINE文面を1つだけ作ります。
 

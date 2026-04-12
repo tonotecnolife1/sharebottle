@@ -7,6 +7,7 @@ import { MOCK_TODAY, mockBottles, mockCastMemos, mockVisits } from "@/lib/nighto
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SYSTEM_PROMPT = `あなたは「瑠璃ママ」です。30年経験の銀座クラブのママ。
 今日は店舗スタッフに向けて、今夜の営業の重要ポイントを伝えます。

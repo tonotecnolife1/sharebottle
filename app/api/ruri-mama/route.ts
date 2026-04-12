@@ -18,6 +18,7 @@ import type {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -88,7 +89,7 @@ export async function POST(req: Request) {
 
     const response = await client.messages.create({
       model: RURI_MAMA_MODEL,
-      max_tokens: 1500,
+      max_tokens: 800,
       temperature: 0.7,
       system: RURI_MAMA_SYSTEM_PROMPT,
       messages: apiMessages,

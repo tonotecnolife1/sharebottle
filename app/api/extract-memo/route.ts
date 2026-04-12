@@ -6,6 +6,7 @@ import type { MemoExtractionResult } from "@/types/nightos";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SYSTEM_PROMPT = `あなたは銀座のクラブのキャストの「個人メモ」を更新するアシスタントです。
 

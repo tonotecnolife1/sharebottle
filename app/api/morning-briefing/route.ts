@@ -6,6 +6,7 @@ import type { CastHomeData, FollowTarget } from "@/types/nightos";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SYSTEM_PROMPT = `あなたは銀座のクラブのママ「瑠璃ママ」です。30年経験。
 キャストの今日の朝の準備をサポートします。
