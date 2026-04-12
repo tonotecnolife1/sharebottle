@@ -39,7 +39,8 @@ export const AVATAR_VARIANTS: {
 ];
 
 const STORAGE_KEY = "nightos.avatar-variant";
-const DEFAULT_VARIANT: AvatarVariant = "a";
+// 「大人っぽい系（着物）」をデフォルトに。30年経験の銀座のママという設定に一番マッチする。
+const DEFAULT_VARIANT: AvatarVariant = "b";
 
 export function getStoredVariant(): AvatarVariant {
   if (typeof window === "undefined") return DEFAULT_VARIANT;
