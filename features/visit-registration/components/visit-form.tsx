@@ -13,13 +13,20 @@ import { TableGrid } from "./table-grid";
 interface Props {
   casts: Cast[];
   customers: Customer[];
+  initialCustomerId?: string;
 }
 
-export function VisitForm({ casts, customers }: Props) {
+export function VisitForm({ casts, customers, initialCustomerId }: Props) {
   const [pending, startTransition] = useTransition();
   const [tableId, setTableId] = useState<string | null>(null);
-  const [customerId, setCustomerId] = useState<string | null>(null);
-  const [castId, setCastId] = useState<string>(casts[0]?.id ?? "");
+  const [customerId, setCustomerId] = useState<string | null>(initialCustomerId ?? null);
+  const [castId, setCastId] = useState<string>(() => {
+    if (initialCustomerId) {
+      const cust = customers.find((c) => c.id === initialCustomerId);
+      return cust?.cast_id ?? casts[0]?.id ?? "";
+    }
+    return casts[0]?.id ?? "";
+  });
   const [isNominated, setIsNominated] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

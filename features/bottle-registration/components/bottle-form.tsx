@@ -11,12 +11,13 @@ import { Stepper } from "./stepper";
 
 interface Props {
   customers: Customer[];
+  initialCustomerId?: string;
 }
 
-export function BottleForm({ customers }: Props) {
+export function BottleForm({ customers, initialCustomerId }: Props) {
   const [pending, startTransition] = useTransition();
   const [brand, setBrand] = useState("");
-  const [customerId, setCustomerId] = useState(customers[0]?.id ?? "");
+  const [customerId, setCustomerId] = useState(initialCustomerId ?? customers[0]?.id ?? "");
   const [glasses, setGlasses] = useState(20);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

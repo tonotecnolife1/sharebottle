@@ -5,7 +5,11 @@ import {
   getAllCustomers,
 } from "@/lib/nightos/supabase-queries";
 
-export default async function NewVisitPage() {
+interface Props {
+  searchParams: { customerId?: string };
+}
+
+export default async function NewVisitPage({ searchParams }: Props) {
   const [casts, customers] = await Promise.all([
     getAllCasts(),
     getAllCustomers(),
@@ -15,7 +19,11 @@ export default async function NewVisitPage() {
     <div className="animate-fade-in">
       <PageHeader title="来店登録" subtitle="約15秒で完了" showBack />
       <div className="px-5 pt-4 pb-6">
-        <VisitForm casts={casts} customers={customers} />
+        <VisitForm
+          casts={casts}
+          customers={customers}
+          initialCustomerId={searchParams.customerId}
+        />
       </div>
     </div>
   );
