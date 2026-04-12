@@ -87,6 +87,47 @@ export const mockCoupons: Coupon[] = [
     used_at: "2026-03-07T20:00:00+09:00",
     code: "NIGHT-THX10",
   },
+  // ── Lounge ÉTOILE 六本木 ──
+  {
+    id: "coupon5",
+    customer_id: "cust1",
+    store_id: "store2",
+    store_name: "Lounge ÉTOILE 六本木",
+    type: "drink",
+    title: "5回来店記念 シャンパンサービス",
+    description: "5回来店達成 — グラスシャンパンを1杯プレゼント 🥂",
+    valid_from: "2026-03-10",
+    valid_until: "2026-05-10",
+    used_at: null,
+    code: "ETOILE-5V",
+  },
+  {
+    id: "coupon6",
+    customer_id: "cust1",
+    store_id: "store2",
+    store_name: "Lounge ÉTOILE 六本木",
+    type: "discount",
+    title: "初回来店ウェルカム 15%OFF",
+    description: "初回ご来店のお客様限定 — 次回会計から15%オフ",
+    valid_from: "2026-01-15",
+    valid_until: "2026-03-15",
+    used_at: "2026-02-20T21:00:00+09:00",
+    code: "ETOILE-WEL",
+  },
+  // ── BAR VELVET 赤坂 ──
+  {
+    id: "coupon7",
+    customer_id: "cust1",
+    store_id: "store3",
+    store_name: "BAR VELVET 赤坂",
+    type: "drink",
+    title: "新規登録キャンペーン",
+    description: "アプリ登録特典 — お好きなウイスキー1杯プレゼント 🥃",
+    valid_from: "2026-03-01",
+    valid_until: "2026-06-01",
+    used_at: null,
+    code: "VELVET-NEW",
+  },
 ];
 
 // Fixed "today" for deterministic follow-target selection in mock mode.
@@ -95,6 +136,8 @@ export const MOCK_TODAY = new Date("2026-03-19T00:00:00+09:00");
 
 export const mockStores: Store[] = [
   { id: CURRENT_STORE_ID, name: "CLUB NIGHTOS 銀座本店" },
+  { id: "store2", name: "Lounge ÉTOILE 六本木" },
+  { id: "store3", name: "BAR VELVET 赤坂" },
 ];
 
 export const mockCasts: Cast[] = [
@@ -113,6 +156,24 @@ export const mockCasts: Cast[] = [
     nomination_count: 14,
     monthly_sales: 1_420_000,
     repeat_rate: 0.65,
+  },
+  // ── Lounge ÉTOILE 六本木 ──
+  {
+    id: "cast3",
+    store_id: "store2",
+    name: "りな",
+    nomination_count: 22,
+    monthly_sales: 2_100_000,
+    repeat_rate: 0.78,
+  },
+  // ── BAR VELVET 赤坂 ──
+  {
+    id: "cast4",
+    store_id: "store3",
+    name: "ゆい",
+    nomination_count: 10,
+    monthly_sales: 980_000,
+    repeat_rate: 0.60,
   },
 ];
 
@@ -204,6 +265,35 @@ export const mockBottles: Bottle[] = [
     remaining_glasses: 12,
     kept_at: "2026-02-14T20:00:00+09:00",
   },
+  // ── 田中太郎が Lounge ÉTOILE 六本木 でキープ ──
+  {
+    id: "btl5",
+    store_id: "store2",
+    customer_id: "cust1",
+    brand: "ドンペリニヨン",
+    total_glasses: 6,
+    remaining_glasses: 4,
+    kept_at: "2026-02-20T21:00:00+09:00",
+  },
+  {
+    id: "btl6",
+    store_id: "store2",
+    customer_id: "cust1",
+    brand: "グレンリベット12年",
+    total_glasses: 20,
+    remaining_glasses: 14,
+    kept_at: "2026-01-30T20:30:00+09:00",
+  },
+  // ── 田中太郎が BAR VELVET 赤坂 でキープ ──
+  {
+    id: "btl7",
+    store_id: "store3",
+    customer_id: "cust1",
+    brand: "竹鶴17年",
+    total_glasses: 20,
+    remaining_glasses: 18,
+    kept_at: "2026-03-01T21:00:00+09:00",
+  },
 ];
 
 // 来店履歴（フォロー対象判定で使用）
@@ -248,6 +338,27 @@ export const mockVisits: Visit[] = [
     count: 8,
     is_nominated: true,
   }),
+  // ── 田中太郎の他店舗来店 ──
+  // Lounge ÉTOILE 六本木 — 5回, りな指名
+  ...generateVisitSeries({
+    customer_id: "cust1",
+    cast_id: "cast3",
+    lastVisit: "2026-03-10",
+    intervalDays: 14,
+    count: 5,
+    is_nominated: true,
+    store_id: "store2",
+  }),
+  // BAR VELVET 赤坂 — 3回, ゆい指名
+  ...generateVisitSeries({
+    customer_id: "cust1",
+    cast_id: "cast4",
+    lastVisit: "2026-03-05",
+    intervalDays: 21,
+    count: 3,
+    is_nominated: true,
+    store_id: "store3",
+  }),
 ];
 
 function generateVisitSeries(opts: {
@@ -257,15 +368,17 @@ function generateVisitSeries(opts: {
   intervalDays: number;
   count: number;
   is_nominated: boolean;
+  store_id?: string;
 }): Visit[] {
+  const storeId = opts.store_id ?? CURRENT_STORE_ID;
   const visits: Visit[] = [];
   const last = new Date(opts.lastVisit + "T20:00:00+09:00");
   for (let i = 0; i < opts.count; i++) {
     const d = new Date(last);
     d.setDate(d.getDate() - i * opts.intervalDays);
     visits.push({
-      id: `visit_${opts.customer_id}_${i}`,
-      store_id: CURRENT_STORE_ID,
+      id: `visit_${opts.customer_id}_${storeId}_${i}`,
+      store_id: storeId,
       customer_id: opts.customer_id,
       cast_id: opts.cast_id,
       table_name: i === 0 ? "T3" : null,
