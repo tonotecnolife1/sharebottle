@@ -1,4 +1,3 @@
-import { PageHeader } from "@/components/nightos/page-header";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 import { SendStoreRequest } from "@/features/cast-home/components/send-store-request";
@@ -16,15 +15,33 @@ export default async function CastHomePage() {
     getUnreadCastMessages(CURRENT_CAST_ID),
   ]);
 
+  // Time-based greeting
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12
+      ? "おはようございます"
+      : hour < 17
+        ? "こんにちは"
+        : "おかえりなさい";
+
   return (
     <div className="animate-fade-in">
       <VisitNotificationPoller castId={data.cast.id} />
-      <PageHeader
-        title={`おかえりなさい、${data.cast.name}`}
-        subtitle="今日のフォロー対象と瑠璃ママが待っています"
-      />
 
-      <div className="px-5 pt-5 pb-6 space-y-5">
+      {/* ── Non-sticky header ── */}
+      <div className="px-5 pt-8 pb-2">
+        <div className="text-label-sm text-ink-muted tracking-wider uppercase mb-1">
+          NIGHTOS
+        </div>
+        <h1 className="text-display-lg font-display font-semibold text-ink">
+          {greeting}、{data.cast.name}さん
+        </h1>
+        <p className="text-body-sm text-ink-secondary mt-0.5">
+          今日のフォロー対象と瑠璃ママが待っています
+        </p>
+      </div>
+
+      <div className="px-5 pt-3 pb-6 space-y-5">
         {/* Store → cast messages */}
         <StoreMessageBanner
           castId={data.cast.id}
