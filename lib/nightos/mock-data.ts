@@ -16,6 +16,20 @@ import { CURRENT_STORE_ID } from "./constants";
  */
 export const mockScreenshots: LineScreenshot[] = [];
 
+/**
+ * Store → cast messages. Stored in memory, displayed as a banner on
+ * the cast home screen.
+ */
+export interface StoreToCastMessage {
+  id: string;
+  cast_id: string;
+  message: string;
+  sent_at: string;
+  read: boolean;
+}
+
+export const mockCastMessages: StoreToCastMessage[] = [];
+
 // Fixed "today" for deterministic follow-target selection in mock mode.
 // Matches the spec's reference date (last-visit dates are in early March).
 export const MOCK_TODAY = new Date("2026-03-19T00:00:00+09:00");

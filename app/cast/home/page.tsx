@@ -3,12 +3,17 @@ import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 import { FollowTargetList } from "@/features/cast-home/components/follow-target-list";
 import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
+import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
 import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getUnreadCastMessages } from "@/lib/nightos/supabase-queries";
 
 export default async function CastHomePage() {
-  const data = await fetchCastHomeData(CURRENT_CAST_ID);
+  const [data, storeMessages] = await Promise.all([
+    fetchCastHomeData(CURRENT_CAST_ID),
+    getUnreadCastMessages(CURRENT_CAST_ID),
+  ]);
 
   return (
     <div className="animate-fade-in">
@@ -19,6 +24,16 @@ export default async function CastHomePage() {
       />
 
       <div className="px-5 pt-5 pb-6 space-y-5">
+        {/* Store → cast messages */}
+        <StoreMessageBanner
+          castId={data.cast.id}
+          initialMessages={storeMessages.map((m) => ({
+            id: m.id,
+            message: m.message,
+            sent_at: m.sent_at,
+          }))}
+        />
+
         <SummaryCards summary={data.summary} />
 
         <MorningBriefing castId={data.cast.id} />

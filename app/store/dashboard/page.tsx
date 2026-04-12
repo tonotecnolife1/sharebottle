@@ -1,14 +1,39 @@
 import { PageHeader } from "@/components/nightos/page-header";
 import { Card } from "@/components/nightos/card";
 import { StatCard } from "@/components/nightos/stat-card";
+import { AtRiskCustomers } from "@/features/store-dashboard/components/at-risk-customers";
 import { CastTable } from "@/features/store-dashboard/components/cast-table";
+import { CategoryBreakdown } from "@/features/store-dashboard/components/category-breakdown";
 import { NominationTrendBars } from "@/features/store-dashboard/components/trend-bars";
 import { RepeatTrend } from "@/features/store-dashboard/components/repeat-trend";
-import { getStoreDashboardData } from "@/lib/nightos/supabase-queries";
+import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
+import {
+  MOCK_TODAY,
+  mockBottles,
+  mockCastMemos,
+  mockVisits,
+} from "@/lib/nightos/mock-data";
+import {
+  getAllCustomers,
+  getStoreDashboardData,
+} from "@/lib/nightos/supabase-queries";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function StoreDashboardPage() {
-  const data = await getStoreDashboardData();
+  const [data, customers] = await Promise.all([
+    getStoreDashboardData(),
+    getAllCustomers(),
+  ]);
+
+  // Compute at-risk targets for the store-level view (all casts combined)
+  const today = process.env.NEXT_PUBLIC_SUPABASE_URL ? new Date() : MOCK_TODAY;
+  const allTargets = selectFollowTargets({
+    customers,
+    visits: mockVisits,
+    bottles: mockBottles,
+    memos: mockCastMemos,
+    today,
+  });
 
   return (
     <div className="animate-fade-in">
@@ -45,6 +70,22 @@ export default async function StoreDashboardPage() {
             tone="rose"
           />
         </div>
+
+        {/* At-risk customers */}
+        <section>
+          <h2 className="text-display-sm text-ink mb-2">
+            離脱リスク顧客
+          </h2>
+          <AtRiskCustomers targets={allTargets} />
+        </section>
+
+        {/* Customer category breakdown */}
+        <section>
+          <h2 className="text-display-sm text-ink mb-2">
+            顧客カテゴリ構成
+          </h2>
+          <CategoryBreakdown customers={customers} />
+        </section>
 
         {/* Nomination trend */}
         <section>

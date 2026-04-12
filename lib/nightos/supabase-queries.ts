@@ -16,10 +16,12 @@ import {
   MOCK_TODAY,
   mockBottles,
   mockCastMemos,
+  mockCastMessages,
   mockCasts,
   mockCustomers,
   mockScreenshots,
   mockVisits,
+  type StoreToCastMessage,
 } from "./mock-data";
 import {
   MOCK_FOLLOW_RATE,
@@ -140,6 +142,173 @@ export async function getAllCustomers(): Promise<Customer[]> {
     () => getAllCustomersReal(),
     () => getAllCustomersMock(),
   );
+}
+
+// ═══════════════ Store CRUD: customers ═══════════════
+
+export interface UpdateCustomerInput {
+  name: string;
+  birthday: string | null;
+  job: string | null;
+  favorite_drink: string | null;
+  category: CustomerCategory;
+  store_memo: string | null;
+  cast_id: string;
+}
+
+export async function updateCustomer(
+  id: string,
+  input: UpdateCustomerInput,
+): Promise<Customer | null> {
+  if (!isSupabaseConfigured()) return updateCustomerMock(id, input);
+  // TODO: real Supabase update — keeping mock for now since the
+  // Supabase write path mirrors createCustomerReal
+  return updateCustomerMock(id, input);
+}
+
+function updateCustomerMock(
+  id: string,
+  input: UpdateCustomerInput,
+): Customer | null {
+  const idx = mockCustomers.findIndex((c) => c.id === id);
+  if (idx < 0) return null;
+  const updated: Customer = {
+    ...mockCustomers[idx],
+    name: input.name,
+    birthday: input.birthday,
+    job: input.job,
+    favorite_drink: input.favorite_drink,
+    category: input.category,
+    store_memo: input.store_memo,
+    cast_id: input.cast_id,
+  };
+  mockCustomers[idx] = updated;
+  return updated;
+}
+
+export async function deleteCustomer(id: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    return deleteCustomerMock(id);
+  }
+  return deleteCustomerMock(id);
+}
+
+function deleteCustomerMock(id: string): void {
+  const idx = mockCustomers.findIndex((c) => c.id === id);
+  if (idx >= 0) mockCustomers.splice(idx, 1);
+  // Cascade: also remove dependent rows from the in-memory mocks
+  for (let i = mockBottles.length - 1; i >= 0; i--) {
+    if (mockBottles[i].customer_id === id) mockBottles.splice(i, 1);
+  }
+  for (let i = mockVisits.length - 1; i >= 0; i--) {
+    if (mockVisits[i].customer_id === id) mockVisits.splice(i, 1);
+  }
+  for (let i = mockCastMemos.length - 1; i >= 0; i--) {
+    if (mockCastMemos[i].customer_id === id) mockCastMemos.splice(i, 1);
+  }
+  for (let i = mockScreenshots.length - 1; i >= 0; i--) {
+    if (mockScreenshots[i].customer_id === id) mockScreenshots.splice(i, 1);
+  }
+}
+
+export async function getCustomerById(id: string): Promise<Customer | null> {
+  if (!isSupabaseConfigured()) {
+    return mockCustomers.find((c) => c.id === id) ?? null;
+  }
+  return mockCustomers.find((c) => c.id === id) ?? null;
+}
+
+// ═══════════════ Store CRUD: visits ═══════════════
+
+export interface VisitWithNames extends Visit {
+  customer_name: string;
+  cast_name: string;
+}
+
+export async function getRecentVisits(limit = 50): Promise<VisitWithNames[]> {
+  if (!isSupabaseConfigured()) return getRecentVisitsMock(limit);
+  return getRecentVisitsMock(limit);
+}
+
+function getRecentVisitsMock(limit: number): VisitWithNames[] {
+  return [...mockVisits]
+    .sort(
+      (a, b) =>
+        new Date(b.visited_at).getTime() - new Date(a.visited_at).getTime(),
+    )
+    .slice(0, limit)
+    .map((v) => ({
+      ...v,
+      customer_name:
+        mockCustomers.find((c) => c.id === v.customer_id)?.name ?? "（不明）",
+      cast_name: mockCasts.find((c) => c.id === v.cast_id)?.name ?? "（不明）",
+    }));
+}
+
+export async function deleteVisit(id: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    return deleteVisitMock(id);
+  }
+  return deleteVisitMock(id);
+}
+
+function deleteVisitMock(id: string): void {
+  const idx = mockVisits.findIndex((v) => v.id === id);
+  if (idx >= 0) mockVisits.splice(idx, 1);
+}
+
+// ═══════════════ Store CRUD: bottles ═══════════════
+
+export interface BottleWithCustomer extends Bottle {
+  customer_name: string;
+  cast_id: string | null;
+}
+
+export async function getAllBottles(): Promise<BottleWithCustomer[]> {
+  if (!isSupabaseConfigured()) return getAllBottlesMock();
+  return getAllBottlesMock();
+}
+
+function getAllBottlesMock(): BottleWithCustomer[] {
+  return [...mockBottles]
+    .sort((a, b) => a.remaining_glasses - b.remaining_glasses)
+    .map((b) => {
+      const customer = mockCustomers.find((c) => c.id === b.customer_id);
+      return {
+        ...b,
+        customer_name: customer?.name ?? "（不明）",
+        cast_id: customer?.cast_id ?? null,
+      };
+    });
+}
+
+export async function consumeBottle(
+  id: string,
+  glasses = 1,
+): Promise<Bottle | null> {
+  if (!isSupabaseConfigured()) return consumeBottleMock(id, glasses);
+  return consumeBottleMock(id, glasses);
+}
+
+function consumeBottleMock(id: string, glasses: number): Bottle | null {
+  const idx = mockBottles.findIndex((b) => b.id === id);
+  if (idx < 0) return null;
+  const next = {
+    ...mockBottles[idx],
+    remaining_glasses: Math.max(0, mockBottles[idx].remaining_glasses - glasses),
+  };
+  mockBottles[idx] = next;
+  return next;
+}
+
+export async function deleteBottle(id: string): Promise<void> {
+  if (!isSupabaseConfigured()) return deleteBottleMock(id);
+  return deleteBottleMock(id);
+}
+
+function deleteBottleMock(id: string): void {
+  const idx = mockBottles.findIndex((b) => b.id === id);
+  if (idx >= 0) mockBottles.splice(idx, 1);
 }
 
 function getAllCustomersMock(): Customer[] {
@@ -621,4 +790,37 @@ function getCustomerContextMock(
         new Date(b.visited_at).getTime() - new Date(a.visited_at).getTime(),
     );
   return { customer, memo, bottles, visits };
+}
+
+// ═══════════════ Store → Cast messaging ═══════════════
+
+export async function sendCastMessage(args: {
+  castId: string;
+  message: string;
+}): Promise<StoreToCastMessage> {
+  const msg: StoreToCastMessage = {
+    id: `msg_${Date.now()}`,
+    cast_id: args.castId,
+    message: args.message,
+    sent_at: new Date().toISOString(),
+    read: false,
+  };
+  mockCastMessages.push(msg);
+  return msg;
+}
+
+export async function getUnreadCastMessages(
+  castId: string,
+): Promise<StoreToCastMessage[]> {
+  return mockCastMessages
+    .filter((m) => m.cast_id === castId && !m.read)
+    .sort(
+      (a, b) =>
+        new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime(),
+    );
+}
+
+export async function markCastMessageRead(id: string): Promise<void> {
+  const msg = mockCastMessages.find((m) => m.id === id);
+  if (msg) msg.read = true;
 }
