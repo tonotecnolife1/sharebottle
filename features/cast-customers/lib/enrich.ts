@@ -48,6 +48,17 @@ export const STATUS_CONFIG: Record<
   },
 };
 
+export type ContactMethod = "line" | "instagram" | "other";
+
+export const CONTACT_METHOD_CONFIG: Record<
+  ContactMethod,
+  { label: string; icon: string }
+> = {
+  line: { label: "LINE", icon: "💬" },
+  instagram: { label: "Instagram", icon: "📷" },
+  other: { label: "その他", icon: "📱" },
+};
+
 export interface EnrichedCustomer {
   customer: Customer;
   memo: CastMemo | null;
@@ -61,6 +72,7 @@ export interface EnrichedCustomer {
   status: CustomerStatus;
   lastVisitDate: string | null;
   hasBirthday: boolean; // within 14 days
+  contactMethod: ContactMethod;
   // From localStorage
   priority: Priority;
   nextAction: NextAction | null;
@@ -137,6 +149,14 @@ export function enrichCustomers(
       }
     }
 
+    // Contact method — derive from localStorage or default.
+    // In a real app this would be a field on the customer record.
+    // For MVP, use a simple heuristic: VIPs tend to use LINE,
+    // younger customers (new) might use Instagram.
+    const contactMethod: ContactMethod =
+      loadContactMethod(customer.id) ??
+      (customer.category === "new" ? "instagram" : "line");
+
     return {
       customer,
       memo,
@@ -149,10 +169,42 @@ export function enrichCustomers(
       status,
       lastVisitDate,
       hasBirthday,
+      contactMethod,
       priority: priorities[customer.id] ?? 0,
       nextAction: actions[customer.id] ?? null,
     };
   });
+}
+
+// ═══════════════ Contact method localStorage ═══════════════
+
+const CONTACT_KEY = "nightos.contact-methods";
+
+function loadContactMethod(customerId: string): ContactMethod | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CONTACT_KEY);
+    if (!raw) return null;
+    const map = JSON.parse(raw) as Record<string, ContactMethod>;
+    return map[customerId] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveContactMethod(
+  customerId: string,
+  method: ContactMethod,
+) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(CONTACT_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, ContactMethod>) : {};
+    map[customerId] = method;
+    window.localStorage.setItem(CONTACT_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
 }
 
 function computeStatus(

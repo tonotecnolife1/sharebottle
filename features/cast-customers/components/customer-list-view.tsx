@@ -3,11 +3,13 @@
 import Link from "next/link";
 import {
   AlertTriangle,
+  AtSign,
   Cake,
   Calendar,
   Check,
   ChevronRight,
   Flag,
+  MessageCircle,
   Pencil,
   Plus,
   Search,
@@ -29,10 +31,13 @@ import {
   type NextAction,
 } from "../lib/action-store";
 import {
+  CONTACT_METHOD_CONFIG,
   enrichCustomers,
+  saveContactMethod,
   sortCustomers,
   SORT_OPTIONS,
   STATUS_CONFIG,
+  type ContactMethod,
   type CustomerStatus,
   type EnrichedCustomer,
   type SortKey,
@@ -137,6 +142,18 @@ export function CustomerListView({ contexts, today }: Props) {
     return counts;
   }, [enriched]);
 
+  // Contact method state
+  const [contactMethods, setContactMethods] = useState<Record<string, ContactMethod>>({});
+
+  const handleContactToggle = (customerId: string, current: ContactMethod) => {
+    const options: ContactMethod[] = ["line", "instagram", "other"];
+    const nextIdx = (options.indexOf(current) + 1) % options.length;
+    const next = options[nextIdx];
+    saveContactMethod(customerId, next);
+    setContactMethods((prev) => ({ ...prev, [customerId]: next }));
+    // Also update the enriched data's contact method for re-render
+  };
+
   const handlePriorityToggle = (customerId: string, current: Priority) => {
     const next = cyclePriority(current);
     setPriority(CURRENT_CAST_ID, customerId, next);
@@ -182,9 +199,9 @@ export function CustomerListView({ contexts, today }: Props) {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {/* Status summary pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-5 px-5 scrollbar-none">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-5 px-5 scrollbar-none">
         {STATUS_FILTERS.map((sf) => {
           const count = sf.value === "all"
             ? enriched.length
@@ -195,7 +212,7 @@ export function CustomerListView({ contexts, today }: Props) {
               type="button"
               onClick={() => setStatusFilter(sf.value)}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-8 rounded-full text-label-sm font-medium whitespace-nowrap shrink-0 transition-all active:scale-95 border",
+                "flex items-center gap-1 px-2.5 h-7 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 transition-all active:scale-95 border",
                 statusFilter === sf.value
                   ? "bg-ink text-pearl border-ink"
                   : "bg-pearl-warm text-ink-secondary border-pearl-soft hover:border-ink-muted",
@@ -204,7 +221,7 @@ export function CustomerListView({ contexts, today }: Props) {
               {sf.label}
               <span
                 className={cn(
-                  "text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full",
+                  "text-[9px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full",
                   statusFilter === sf.value
                     ? "bg-pearl/20 text-pearl"
                     : "bg-pearl-soft text-ink-muted",
@@ -221,22 +238,22 @@ export function CustomerListView({ contexts, today }: Props) {
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search
-            size={14}
+            size={12}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="名前・職業・話題で検索"
-            style={{ fontSize: "16px" }}
-            className="w-full h-10 pl-9 pr-3 rounded-full bg-pearl-warm border border-pearl-soft text-ink outline-none focus:border-champagne-dark"
+            style={{ fontSize: "13px" }}
+            className="w-full h-9 pl-8 pr-3 rounded-full bg-pearl-warm border border-pearl-soft text-ink outline-none focus:border-champagne-dark placeholder:text-ink-muted"
           />
         </div>
         <select
           value={sortKey}
           onChange={(e) => setSortKey(e.target.value as SortKey)}
-          className="h-10 px-3 rounded-full bg-pearl-warm border border-pearl-soft text-ink-secondary text-label-sm outline-none cursor-pointer"
-          style={{ fontSize: "14px" }}
+          className="h-9 px-2.5 rounded-full bg-pearl-warm border border-pearl-soft text-ink-secondary text-[11px] outline-none cursor-pointer"
+          style={{ fontSize: "11px" }}
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -247,7 +264,7 @@ export function CustomerListView({ contexts, today }: Props) {
       </div>
 
       {/* Category filter pills */}
-      <div className="flex gap-1.5">
+      <div className="flex gap-1">
         {CATEGORY_FILTERS.map((cf) => (
           <button
             key={cf.value}
@@ -258,7 +275,7 @@ export function CustomerListView({ contexts, today }: Props) {
               )
             }
             className={cn(
-              "px-3 h-7 rounded-full text-label-sm transition-all active:scale-95 border",
+              "px-2.5 h-6 rounded-full text-[11px] transition-all active:scale-95 border",
               categoryFilter === cf.value
                 ? "bg-roseGold text-pearl border-roseGold"
                 : "bg-pearl-warm text-ink-secondary border-pearl-soft",
@@ -270,7 +287,7 @@ export function CustomerListView({ contexts, today }: Props) {
       </div>
 
       {/* Results count */}
-      <div className="text-label-sm text-ink-muted">
+      <div className="text-[11px] text-ink-muted">
         {filtered.length}人表示 / 全{enriched.length}人
       </div>
 
@@ -326,7 +343,7 @@ export function CustomerListView({ contexts, today }: Props) {
                 </div>
 
                 {/* Row 2: stats */}
-                <div className="flex items-center gap-3 text-label-sm text-ink-muted mb-1">
+                <div className="flex items-center gap-2.5 text-[11px] text-ink-muted mb-1">
                   <span
                     className={cn(
                       "font-semibold",
@@ -337,21 +354,21 @@ export function CustomerListView({ contexts, today }: Props) {
                           : "text-ink-secondary",
                     )}
                   >
-                    <Calendar size={10} className="inline mr-0.5" />
+                    <Calendar size={9} className="inline mr-0.5" />
                     {e.daysSinceLastVisit}日前
                   </span>
-                  <span>
-                    累計{e.totalVisitCount}回
-                  </span>
-                  <span>
-                    半年{e.recentVisitCount}回
-                  </span>
+                  <span>累計{e.totalVisitCount}</span>
+                  <span>半年{e.recentVisitCount}</span>
                   {e.bottles.length > 0 && (
                     <span className="flex items-center gap-0.5">
-                      <Wine size={10} className="text-roseGold-dark" />
+                      <Wine size={9} className="text-roseGold-dark" />
                       {e.bottles.length}
                     </span>
                   )}
+                  <span className="flex items-center gap-0.5 text-[10px]">
+                    {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].icon}{" "}
+                    {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].label}
+                  </span>
                 </div>
 
                 {/* Row 3: last topic */}
@@ -371,16 +388,32 @@ export function CustomerListView({ contexts, today }: Props) {
                     handlePriorityToggle(e.customer.id, e.priority)
                   }
                   className={cn(
-                    "flex items-center gap-1 px-2.5 h-7 rounded-full text-[11px] font-medium border transition-all active:scale-95",
+                    "flex items-center gap-1 px-2 h-6 rounded-full text-[10px] font-medium border transition-all active:scale-95",
                     PRIORITY_COLORS[e.priority],
                   )}
                   title={`優先度: ${PRIORITY_LABELS[e.priority]}（タップで変更）`}
                 >
                   <Star
-                    size={10}
+                    size={9}
                     className={e.priority > 0 ? "fill-current" : ""}
                   />
                   {PRIORITY_LABELS[e.priority]}
+                </button>
+
+                {/* Contact method toggle */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleContactToggle(
+                      e.customer.id,
+                      contactMethods[e.customer.id] ?? e.contactMethod,
+                    )
+                  }
+                  className="flex items-center gap-1 px-2 h-6 rounded-full text-[10px] font-medium border border-pearl-soft bg-pearl-warm text-ink-secondary transition-all active:scale-95"
+                  title="連絡手段（タップで変更）"
+                >
+                  {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].icon}
+                  {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].label}
                 </button>
 
                 {/* Next action */}
