@@ -6,6 +6,11 @@ import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
 import { recentFeedbackSamples } from "../lib/feedback-store";
+import {
+  newSessionId,
+  saveSession,
+  type ChatSession,
+} from "../lib/chat-session-store";
 import { ChatInput } from "./chat-input";
 import { ChipOptions } from "./chip-options";
 import { CustomerContextPicker } from "./customer-context-picker";
@@ -111,7 +116,30 @@ export function ChatWindow({
   >(initialCustomerId);
   const [stubMode, setStubMode] = useState(initialIsStubMode);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [currentSessionId] = useState(() => newSessionId());
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Save session to history whenever phase becomes "responded"
+  useEffect(() => {
+    if (phase.name !== "responded") return;
+    const userMsgs = messages.filter(
+      (m) => m.role === "user" && m !== GREETING && m !== FREEFORM_PROMPT,
+    );
+    if (userMsgs.length === 0) return;
+    const customerName = selectedCustomerId
+      ? customers.find((c) => c.id === selectedCustomerId)?.name ?? null
+      : null;
+    const session: ChatSession = {
+      id: currentSessionId,
+      customerId: selectedCustomerId ?? null,
+      customerName,
+      title: userMsgs[0]?.content.slice(0, 50) ?? "相談",
+      messages: messages.filter((m) => m !== GREETING && m !== FREEFORM_PROMPT),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveSession(session);
+  }, [phase, messages, selectedCustomerId, customers, currentSessionId]);
 
   // On mount, restore persisted chat history (if any)
   useEffect(() => {
