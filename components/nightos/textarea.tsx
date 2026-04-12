@@ -1,11 +1,18 @@
+"use client";
+
 import { forwardRef, type TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { AutoResizeTextarea } from "./auto-resize-textarea";
 
 interface Props extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   hint?: string;
 }
 
+/**
+ * Form-level textarea with label + hint. Uses AutoResizeTextarea
+ * internally so the field grows as the user types.
+ */
 export const TextAreaInput = forwardRef<HTMLTextAreaElement, Props>(
   function TextAreaInput({ label, hint, className, id, ...rest }, ref) {
     const textareaId = id ?? rest.name;
@@ -19,19 +26,21 @@ export const TextAreaInput = forwardRef<HTMLTextAreaElement, Props>(
             {label}
           </label>
         )}
-        <textarea
-          ref={ref}
-          id={textareaId}
-          rows={3}
+        <div
           className={cn(
-            "w-full px-3.5 py-2.5 rounded-btn bg-pearl-warm text-ink text-body-md",
-            "border border-pearl-soft outline-none transition-colors resize-none",
-            "placeholder:text-ink-muted",
-            "focus:border-champagne-dark focus:bg-white",
-            className,
+            "rounded-btn bg-pearl-warm border border-pearl-soft",
+            "transition-colors focus-within:border-champagne-dark focus-within:bg-white",
           )}
-          {...rest}
-        />
+        >
+          <AutoResizeTextarea
+            ref={ref}
+            id={textareaId}
+            minRows={2}
+            maxRows={10}
+            className={cn("px-3.5 py-2.5", className)}
+            {...rest}
+          />
+        </div>
         {hint && <p className="text-label-sm text-ink-muted">{hint}</p>}
       </div>
     );

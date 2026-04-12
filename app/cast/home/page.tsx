@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronRight, Users } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
@@ -39,6 +41,25 @@ export default async function CastHomePage() {
         <MorningBriefing castId={data.cast.id} />
 
         <RuriMamaEntryCard />
+
+        {/* Customer list link */}
+        <Link
+          href="/cast/customers"
+          className="flex items-center justify-between rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-4 py-3 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-champagne flex items-center justify-center">
+              <Users size={16} className="text-ink-secondary" />
+            </div>
+            <div>
+              <div className="text-body-md font-semibold text-ink">顧客一覧</div>
+              <div className="text-label-sm text-ink-muted">
+                担当顧客の情報を確認
+              </div>
+            </div>
+          </div>
+          <ChevronRight size={14} className="text-ink-muted" />
+        </Link>
 
         <section className="space-y-3">
           <header className="flex items-baseline justify-between">

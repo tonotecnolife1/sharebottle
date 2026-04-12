@@ -1,7 +1,8 @@
 "use client";
 
 import { Mic, MicOff, Send, Zap } from "lucide-react";
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState } from "react";
+import { AutoResizeTextarea } from "@/components/nightos/auto-resize-textarea";
 import { cn } from "@/lib/utils";
 import { useVoiceInput } from "../use-voice-input";
 
@@ -19,9 +20,9 @@ export function ChatInput({
   placeholder = "話しかけてもOK・書いてもOK",
 }: Props) {
   const [text, setText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voice = useVoiceInput({
     onResult: (transcript) => {
-      // Replace with the latest transcript (interim or final)
       setText(transcript);
     },
   });
@@ -32,13 +33,8 @@ export function ChatInput({
     onSend(t);
     setText("");
     if (voice.recording) voice.stop();
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      submit();
-    }
+    // Re-focus the textarea after sending so the keyboard stays open on mobile
+    requestAnimationFrame(() => textareaRef.current?.focus());
   };
 
   return (
@@ -60,14 +56,18 @@ export function ChatInput({
       )}
 
       <div className="flex items-end gap-2 rounded-2xl border border-amethyst-border bg-pearl-warm shadow-soft-card px-3 py-2">
-        <textarea
+        {/* Auto-resize textarea — LINE-like behavior */}
+        <AutoResizeTextarea
+          ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={onKeyDown}
           placeholder={placeholder}
-          rows={1}
+          minRows={1}
+          maxRows={6}
           disabled={disabled}
-          className="flex-1 bg-transparent resize-none outline-none text-body-md text-ink placeholder:text-ink-muted py-2 max-h-32"
+          className="py-2"
+          // iOS: suggest "enter" key (newline, not send)
+          enterKeyHint="enter"
         />
 
         {voice.supported && (

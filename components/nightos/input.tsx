@@ -25,8 +25,9 @@ export const TextInput = forwardRef<HTMLInputElement, Props>(function TextInput(
       <input
         ref={ref}
         id={inputId}
+        style={{ fontSize: "16px" }}
         className={cn(
-          "w-full h-11 px-3.5 rounded-btn bg-pearl-warm text-ink text-body-md",
+          "w-full h-11 px-3.5 rounded-btn bg-pearl-warm text-ink",
           "border border-pearl-soft outline-none transition-colors",
           "placeholder:text-ink-muted",
           "focus:border-champagne-dark focus:bg-white",
