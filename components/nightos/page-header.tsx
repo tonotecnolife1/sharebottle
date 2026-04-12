@@ -28,7 +28,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 px-5 py-4 backdrop-blur-md",
+        "sticky top-0 z-50 px-5 py-4 backdrop-blur-md",
         isRuri
           ? "ruri-gradient text-pearl"
           : "bg-pearl-warm/85 border-b border-pearl-soft",
