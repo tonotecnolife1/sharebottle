@@ -105,7 +105,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-モデルは `claude-sonnet-4-6`、システムプロンプトは
+モデルは `claude-haiku-4-5-20251001`（コスパ重視。約 $0.005/回）、システムプロンプトは
 `features/ruri-mama/data/system-prompt.ts` にあります。  
 API キーが無効・通信失敗時はスタブ応答に自動フォールバックします。
 
@@ -133,7 +133,7 @@ npm run dev
 - Tailwind CSS（NIGHTOS用 light palette: pearl / champagne / rose-gold / amethyst / blush）
 - Noto Sans JP + Cormorant Garamond（`<link>` でランタイムロード）
 - Supabase (Auth / Postgres) — PR-1 でスキーマ定義、PR-2+ で実接続
-- Anthropic Claude API (`claude-sonnet-4-6`, 瑠璃ママペルソナ)
+- Anthropic Claude API (`claude-haiku-4-5-20251001`, 瑠璃ママペルソナ)
 - Lucide React（アイコン）
 
 ---
