@@ -374,7 +374,7 @@ export function ChatWindow({
         </div>
       )}
 
-      <div className="px-4 pt-3 pb-2 bg-pearl/80 backdrop-blur-sm">
+      <div className="px-4 pt-3 pb-2 bg-[#faf7f2] relative z-30">
         <CustomerContextPicker
           customers={customers}
           selectedId={selectedCustomerId}
@@ -384,7 +384,7 @@ export function ChatWindow({
 
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-3 relative z-0"
       >
         {messages.map((m, i) => (
           <div key={i} className="space-y-2">
