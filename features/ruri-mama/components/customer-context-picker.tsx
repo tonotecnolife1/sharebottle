@@ -20,7 +20,7 @@ export function CustomerContextPicker({
   const selected = customers.find((c) => c.id === selectedId);
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -55,8 +55,18 @@ export function CustomerContextPicker({
         />
       </button>
 
+      {/* Backdrop — closes dropdown when tapping outside */}
       {open && (
-        <div className="absolute top-full mt-2 left-0 right-0 z-30 rounded-2xl bg-pearl-warm border border-amethyst-border shadow-elevated-light overflow-hidden animate-fade-in">
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute top-full mt-2 left-0 right-0 z-50 rounded-2xl bg-pearl-warm border border-amethyst-border shadow-elevated-light overflow-hidden animate-fade-in max-h-[60vh] overflow-y-auto">
           <button
             type="button"
             onClick={() => {
@@ -65,7 +75,9 @@ export function CustomerContextPicker({
             }}
             className="w-full text-left px-4 py-3 hover:bg-pearl-soft border-b border-pearl-soft"
           >
-            <div className="text-body-md text-ink-secondary">指定なしで相談</div>
+            <div className="text-body-md text-ink-secondary">
+              指定なしで相談
+            </div>
           </button>
           {customers.map((c) => (
             <button
@@ -82,7 +94,12 @@ export function CustomerContextPicker({
             >
               <div className="text-body-md text-ink">{c.name}</div>
               <div className="text-label-sm text-ink-muted">
-                {c.job ?? "—"}・{c.category === "vip" ? "VIP" : c.category === "new" ? "新規" : "常連"}
+                {c.job ?? "—"} ·{" "}
+                {c.category === "vip"
+                  ? "VIP"
+                  : c.category === "new"
+                    ? "新規"
+                    : "常連"}
               </div>
             </button>
           ))}
