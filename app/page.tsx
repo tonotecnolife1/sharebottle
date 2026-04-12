@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Sparkles, Store as StoreIcon, User } from "lucide-react";
+import {
+  Sparkles,
+  Store as StoreIcon,
+  Ticket,
+  User,
+} from "lucide-react";
 import { getRole, setRole, type NightosRole } from "@/lib/nightos/role-store";
 import { Card } from "@/components/nightos/card";
 
@@ -14,11 +19,18 @@ export default function RoleSelectorPage() {
     const existing = getRole();
     if (existing === "cast") router.replace("/cast/home");
     else if (existing === "store") router.replace("/store");
+    else if (existing === "customer") router.replace("/customer/home");
   }, [router]);
 
   const pick = (role: NightosRole) => {
     setRole(role);
-    router.push(role === "cast" ? "/cast/home" : "/store");
+    const dest =
+      role === "cast"
+        ? "/cast/home"
+        : role === "store"
+          ? "/store"
+          : "/customer/home";
+    router.push(dest);
   };
 
   return (
@@ -39,13 +51,14 @@ export default function RoleSelectorPage() {
         </div>
 
         {/* Role cards */}
-        <div className="grid gap-4 animate-fade-in">
+        <div className="grid gap-3 animate-fade-in">
+          {/* Cast */}
           <button
             type="button"
             onClick={() => pick("cast")}
             className="text-left transition-transform active:scale-[0.98]"
           >
-            <Card className="!border-roseGold-border !bg-gradient-pearl p-6 shadow-glow-rose">
+            <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full rose-gradient flex items-center justify-center shadow-soft-card">
                   <User size={26} className="text-pearl" />
@@ -58,19 +71,20 @@ export default function RoleSelectorPage() {
                     キャスト（あかり）
                   </div>
                   <div className="text-body-sm text-ink-secondary mt-0.5">
-                    今日のフォローと瑠璃ママに相談
+                    フォロー・瑠璃ママ・テンプレート・成績
                   </div>
                 </div>
               </div>
             </Card>
           </button>
 
+          {/* Store staff */}
           <button
             type="button"
             onClick={() => pick("store")}
             className="text-left transition-transform active:scale-[0.98]"
           >
-            <Card className="p-6">
+            <Card className="p-5">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-champagne-dark flex items-center justify-center shadow-soft-card">
                   <StoreIcon size={26} className="text-ink" />
@@ -81,7 +95,33 @@ export default function RoleSelectorPage() {
                   </div>
                   <div className="text-display-sm text-ink">店舗スタッフ</div>
                   <div className="text-body-sm text-ink-secondary mt-0.5">
-                    顧客・来店・ボトル登録（準備中）
+                    顧客・来店・ボトル管理・ダッシュボード
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </button>
+
+          {/* Customer */}
+          <button
+            type="button"
+            onClick={() => pick("customer")}
+            className="text-left transition-transform active:scale-[0.98]"
+          >
+            <Card className="!border-amethyst-border p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
+                  <Ticket size={26} className="text-pearl" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
+                    For Guest
+                  </div>
+                  <div className="text-display-sm text-ink">
+                    来店客（田中太郎）
+                  </div>
+                  <div className="text-body-sm text-ink-secondary mt-0.5">
+                    ボトル管理・指名確認・クーポン
                   </div>
                 </div>
               </div>

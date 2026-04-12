@@ -2,7 +2,7 @@
 
 import { ROLE_STORAGE_KEY } from "./constants";
 
-export type NightosRole = "store" | "cast";
+export type NightosRole = "store" | "cast" | "customer";
 
 /**
  * Read the currently-selected role from localStorage. Returns null on the
@@ -11,7 +11,7 @@ export type NightosRole = "store" | "cast";
 export function getRole(): NightosRole | null {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(ROLE_STORAGE_KEY);
-  if (raw === "store" || raw === "cast") return raw;
+  if (raw === "store" || raw === "cast" || raw === "customer") return raw;
   return null;
 }
 

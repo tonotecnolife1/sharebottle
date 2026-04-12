@@ -20,6 +20,7 @@ import {
   mockCasts,
   mockCustomers,
   mockScreenshots,
+  mockStores,
   mockVisits,
   type StoreToCastMessage,
 } from "./mock-data";
@@ -823,4 +824,94 @@ export async function getUnreadCastMessages(
 export async function markCastMessageRead(id: string): Promise<void> {
   const msg = mockCastMessages.find((m) => m.id === id);
   if (msg) msg.read = true;
+}
+
+// ═══════════════ Customer (来店客) queries ═══════════════
+
+import type {
+  Coupon,
+  CustomerBottleView,
+  CustomerStoreOverview,
+} from "@/types/nightos";
+import { mockCoupons } from "./mock-data";
+
+export async function getCustomerStoreOverviews(
+  customerId: string,
+): Promise<CustomerStoreOverview[]> {
+  // For MVP: aggregate from mock data. One overview per store the customer has bottles at.
+  const customerBottles = mockBottles.filter(
+    (b) => b.customer_id === customerId,
+  );
+  const customerVisits = mockVisits.filter(
+    (v) => v.customer_id === customerId,
+  );
+
+  const storeIdSet = new Set([
+    ...customerBottles.map((b) => b.store_id),
+    ...customerVisits.map((v) => v.store_id),
+  ]);
+  const storeIds = Array.from(storeIdSet);
+
+  const overviews: CustomerStoreOverview[] = [];
+  for (const storeId of storeIds) {
+    const store = mockStores.find((s) => s.id === storeId);
+    const bottles = customerBottles.filter((b) => b.store_id === storeId);
+    const visits = customerVisits
+      .filter((v) => v.store_id === storeId)
+      .sort(
+        (a, b) =>
+          new Date(b.visited_at).getTime() - new Date(a.visited_at).getTime(),
+      );
+    const nominatedVisits = visits.filter((v) => v.is_nominated);
+    const castId = nominatedVisits[0]?.cast_id;
+    const cast = castId ? mockCasts.find((c) => c.id === castId) : null;
+
+    overviews.push({
+      store_id: storeId,
+      store_name: store?.name ?? "（不明）",
+      visit_count: visits.length,
+      total_spent_estimate:
+        visits.length *
+        (mockCustomers.find((c) => c.id === customerId)?.category === "vip"
+          ? 40_000
+          : 22_000),
+      bottles,
+      nomination_cast: cast?.name ?? null,
+      last_visit: visits[0]?.visited_at ?? null,
+    });
+  }
+  return overviews;
+}
+
+export async function getCustomerBottleViews(
+  customerId: string,
+): Promise<CustomerBottleView[]> {
+  const bottles = mockBottles.filter((b) => b.customer_id === customerId);
+  return bottles.map((bottle) => {
+    const store = mockStores.find((s) => s.id === bottle.store_id);
+    const customer = mockCustomers.find((c) => c.id === customerId);
+    const cast = customer
+      ? mockCasts.find((c) => c.id === customer.cast_id)
+      : null;
+    return {
+      bottle,
+      store_name: store?.name ?? "（不明）",
+      cast_name: cast?.name ?? null,
+    };
+  });
+}
+
+export async function getCustomerCoupons(
+  customerId: string,
+): Promise<Coupon[]> {
+  return mockCoupons
+    .filter((c) => c.customer_id === customerId)
+    .sort((a, b) => {
+      // Unused first, then by valid_until desc
+      if (!a.used_at && b.used_at) return -1;
+      if (a.used_at && !b.used_at) return 1;
+      return (
+        new Date(b.valid_until).getTime() - new Date(a.valid_until).getTime()
+      );
+    });
 }

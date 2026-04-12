@@ -30,6 +30,65 @@ export interface StoreToCastMessage {
 
 export const mockCastMessages: StoreToCastMessage[] = [];
 
+// ═══════════════ Customer (来店客) mock data ═══════════════
+
+import type { Coupon } from "@/types/nightos";
+
+export const mockCoupons: Coupon[] = [
+  {
+    id: "coupon1",
+    customer_id: "cust1",
+    store_id: "store1",
+    store_name: "CLUB NIGHTOS 銀座本店",
+    type: "drink",
+    title: "ドリンク1杯サービス",
+    description: "10回来店達成記念 — お好きなドリンクを1杯プレゼント",
+    valid_from: "2026-03-01",
+    valid_until: "2026-04-30",
+    used_at: null,
+    code: "NIGHT-D10",
+  },
+  {
+    id: "coupon2",
+    customer_id: "cust1",
+    store_id: "store1",
+    store_name: "CLUB NIGHTOS 銀座本店",
+    type: "birthday",
+    title: "バースデーシャンパン 🥂",
+    description: "お誕生月限定 — シャンパン1杯プレゼント",
+    valid_from: "2026-09-01",
+    valid_until: "2026-09-30",
+    used_at: null,
+    code: "NIGHT-BD26",
+  },
+  {
+    id: "coupon3",
+    customer_id: "cust1",
+    store_id: "store1",
+    store_name: "CLUB NIGHTOS 銀座本店",
+    type: "vip",
+    title: "VIPラウンジ無料利用",
+    description: "VIP会員特典 — VIPルームを無料でご利用いただけます",
+    valid_from: "2026-01-01",
+    valid_until: "2026-12-31",
+    used_at: null,
+    code: "NIGHT-VIP",
+  },
+  {
+    id: "coupon4",
+    customer_id: "cust1",
+    store_id: "store1",
+    store_name: "CLUB NIGHTOS 銀座本店",
+    type: "discount",
+    title: "累計利用感謝 10%OFF",
+    description: "累計¥300,000利用達成 — 次回会計から10%オフ",
+    valid_from: "2026-02-15",
+    valid_until: "2026-05-15",
+    used_at: "2026-03-07T20:00:00+09:00",
+    code: "NIGHT-THX10",
+  },
+];
+
 // Fixed "today" for deterministic follow-target selection in mock mode.
 // Matches the spec's reference date (last-visit dates are in early March).
 export const MOCK_TODAY = new Date("2026-03-19T00:00:00+09:00");

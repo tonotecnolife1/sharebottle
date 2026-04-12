@@ -106,6 +106,40 @@ export interface LineScreenshot {
   created_at: string;
 }
 
+// ═══════════════ Customer (来店客) app types ═══════════════
+
+export type CouponType = "drink" | "discount" | "birthday" | "vip";
+
+export interface Coupon {
+  id: string;
+  customer_id: string;
+  store_id: string;
+  store_name: string;
+  type: CouponType;
+  title: string;
+  description: string;
+  valid_from: string;
+  valid_until: string;
+  used_at: string | null;
+  code: string;
+}
+
+export interface CustomerBottleView {
+  bottle: Bottle;
+  store_name: string;
+  cast_name: string | null;
+}
+
+export interface CustomerStoreOverview {
+  store_id: string;
+  store_name: string;
+  visit_count: number;
+  total_spent_estimate: number;
+  bottles: Bottle[];
+  nomination_cast: string | null;
+  last_visit: string | null;
+}
+
 // ═══════════════ Derived / view types ═══════════════
 
 export type FollowReason =

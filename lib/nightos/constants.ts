@@ -4,6 +4,8 @@
 export const CURRENT_STORE_ID = "store1";
 export const CURRENT_CAST_ID = "cast1"; // あかり
 
+export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード用）
+
 export const ROLE_STORAGE_KEY = "nightos.role";
 
 // Claude Haiku 4.5 — Anthropic の最新ハイク。Sonnet 4.6 と比べて
