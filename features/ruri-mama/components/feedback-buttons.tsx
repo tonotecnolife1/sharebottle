@@ -1,18 +1,41 @@
 "use client";
 
 import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { cn } from "@/lib/utils";
+import {
+  getFeedbackFor,
+  saveFeedback,
+  type FeedbackValue,
+} from "../lib/feedback-store";
 
-type Feedback = "helpful" | "not_helpful" | null;
+interface Props {
+  /**
+   * The full assistant message content. We use the first 120 chars
+   * as a stable snippet key so feedback persists across reloads.
+   */
+  assistantContent: string;
+}
 
-export function FeedbackButtons() {
-  const [feedback, setFeedback] = useState<Feedback>(null);
+export function FeedbackButtons({ assistantContent }: Props) {
+  const [feedback, setFeedback] = useState<FeedbackValue | null>(null);
+
+  // Restore previously-saved feedback for this message on mount
+  useEffect(() => {
+    setFeedback(getFeedbackFor(CURRENT_CAST_ID, assistantContent));
+  }, [assistantContent]);
+
+  const handleClick = (value: FeedbackValue) => {
+    setFeedback(value);
+    saveFeedback(CURRENT_CAST_ID, assistantContent, value);
+  };
+
   return (
     <div className="flex justify-start gap-2 pl-2">
       <button
         type="button"
-        onClick={() => setFeedback("helpful")}
+        onClick={() => handleClick("helpful")}
         className={cn(
           "flex items-center gap-1 px-3 h-8 rounded-badge text-label-sm transition-colors",
           feedback === "helpful"
@@ -25,7 +48,7 @@ export function FeedbackButtons() {
       </button>
       <button
         type="button"
-        onClick={() => setFeedback("not_helpful")}
+        onClick={() => handleClick("not_helpful")}
         className={cn(
           "flex items-center gap-1 px-3 h-8 rounded-badge text-label-sm transition-colors",
           feedback === "not_helpful"

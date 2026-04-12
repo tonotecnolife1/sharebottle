@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { StoreInfoCard } from "@/components/nightos/card";
 import { cn } from "@/lib/utils";
 import type { Bottle, CustomerContext } from "@/types/nightos";
+import { BottleSuggestion } from "./bottle-suggestion";
 
 const LOW_THRESHOLD = 5;
 
@@ -11,6 +12,8 @@ export function StoreInfoSection({ context }: { context: CustomerContext }) {
     customer.favorite_drink || bottles.length > 0 || customer.store_memo;
 
   if (!hasAny) return null;
+
+  const hasLowBottle = bottles.some((b) => b.remaining_glasses <= LOW_THRESHOLD);
 
   return (
     <StoreInfoCard title="店舗からの共有情報">
@@ -33,6 +36,7 @@ export function StoreInfoSection({ context }: { context: CustomerContext }) {
                 <BottleRow key={b.id} bottle={b} />
               ))}
             </dd>
+            {hasLowBottle && <BottleSuggestion customerId={customer.id} />}
           </div>
         )}
         {customer.store_memo && (

@@ -5,6 +5,7 @@ import { Info, Plus, Sparkles, Trash2 } from "lucide-react";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
+import { recentFeedbackSamples } from "../lib/feedback-store";
 import { ChatInput } from "./chat-input";
 import { ChipOptions } from "./chip-options";
 import { CustomerContextPicker } from "./customer-context-picker";
@@ -162,6 +163,7 @@ export function ChatWindow({
   ) => {
     setPhase({ name: "loading" });
     try {
+      const feedbackContext = recentFeedbackSamples(CURRENT_CAST_ID, 8);
       const res = await fetch("/api/ruri-mama", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,6 +173,7 @@ export function ChatWindow({
           hearingContext,
           castId: CURRENT_CAST_ID,
           intent,
+          recentFeedback: feedbackContext,
         }),
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -359,7 +362,7 @@ export function ChatWindow({
           <div key={i} className="space-y-2">
             <MessageBubble message={m} />
             {m.role === "assistant" && i > 0 && m !== FREEFORM_PROMPT && (
-              <FeedbackButtons />
+              <FeedbackButtons assistantContent={m.content} />
             )}
           </div>
         ))}

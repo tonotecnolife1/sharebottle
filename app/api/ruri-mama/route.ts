@@ -48,6 +48,7 @@ export async function POST(req: Request) {
     hearingContext: body.hearingContext ?? {},
     intent: body.intent,
     today,
+    recentFeedback: body.recentFeedback,
   });
 
   // Last user message is the actual query
@@ -120,6 +121,7 @@ function buildContextPrefix(opts: {
   hearingContext: Record<string, string>;
   intent: Intent;
   today: Date;
+  recentFeedback?: { helpful: string[]; notHelpful: string[] };
 }): string {
   const lines: string[] = [];
 
@@ -181,6 +183,29 @@ function buildContextPrefix(opts: {
     };
     lines.push(`[相談カテゴリ] ${intentLabel[opts.intent]}`);
     lines.push("");
+  }
+
+  // Recent feedback from the cast — bias the next reply toward what they
+  // already said was helpful and away from what wasn't.
+  if (opts.recentFeedback) {
+    const { helpful, notHelpful } = opts.recentFeedback;
+    if (helpful.length > 0 || notHelpful.length > 0) {
+      lines.push("[キャストのフィードバック傾向]");
+      if (helpful.length > 0) {
+        lines.push("このキャストが「参考になった」と評価した過去の回答（抜粋）:");
+        helpful.slice(-3).forEach((s) => lines.push(`  ✓ ${s}`));
+      }
+      if (notHelpful.length > 0) {
+        lines.push(
+          "このキャストが「参考にならなかった」と評価した過去の回答（抜粋）:",
+        );
+        notHelpful.slice(-3).forEach((s) => lines.push(`  ✗ ${s}`));
+      }
+      lines.push(
+        "→ 上の傾向を参考にしつつ、似た失敗を繰り返さず、好まれた方向で答えてください。",
+      );
+      lines.push("");
+    }
   }
 
   if (lines.length > 0) {

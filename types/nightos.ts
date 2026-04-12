@@ -179,6 +179,14 @@ export interface RuriMamaRequest {
   hearingContext?: Record<string, string>;
   castId: string;
   intent: Intent;
+  /**
+   * Recent feedback samples from the cast (excerpted assistant content
+   * that was marked helpful or not). Used to bias future replies.
+   */
+  recentFeedback?: {
+    helpful: string[];
+    notHelpful: string[];
+  };
 }
 
 export interface RuriMamaResponse {

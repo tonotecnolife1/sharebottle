@@ -1,5 +1,6 @@
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { Card } from "@/components/nightos/card";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import type { StoreDashboardData } from "@/lib/nightos/supabase-queries";
 
 export function CastTable({
@@ -7,33 +8,92 @@ export function CastTable({
 }: {
   stats: StoreDashboardData["castStats"];
 }) {
+  // Compute ROI = monthly_sales / customers — rough revenue per customer
+  // and rank casts so the top performer gets a green up-arrow
+  const ranked = [...stats].sort(
+    (a, b) => b.cast.monthly_sales - a.cast.monthly_sales,
+  );
+  const topId = ranked[0]?.cast.id;
+  const bottomId = ranked[ranked.length - 1]?.cast.id;
+
   return (
-    <Card className="p-4 space-y-2">
-      <div className="grid grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr_0.9fr] gap-2 text-label-sm text-ink-muted border-b border-pearl-soft pb-2">
+    <Card className="p-4 space-y-3">
+      <div className="grid grid-cols-[1.2fr_0.55fr_0.7fr_0.7fr_0.55fr_0.9fr] gap-2 text-label-sm text-ink-muted border-b border-pearl-soft pb-2">
         <div>キャスト</div>
         <div className="text-right">指名</div>
         <div className="text-right">リピート</div>
         <div className="text-right">フォロー</div>
+        <div className="text-right">担当</div>
         <div className="text-right">月売上</div>
       </div>
-      {stats.map((s) => (
-        <div
-          key={s.cast.id}
-          className="grid grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr_0.9fr] gap-2 text-body-sm text-ink py-1"
-        >
-          <div className="font-medium">{s.cast.name}</div>
-          <div className="text-right font-display text-body-lg">
-            {s.cast.nomination_count}
+      {stats.map((s) => {
+        const isTop = s.cast.id === topId && stats.length > 1;
+        const isBottom = s.cast.id === bottomId && stats.length > 1;
+        const arpc =
+          s.customerCount > 0
+            ? Math.round(s.cast.monthly_sales / s.customerCount)
+            : 0;
+        return (
+          <div
+            key={s.cast.id}
+            className="grid grid-cols-[1.2fr_0.55fr_0.7fr_0.7fr_0.55fr_0.9fr] gap-2 text-body-sm text-ink py-1.5 items-center"
+          >
+            <div className="flex items-center gap-1 font-medium">
+              {isTop && (
+                <TrendingUp size={12} className="text-emerald shrink-0" />
+              )}
+              {isBottom && stats.length > 1 && !isTop && (
+                <TrendingDown size={12} className="text-amber shrink-0" />
+              )}
+              <span>{s.cast.name}</span>
+            </div>
+            <div className="text-right font-display text-body-lg">
+              {s.cast.nomination_count}
+            </div>
+            <div className="text-right">
+              {Math.round(s.cast.repeat_rate * 100)}%
+            </div>
+            <div
+              className={cn(
+                "text-right",
+                s.followRate >= 0.7
+                  ? "text-emerald font-medium"
+                  : s.followRate < 0.5
+                    ? "text-amber"
+                    : "",
+              )}
+            >
+              {Math.round(s.followRate * 100)}%
+            </div>
+            <div className="text-right text-ink-secondary">
+              {s.customerCount}人
+            </div>
+            <div className="text-right">
+              <div className="font-medium">
+                {formatCurrency(s.cast.monthly_sales)}
+              </div>
+              {arpc > 0 && (
+                <div className="text-[10px] text-ink-muted">
+                  ARPU {formatCurrency(arpc)}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="text-right">
-            {Math.round(s.cast.repeat_rate * 100)}%
-          </div>
-          <div className="text-right">{Math.round(s.followRate * 100)}%</div>
-          <div className="text-right text-ink-secondary">
-            {formatCurrency(s.cast.monthly_sales).replace("¥", "¥")}
-          </div>
+        );
+      })}
+
+      {/* Legend */}
+      <div className="pt-2 border-t border-pearl-soft text-label-sm text-ink-muted space-y-0.5">
+        <div className="flex items-center gap-1">
+          <TrendingUp size={10} className="text-emerald" />
+          売上トップ
         </div>
-      ))}
+        <div>
+          フォロー率: <span className="text-emerald font-medium">緑70%↑</span>
+          /<span className="text-amber"> 黄50%↓</span>
+        </div>
+        <div>ARPU = 月売上 ÷ 担当顧客数</div>
+      </div>
     </Card>
   );
 }
