@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  AlertTriangle,
   AtSign,
   Cake,
   Calendar,
@@ -10,7 +9,6 @@ import {
   ChevronRight,
   Flag,
   MessageCircle,
-  Pencil,
   Plus,
   Search,
   Sparkles,
@@ -415,6 +413,15 @@ export function CustomerListView({ contexts, today }: Props) {
                   {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].icon}
                   {CONTACT_METHOD_CONFIG[contactMethods[e.customer.id] ?? e.contactMethod].label}
                 </button>
+
+                {/* Quick: template */}
+                <Link
+                  href={`/cast/templates?customerId=${e.customer.id}`}
+                  className="flex items-center gap-0.5 px-2 h-6 rounded-full text-[10px] font-medium border border-roseGold-border bg-roseGold-muted text-roseGold-dark active:scale-95"
+                >
+                  <MessageCircle size={9} />
+                  テンプレ
+                </Link>
 
                 {/* Next action */}
                 {editingActionId === e.customer.id ? (
