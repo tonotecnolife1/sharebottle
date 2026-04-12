@@ -33,7 +33,7 @@ export default async function CastHomePage() {
         <div className="text-label-sm text-ink-muted tracking-wider uppercase mb-1">
           NIGHTOS
         </div>
-        <h1 className="text-display-lg font-display font-semibold text-ink">
+        <h1 className="font-display font-semibold text-ink text-[clamp(1.4rem,5vw,2rem)] leading-tight whitespace-nowrap">
           {greeting}、{data.cast.name}さん
         </h1>
         <p className="text-body-sm text-ink-secondary mt-0.5">

@@ -95,9 +95,12 @@
     padding-top: max(1rem, env(safe-area-inset-top));
   }
 
-  /* Subtle pearl page bg with a warm sheen */
+  /* Subtle pearl page bg with a warm sheen.
+     background-attachment: fixed keeps the gradient anchored to
+     the viewport so full-page screenshots look consistent. */
   .pearl-sheen {
-    background: radial-gradient(
+    background-color: theme("colors.pearl.DEFAULT");
+    background-image: radial-gradient(
         1200px 600px at 20% -10%,
         rgba(201, 141, 128, 0.08),
         transparent 60%
@@ -106,7 +109,7 @@
         900px 500px at 100% 110%,
         rgba(154, 123, 187, 0.08),
         transparent 60%
-      ),
-      theme("colors.pearl.DEFAULT");
+      );
+    background-attachment: fixed;
   }
 }
