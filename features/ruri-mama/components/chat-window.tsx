@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Info, Plus, Sparkles } from "lucide-react";
+import { Info, Plus, Sparkles, Trash2 } from "lucide-react";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
@@ -18,6 +18,51 @@ import type {
   Intent,
   RuriMamaResponse,
 } from "@/types/nightos";
+
+// ═══════════════ Persistence helpers ═══════════════
+
+const STORAGE_KEY_PREFIX = "nightos.chat";
+const MAX_PERSISTED_MESSAGES = 30;
+
+function loadStoredMessages(castId: string): ChatMessage[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(`${STORAGE_KEY_PREFIX}.${castId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ChatMessage[];
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveMessagesToStorage(castId: string, messages: ChatMessage[]) {
+  if (typeof window === "undefined") return;
+  try {
+    // Filter out transient assistant prompts (greeting / freeform invite)
+    // and trim to MAX_PERSISTED_MESSAGES so localStorage doesn't grow forever.
+    const persistable = messages.filter(
+      (m) => m.role !== "assistant" || (m.content.length > 0 && m !== GREETING && m !== FREEFORM_PROMPT),
+    );
+    const trimmed = persistable.slice(-MAX_PERSISTED_MESSAGES);
+    window.localStorage.setItem(
+      `${STORAGE_KEY_PREFIX}.${castId}`,
+      JSON.stringify(trimmed),
+    );
+  } catch {
+    // ignore quota errors
+  }
+}
+
+function clearStoredMessages(castId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(`${STORAGE_KEY_PREFIX}.${castId}`);
+  } catch {
+    // ignore
+  }
+}
 
 interface Props {
   customers: Customer[];
@@ -64,7 +109,30 @@ export function ChatWindow({
     string | undefined
   >(initialCustomerId);
   const [stubMode, setStubMode] = useState(initialIsStubMode);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // On mount, restore persisted chat history (if any)
+  useEffect(() => {
+    const stored = loadStoredMessages(CURRENT_CAST_ID);
+    if (stored && stored.length > 0) {
+      setMessages([GREETING, ...stored]);
+      // If the last persisted message was an assistant reply, mark as
+      // "responded" so the cast can immediately tap "新しい相談" or
+      // continue typing
+      const lastUserOrAi = stored[stored.length - 1];
+      if (lastUserOrAi.role === "assistant") {
+        setPhase({ name: "responded" });
+      }
+    }
+    setHistoryLoaded(true);
+  }, []);
+
+  // Save on every change after the initial restore
+  useEffect(() => {
+    if (!historyLoaded) return;
+    saveMessagesToStorage(CURRENT_CAST_ID, messages);
+  }, [messages, historyLoaded]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -72,6 +140,13 @@ export function ChatWindow({
       behavior: "smooth",
     });
   }, [messages, phase]);
+
+  const handleClearHistory = () => {
+    if (!confirm("これまでの相談履歴を全部削除しますか？")) return;
+    clearStoredMessages(CURRENT_CAST_ID);
+    setMessages([GREETING]);
+    setPhase({ name: "intent-pick" });
+  };
 
   const lookupCustomerName = (id: string | undefined): string | null =>
     id ? (customers.find((c) => c.id === id)?.name ?? null) : null;
@@ -310,7 +385,7 @@ export function ChatWindow({
         )}
 
         {phase.name === "responded" && (
-          <div className="flex justify-center pt-2">
+          <div className="flex flex-col items-center gap-2 pt-2">
             <button
               type="button"
               onClick={handleNewConsultation}
@@ -319,6 +394,16 @@ export function ChatWindow({
               <Plus size={14} />
               新しい相談を始める
             </button>
+            {messages.length > 3 && (
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                className="flex items-center gap-1 text-label-sm text-ink-muted hover:text-rose underline underline-offset-2"
+              >
+                <Trash2 size={11} />
+                履歴を全部クリアする
+              </button>
+            )}
           </div>
         )}
       </div>

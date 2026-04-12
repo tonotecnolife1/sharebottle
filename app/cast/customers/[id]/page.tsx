@@ -6,6 +6,7 @@ import { CustomerStats } from "@/features/customer-card/components/customer-stat
 import { LineImportPanel } from "@/features/customer-card/components/line-import-panel";
 import { MemoSection } from "@/features/customer-card/components/memo-section";
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
+import { VisitHistory } from "@/features/customer-card/components/visit-history";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import {
   getCustomerContext,
@@ -29,6 +30,7 @@ export default async function CustomerCardPage({
       <div className="px-5 pt-4 pb-6 space-y-5">
         <CustomerHeader customer={context.customer} />
         <CustomerStats context={context} />
+        <VisitHistory visits={context.visits} />
         <StoreInfoSection context={context} />
         <MemoSection customer={context.customer} memo={context.memo} />
         <LineImportPanel

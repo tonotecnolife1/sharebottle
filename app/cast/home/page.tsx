@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/nightos/page-header";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 import { FollowTargetList } from "@/features/cast-home/components/follow-target-list";
+import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 
@@ -15,8 +16,10 @@ export default async function CastHomePage() {
         subtitle="今日のフォロー対象と瑠璃ママが待っています"
       />
 
-      <div className="px-5 pt-5 pb-6 space-y-6">
+      <div className="px-5 pt-5 pb-6 space-y-5">
         <SummaryCards summary={data.summary} />
+
+        <MorningBriefing castId={data.cast.id} />
 
         <RuriMamaEntryCard />
 

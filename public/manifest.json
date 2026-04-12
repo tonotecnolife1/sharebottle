@@ -1,0 +1,25 @@
+{
+  "name": "NIGHTOS",
+  "short_name": "NIGHTOS",
+  "description": "夜のお店のためのワークスペース。店舗が入力し、キャストが活用する。",
+  "lang": "ja",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf7f2",
+  "theme_color": "#9a7bbb",
+  "icons": [
+    {
+      "src": "/ruri-mama-b.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ruri-mama.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

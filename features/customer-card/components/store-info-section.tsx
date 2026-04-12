@@ -1,5 +1,9 @@
+import { AlertTriangle } from "lucide-react";
 import { StoreInfoCard } from "@/components/nightos/card";
-import type { CustomerContext } from "@/types/nightos";
+import { cn } from "@/lib/utils";
+import type { Bottle, CustomerContext } from "@/types/nightos";
+
+const LOW_THRESHOLD = 5;
 
 export function StoreInfoSection({ context }: { context: CustomerContext }) {
   const { customer, bottles } = context;
@@ -24,11 +28,9 @@ export function StoreInfoSection({ context }: { context: CustomerContext }) {
             <dt className="text-label-sm text-ink-secondary mb-0.5">
               キープボトル
             </dt>
-            <dd className="text-body-md text-ink space-y-0.5">
+            <dd className="space-y-1">
               {bottles.map((b) => (
-                <div key={b.id}>
-                  {b.brand}（残 {b.remaining_glasses}杯 / {b.total_glasses}杯）
-                </div>
+                <BottleRow key={b.id} bottle={b} />
               ))}
             </dd>
           </div>
@@ -45,5 +47,27 @@ export function StoreInfoSection({ context }: { context: CustomerContext }) {
         )}
       </dl>
     </StoreInfoCard>
+  );
+}
+
+function BottleRow({ bottle }: { bottle: Bottle }) {
+  const isLow = bottle.remaining_glasses <= LOW_THRESHOLD;
+  return (
+    <div className="flex items-center gap-2 text-body-md text-ink">
+      <span>
+        {bottle.brand}（残 {bottle.remaining_glasses}杯 / {bottle.total_glasses}杯）
+      </span>
+      {isLow && (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-badge text-[10px] font-medium",
+            "bg-amber/20 text-amber border border-amber/40",
+          )}
+        >
+          <AlertTriangle size={9} />
+          残りわずか
+        </span>
+      )}
+    </div>
   );
 }

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Cake, Clock, Sparkles, Wine } from "lucide-react";
+import { AlertTriangle, Cake, Clock, Sparkles, Wine } from "lucide-react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
 import type { FollowReason, FollowTarget } from "@/types/nightos";
+
+const BOTTLE_LOW_THRESHOLD = 5;
 
 const reasonBadgeTone: Record<FollowReason, "interval" | "birthday" | "nomination"> = {
   interval: "interval",
@@ -56,6 +58,12 @@ export function FollowTargetCard({ target }: { target: FollowTarget }) {
             <span>
               {bottle.brand}（残{bottle.remaining_glasses}杯 / {bottle.total_glasses}杯）
             </span>
+            {bottle.remaining_glasses <= BOTTLE_LOW_THRESHOLD && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-badge text-[10px] font-medium bg-amber/20 text-amber border border-amber/40">
+                <AlertTriangle size={9} />
+                残りわずか
+              </span>
+            )}
           </div>
         )}
         {lastTopic && (
