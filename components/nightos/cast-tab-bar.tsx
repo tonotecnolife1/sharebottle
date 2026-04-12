@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, Home, LogOut, MessageSquare, Sparkles } from "lucide-react";
+import { BarChart3, Home, LogOut, MessageSquare, Sparkles, Users } from "lucide-react";
 import { clearRole } from "@/lib/nightos/role-store";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,14 @@ const TABS: Tab[] = [
     label: "ホーム",
     href: "/cast/home",
     icon: Home,
-    match: (p) => p === "/cast/home" || p.startsWith("/cast/customers"),
+    match: (p) => p === "/cast/home",
+  },
+  {
+    key: "customers",
+    label: "顧客",
+    href: "/cast/customers",
+    icon: Users,
+    match: (p) => p.startsWith("/cast/customers"),
   },
   {
     key: "templates",
