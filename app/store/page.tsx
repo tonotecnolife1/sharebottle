@@ -13,12 +13,16 @@ import { Card } from "@/components/nightos/card";
 import { StatCard } from "@/components/nightos/stat-card";
 import { StoreBriefing } from "@/features/store-hub/components/store-briefing";
 import { SendCastMessage } from "@/features/store-hub/components/send-cast-message";
-import { getAllCasts, getStoreDashboardData } from "@/lib/nightos/supabase-queries";
+import { IssueCoupon } from "@/features/store-hub/components/issue-coupon";
+import { CastRequestBanner } from "@/features/store-hub/components/cast-request-banner";
+import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests } from "@/lib/nightos/supabase-queries";
 
 export default async function StoreHubPage() {
-  const [data, casts] = await Promise.all([
+  const [data, casts, customers, castRequests] = await Promise.all([
     getStoreDashboardData(),
     getAllCasts(),
+    getAllCustomers(),
+    getUnresolvedCastRequests(),
   ]);
 
   return (
@@ -58,11 +62,19 @@ export default async function StoreHubPage() {
           />
         </div>
 
+        {/* Cast requests (reverse messaging) */}
+        {castRequests.length > 0 && (
+          <CastRequestBanner requests={castRequests} />
+        )}
+
         {/* Store AI Briefing */}
         <StoreBriefing />
 
         {/* Send message to cast */}
         <SendCastMessage casts={casts.map((c) => ({ id: c.id, name: c.name }))} />
+
+        {/* Issue coupon to customer */}
+        <IssueCoupon customers={customers.map((c) => ({ id: c.id, name: c.name }))} />
 
         {/* Registration shortcuts */}
         <section className="space-y-2">

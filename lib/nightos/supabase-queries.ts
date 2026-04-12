@@ -966,3 +966,35 @@ export async function getCustomerCoupons(
       );
     });
 }
+
+// ═══════════════ Cast → Store requests ═══════════════
+
+import { mockCastRequests, type CastToStoreRequest } from "./mock-data";
+
+export async function sendCastRequest(args: {
+  castId: string;
+  castName: string;
+  message: string;
+}): Promise<CastToStoreRequest> {
+  const req: CastToStoreRequest = {
+    id: `req_${Date.now()}`,
+    cast_id: args.castId,
+    cast_name: args.castName,
+    message: args.message,
+    sent_at: new Date().toISOString(),
+    resolved: false,
+  };
+  mockCastRequests.push(req);
+  return req;
+}
+
+export async function getUnresolvedCastRequests(): Promise<CastToStoreRequest[]> {
+  return mockCastRequests
+    .filter((r) => !r.resolved)
+    .sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime());
+}
+
+export async function resolveCastRequest(id: string): Promise<void> {
+  const req = mockCastRequests.find((r) => r.id === id);
+  if (req) req.resolved = true;
+}

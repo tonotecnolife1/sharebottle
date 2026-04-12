@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/nightos/page-header";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
+import { SendStoreRequest } from "@/features/cast-home/components/send-store-request";
 import { FollowTargetList } from "@/features/cast-home/components/follow-target-list";
 import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
 import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
@@ -39,6 +40,8 @@ export default async function CastHomePage() {
         <MorningBriefing castId={data.cast.id} />
 
         <RuriMamaEntryCard />
+
+        <SendStoreRequest castId={data.cast.id} castName={data.cast.name} />
 
         <section className="space-y-3">
           <header className="flex items-baseline justify-between">

@@ -30,6 +30,20 @@ export interface StoreToCastMessage {
 
 export const mockCastMessages: StoreToCastMessage[] = [];
 
+/**
+ * Cast → store requests. Displayed on the store hub.
+ */
+export interface CastToStoreRequest {
+  id: string;
+  cast_id: string;
+  cast_name: string;
+  message: string;
+  sent_at: string;
+  resolved: boolean;
+}
+
+export const mockCastRequests: CastToStoreRequest[] = [];
+
 // ═══════════════ Customer (来店客) mock data ═══════════════
 
 import type { Coupon } from "@/types/nightos";
