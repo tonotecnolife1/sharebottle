@@ -126,6 +126,33 @@ function buildContextPrefix(opts: {
 }): string {
   const lines: string[] = [];
 
+  // Time/season context — helps Ruri-Mama adjust tone
+  const now = new Date();
+  const hour = now.getHours();
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const dayOfWeek = weekdays[now.getDay()];
+  const month = now.getMonth() + 1;
+  const season =
+    month >= 3 && month <= 5
+      ? "春"
+      : month >= 6 && month <= 8
+        ? "夏"
+        : month >= 9 && month <= 11
+          ? "秋"
+          : "冬";
+  const timeLabel =
+    hour < 12
+      ? "午前（フォロー・連絡の時間帯）"
+      : hour < 17
+        ? "午後"
+        : hour < 20
+          ? "開店前"
+          : "営業中";
+  lines.push(
+    `[現在] ${month}月（${season}）・${dayOfWeek}曜日・${timeLabel}`,
+  );
+  lines.push("");
+
   if (opts.customer) {
     const { customer, memo, bottles, visits } = opts.customer;
     lines.push("[顧客カルテ]");
