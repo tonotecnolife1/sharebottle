@@ -7,6 +7,8 @@ import type {
   CustomerCategory,
   CustomerContext,
   FollowLog,
+  LineScreenshot,
+  MemoExtractionResult,
   Visit,
 } from "@/types/nightos";
 import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
@@ -16,6 +18,7 @@ import {
   mockCastMemos,
   mockCasts,
   mockCustomers,
+  mockScreenshots,
   mockVisits,
 } from "./mock-data";
 import {
@@ -330,6 +333,70 @@ function createBottleMock(input: CreateBottleInput): Bottle {
   };
   mockBottles.push(bottle);
   return bottle;
+}
+
+// ═══════════════ LINE screenshot history ═══════════════
+
+export async function getScreenshotsForCustomer(
+  castId: string,
+  customerId: string,
+): Promise<LineScreenshot[]> {
+  if (!isSupabaseConfigured()) return getScreenshotsForCustomerMock(castId, customerId);
+  return getScreenshotsForCustomerMock(castId, customerId);
+}
+
+function getScreenshotsForCustomerMock(
+  castId: string,
+  customerId: string,
+): LineScreenshot[] {
+  return mockScreenshots
+    .filter((s) => s.cast_id === castId && s.customer_id === customerId)
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+}
+
+export interface SaveScreenshotInput {
+  customerId: string;
+  castId: string;
+  imageData: string; // data URL
+  mediaType: string;
+  extracted: MemoExtractionResult;
+  appliedFields: LineScreenshot["applied_fields"];
+}
+
+export async function saveScreenshot(
+  input: SaveScreenshotInput,
+): Promise<LineScreenshot> {
+  if (!isSupabaseConfigured()) return saveScreenshotMock(input);
+  return saveScreenshotMock(input);
+}
+
+function saveScreenshotMock(input: SaveScreenshotInput): LineScreenshot {
+  const screenshot: LineScreenshot = {
+    id: `shot_${Date.now()}`,
+    customer_id: input.customerId,
+    cast_id: input.castId,
+    image_data: input.imageData,
+    media_type: input.mediaType,
+    extracted: input.extracted,
+    applied_fields: input.appliedFields,
+    created_at: new Date().toISOString(),
+  };
+  mockScreenshots.push(screenshot);
+  return screenshot;
+}
+
+export async function deleteScreenshot(id: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    const idx = mockScreenshots.findIndex((s) => s.id === id);
+    if (idx >= 0) mockScreenshots.splice(idx, 1);
+    return;
+  }
+  // TODO: real Supabase delete
+  const idx = mockScreenshots.findIndex((s) => s.id === id);
+  if (idx >= 0) mockScreenshots.splice(idx, 1);
 }
 
 // ═══════════════ Mock implementations ═══════════════

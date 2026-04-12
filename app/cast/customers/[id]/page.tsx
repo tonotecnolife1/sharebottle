@@ -3,17 +3,24 @@ import { PageHeader } from "@/components/nightos/page-header";
 import { ActionButtons } from "@/features/customer-card/components/action-buttons";
 import { CustomerHeader } from "@/features/customer-card/components/customer-header";
 import { CustomerStats } from "@/features/customer-card/components/customer-stats";
+import { LineImportPanel } from "@/features/customer-card/components/line-import-panel";
 import { MemoSection } from "@/features/customer-card/components/memo-section";
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
-import { getCustomerContext } from "@/lib/nightos/supabase-queries";
+import {
+  getCustomerContext,
+  getScreenshotsForCustomer,
+} from "@/lib/nightos/supabase-queries";
 
 export default async function CustomerCardPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const context = await getCustomerContext(CURRENT_CAST_ID, params.id);
+  const [context, screenshots] = await Promise.all([
+    getCustomerContext(CURRENT_CAST_ID, params.id),
+    getScreenshotsForCustomer(CURRENT_CAST_ID, params.id),
+  ]);
   if (!context) notFound();
 
   return (
@@ -24,6 +31,11 @@ export default async function CustomerCardPage({
         <CustomerStats context={context} />
         <StoreInfoSection context={context} />
         <MemoSection customer={context.customer} memo={context.memo} />
+        <LineImportPanel
+          customer={context.customer}
+          memo={context.memo}
+          screenshots={screenshots}
+        />
         <ActionButtons customerId={context.customer.id} />
       </div>
     </div>

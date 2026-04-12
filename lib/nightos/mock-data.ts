@@ -3,10 +3,18 @@ import type {
   Cast,
   CastMemo,
   Customer,
+  LineScreenshot,
   Store,
   Visit,
 } from "@/types/nightos";
 import { CURRENT_STORE_ID } from "./constants";
+
+/**
+ * Mutable in-memory list of imported LINE screenshots. Starts empty;
+ * grows as the cast uses the import feature in the demo session.
+ * Resets on server restart (mock mode only).
+ */
+export const mockScreenshots: LineScreenshot[] = [];
 
 // Fixed "today" for deterministic follow-target selection in mock mode.
 // Matches the spec's reference date (last-visit dates are in early March).

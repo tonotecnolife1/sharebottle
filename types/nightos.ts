@@ -77,6 +77,35 @@ export interface AiChat {
   created_at: string;
 }
 
+// ═══════════════ LINE screenshot import ═══════════════
+
+/**
+ * Result of running a LINE screenshot through the vision model.
+ * Each field is the SUGGESTED new value (or null if no update).
+ */
+export interface MemoExtractionResult {
+  /** 1-2 sentence summary of what's in the screenshot. */
+  summary: string;
+  last_topic: string | null;
+  service_tips: string | null;
+  next_topics: string | null;
+  /** Confidence the model has in its extraction. */
+  confidence: "high" | "medium" | "low";
+}
+
+export interface LineScreenshot {
+  id: string;
+  customer_id: string;
+  cast_id: string;
+  /** Full data URL — `data:image/jpeg;base64,...` */
+  image_data: string;
+  media_type: string;
+  extracted: MemoExtractionResult;
+  /** Which extraction fields the cast actually applied. */
+  applied_fields: ("last_topic" | "service_tips" | "next_topics")[];
+  created_at: string;
+}
+
 // ═══════════════ Derived / view types ═══════════════
 
 export type FollowReason =
