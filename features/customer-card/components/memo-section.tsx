@@ -132,12 +132,12 @@ function MemoField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          rows={2}
+          rows={3}
           style={{ fontSize: "16px" }}
-          className="w-full rounded-btn border border-blush-light bg-pearl-warm px-3 py-2 text-ink outline-none focus:border-blush resize-none leading-relaxed"
+          className="w-full max-h-40 rounded-btn border border-blush-light bg-pearl-warm px-3 py-2 text-ink outline-none focus:border-blush resize-none leading-relaxed"
         />
       ) : (
-        <div className="text-body-md text-ink leading-relaxed min-h-[1.5rem]">
+        <div className="text-body-md text-ink leading-relaxed min-h-[1.5rem] max-h-32 overflow-y-auto whitespace-pre-wrap break-words">
           {value || <span className="text-ink-muted">未記入</span>}
         </div>
       )}
