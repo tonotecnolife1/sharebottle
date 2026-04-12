@@ -55,10 +55,10 @@ export function CustomerContextPicker({
         />
       </button>
 
-      {/* Backdrop — closes dropdown when tapping outside */}
+      {/* Backdrop — closes dropdown and hides content behind */}
       {open && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-40 bg-black/20"
           onClick={() => setOpen(false)}
           aria-hidden
         />
