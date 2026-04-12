@@ -27,9 +27,30 @@ import {
   MOCK_REPEAT_TREND,
 } from "./store-mock-data";
 import { CURRENT_STORE_ID } from "./constants";
+import {
+  createBottleReal,
+  createCustomerReal,
+  createVisitReal,
+  deleteScreenshotReal,
+  getAllCastsReal,
+  getAllCustomersReal,
+  getCastByIdReal,
+  getCastHomeDataReal,
+  getCustomerContextReal,
+  getCustomersForCastReal,
+  getRecentVisitsForCastReal,
+  getScreenshotsForCustomerReal,
+  recordFollowLogReal,
+  saveScreenshotReal,
+  updateCastMemoReal,
+} from "./supabase-real";
 
 // ─────────────────────────────────────────────────────────────
 // NIGHTOS queries with a mock-data fallback.
+//
+// Each public function tries the real Supabase implementation
+// when env vars are configured, falling back to the in-memory
+// mock on any error so misconfiguration never crashes the app.
 //
 // IMPORTANT: we check env vars BEFORE calling the Supabase client
 // factory, because `createServerSupabaseClient` does not tolerate
@@ -43,46 +64,70 @@ function isSupabaseConfigured(): boolean {
   );
 }
 
-export async function getCastHomeData(castId: string): Promise<CastHomeData> {
-  if (!isSupabaseConfigured()) {
-    return getCastHomeDataMock(castId);
+/**
+ * Wraps a real Supabase call with a mock fallback. Logs the error
+ * and returns the mock value when the real call throws so the app
+ * keeps working even if the DB schema is out of sync.
+ */
+async function withFallback<T>(
+  name: string,
+  real: () => Promise<T>,
+  mock: () => T | Promise<T>,
+): Promise<T> {
+  if (!isSupabaseConfigured()) return mock();
+  try {
+    return await real();
+  } catch (err) {
+    console.error(`[supabase] ${name} failed, falling back to mock:`, err);
+    return mock();
   }
-  // TODO: wire up actual Supabase query once the DB is provisioned.
-  // Falls back to mock until a real implementation is added.
-  return getCastHomeDataMock(castId);
+}
+
+export async function getCastHomeData(castId: string): Promise<CastHomeData> {
+  return withFallback(
+    "getCastHomeData",
+    () => getCastHomeDataReal(castId, new Date()),
+    () => getCastHomeDataMock(castId),
+  );
 }
 
 export async function getCustomersForCast(
   castId: string,
 ): Promise<Customer[]> {
-  if (!isSupabaseConfigured()) {
-    return mockCustomers.filter((c) => c.cast_id === castId);
-  }
-  return mockCustomers.filter((c) => c.cast_id === castId);
+  return withFallback(
+    "getCustomersForCast",
+    () => getCustomersForCastReal(castId),
+    () => mockCustomers.filter((c) => c.cast_id === castId),
+  );
 }
 
 export async function getCustomerContext(
   castId: string,
   customerId: string,
 ): Promise<CustomerContext | null> {
-  const base = !isSupabaseConfigured()
-    ? getCustomerContextMock(castId, customerId)
-    : getCustomerContextMock(castId, customerId);
-  return base;
+  return withFallback(
+    "getCustomerContext",
+    () => getCustomerContextReal(castId, customerId),
+    () => getCustomerContextMock(castId, customerId),
+  );
 }
 
 export async function getCastById(castId: string): Promise<Cast | null> {
-  if (!isSupabaseConfigured()) {
-    return mockCasts.find((c) => c.id === castId) ?? null;
-  }
-  return mockCasts.find((c) => c.id === castId) ?? null;
+  return withFallback(
+    "getCastById",
+    () => getCastByIdReal(castId),
+    () => mockCasts.find((c) => c.id === castId) ?? null,
+  );
 }
 
 // ═══════════════ Store-side queries ═══════════════
 
 export async function getAllCasts(): Promise<Cast[]> {
-  if (!isSupabaseConfigured()) return [...mockCasts];
-  return [...mockCasts];
+  return withFallback(
+    "getAllCasts",
+    () => getAllCastsReal(),
+    () => [...mockCasts],
+  );
 }
 
 /**
@@ -90,8 +135,11 @@ export async function getAllCasts(): Promise<Cast[]> {
  * (matches spec: "最近の来店客が上位表示").
  */
 export async function getAllCustomers(): Promise<Customer[]> {
-  if (!isSupabaseConfigured()) return getAllCustomersMock();
-  return getAllCustomersMock();
+  return withFallback(
+    "getAllCustomers",
+    () => getAllCustomersReal(),
+    () => getAllCustomersMock(),
+  );
 }
 
 function getAllCustomersMock(): Customer[] {
@@ -124,7 +172,11 @@ export interface StoreDashboardData {
 }
 
 export async function getStoreDashboardData(): Promise<StoreDashboardData> {
-  if (!isSupabaseConfigured()) return getStoreDashboardDataMock();
+  // The dashboard relies on aggregations + the trend fixtures, which
+  // are constant. For now we keep using the mock impl which already
+  // reads from mockCasts/mockCustomers/mockVisits — those will be
+  // populated from Supabase in a future iteration if RLS + per-store
+  // queries are needed.
   return getStoreDashboardDataMock();
 }
 
@@ -179,11 +231,11 @@ export async function updateCastMemo(args: {
   customerId: string;
   input: CastMemoInput;
 }): Promise<CastMemo> {
-  if (!isSupabaseConfigured()) {
-    return updateCastMemoMock(args);
-  }
-  // TODO: Supabase upsert once DB is wired up
-  return updateCastMemoMock(args);
+  return withFallback(
+    "updateCastMemo",
+    () => updateCastMemoReal(args),
+    () => updateCastMemoMock(args),
+  );
 }
 
 /**
@@ -196,10 +248,11 @@ export async function recordFollowLog(args: {
   customerId: string;
   templateType: FollowLog["template_type"];
 }): Promise<FollowLog> {
-  if (!isSupabaseConfigured()) {
-    return recordFollowLogMock(args);
-  }
-  return recordFollowLogMock(args);
+  return withFallback(
+    "recordFollowLog",
+    () => recordFollowLogReal(args),
+    () => recordFollowLogMock(args),
+  );
 }
 
 // ═══════════════ Mock implementations ═══════════════
@@ -263,8 +316,11 @@ export interface CreateCustomerInput {
 export async function createCustomer(
   input: CreateCustomerInput,
 ): Promise<Customer> {
-  if (!isSupabaseConfigured()) return createCustomerMock(input);
-  return createCustomerMock(input);
+  return withFallback(
+    "createCustomer",
+    () => createCustomerReal({ ...input, storeId: CURRENT_STORE_ID }),
+    () => createCustomerMock(input),
+  );
 }
 
 function createCustomerMock(input: CreateCustomerInput): Customer {
@@ -292,8 +348,11 @@ export interface CreateVisitInput {
 }
 
 export async function createVisit(input: CreateVisitInput): Promise<Visit> {
-  if (!isSupabaseConfigured()) return createVisitMock(input);
-  return createVisitMock(input);
+  return withFallback(
+    "createVisit",
+    () => createVisitReal({ ...input, storeId: CURRENT_STORE_ID }),
+    () => createVisitMock(input),
+  );
 }
 
 function createVisitMock(input: CreateVisitInput): Visit {
@@ -317,8 +376,11 @@ export interface CreateBottleInput {
 }
 
 export async function createBottle(input: CreateBottleInput): Promise<Bottle> {
-  if (!isSupabaseConfigured()) return createBottleMock(input);
-  return createBottleMock(input);
+  return withFallback(
+    "createBottle",
+    () => createBottleReal({ ...input, storeId: CURRENT_STORE_ID }),
+    () => createBottleMock(input),
+  );
 }
 
 function createBottleMock(input: CreateBottleInput): Bottle {
@@ -341,8 +403,11 @@ export async function getScreenshotsForCustomer(
   castId: string,
   customerId: string,
 ): Promise<LineScreenshot[]> {
-  if (!isSupabaseConfigured()) return getScreenshotsForCustomerMock(castId, customerId);
-  return getScreenshotsForCustomerMock(castId, customerId);
+  return withFallback(
+    "getScreenshotsForCustomer",
+    () => getScreenshotsForCustomerReal(castId, customerId),
+    () => getScreenshotsForCustomerMock(castId, customerId),
+  );
 }
 
 function getScreenshotsForCustomerMock(
@@ -369,8 +434,11 @@ export interface SaveScreenshotInput {
 export async function saveScreenshot(
   input: SaveScreenshotInput,
 ): Promise<LineScreenshot> {
-  if (!isSupabaseConfigured()) return saveScreenshotMock(input);
-  return saveScreenshotMock(input);
+  return withFallback(
+    "saveScreenshot",
+    () => saveScreenshotReal(input),
+    () => saveScreenshotMock(input),
+  );
 }
 
 function saveScreenshotMock(input: SaveScreenshotInput): LineScreenshot {
@@ -389,14 +457,16 @@ function saveScreenshotMock(input: SaveScreenshotInput): LineScreenshot {
 }
 
 export async function deleteScreenshot(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    const idx = mockScreenshots.findIndex((s) => s.id === id);
-    if (idx >= 0) mockScreenshots.splice(idx, 1);
-    return;
-  }
-  // TODO: real Supabase delete
-  const idx = mockScreenshots.findIndex((s) => s.id === id);
-  if (idx >= 0) mockScreenshots.splice(idx, 1);
+  return withFallback(
+    "deleteScreenshot",
+    async () => {
+      await deleteScreenshotReal(id);
+    },
+    () => {
+      const idx = mockScreenshots.findIndex((s) => s.id === id);
+      if (idx >= 0) mockScreenshots.splice(idx, 1);
+    },
+  );
 }
 
 // ═══════════════ Mock implementations ═══════════════
@@ -479,10 +549,11 @@ export async function getRecentVisitsForCast(
   castId: string,
   sinceIso: string,
 ): Promise<Visit[]> {
-  if (!isSupabaseConfigured()) {
-    return getRecentVisitsForCastMock(castId, sinceIso);
-  }
-  return getRecentVisitsForCastMock(castId, sinceIso);
+  return withFallback(
+    "getRecentVisitsForCast",
+    () => getRecentVisitsForCastReal(castId, sinceIso),
+    () => getRecentVisitsForCastMock(castId, sinceIso),
+  );
 }
 
 function getRecentVisitsForCastMock(

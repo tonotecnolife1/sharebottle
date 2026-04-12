@@ -9,6 +9,7 @@ import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import type { Bottle, CastMemo, Customer } from "@/types/nightos";
 import { CategoryTabs } from "./category-tabs";
 import { TemplateCard } from "./template-card";
+import { TemplateEditor } from "./template-editor";
 import {
   TEMPLATES,
   fillTemplate,
@@ -16,6 +17,7 @@ import {
   type Template,
   type TemplateCategory,
 } from "../data/templates";
+import type { CustomTemplate } from "../lib/custom-template-store";
 
 export interface CustomerLookup {
   customer: Customer;
@@ -51,6 +53,10 @@ export function TemplateWorkspace({
   >({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Custom user templates loaded from localStorage
+  const [allCustom, setAllCustom] = useState<CustomTemplate[]>([]);
+  const customForCategory = allCustom.filter((t) => t.category === category);
 
   const cacheKey = customerId ? `${customerId}::${category}` : "";
   const aiTemplate = cacheKey ? aiTemplates[cacheKey] : undefined;
@@ -177,6 +183,27 @@ export function TemplateWorkspace({
           )}
         </Card>
       )}
+
+      {/* Custom user templates (above defaults) */}
+      {customForCategory.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-label-md text-ink-secondary font-medium">
+            マイテンプレート
+          </h3>
+          {customForCategory.map((t) => (
+            <TemplateCard
+              key={t.id}
+              template={t}
+              filled={ctx ? fillTemplate(t.body, ctx) : t.body}
+              customerId={customerId}
+              disabled={!customerId}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Editor (always available — cast can save without picking customer) */}
+      <TemplateEditor category={category} onChange={setAllCustom} />
 
       {/* Default templates */}
       <div className="space-y-3">
