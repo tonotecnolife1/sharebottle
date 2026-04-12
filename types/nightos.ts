@@ -137,7 +137,22 @@ export interface CustomerStoreOverview {
   total_spent_estimate: number;
   bottles: Bottle[];
   nomination_cast: string | null;
+  nomination_cast_id: string | null;
   last_visit: string | null;
+  coupons: Coupon[];
+  rank: CustomerRank;
+}
+
+export type RankTier = "bronze" | "silver" | "gold" | "platinum" | "diamond";
+
+export interface CustomerRank {
+  tier: RankTier;
+  label: string;
+  emoji: string;
+  visitCount: number;
+  nextTierLabel: string | null;
+  visitsToNextTier: number;
+  progress: number; // 0..1
 }
 
 // ═══════════════ Derived / view types ═══════════════

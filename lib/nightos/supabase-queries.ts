@@ -831,9 +831,53 @@ export async function markCastMessageRead(id: string): Promise<void> {
 import type {
   Coupon,
   CustomerBottleView,
+  CustomerRank,
   CustomerStoreOverview,
+  RankTier,
 } from "@/types/nightos";
 import { mockCoupons } from "./mock-data";
+
+const RANK_TIERS: {
+  tier: RankTier;
+  label: string;
+  emoji: string;
+  minVisits: number;
+}[] = [
+  { tier: "diamond", label: "ダイヤモンド", emoji: "💎", minVisits: 50 },
+  { tier: "platinum", label: "プラチナ", emoji: "👑", minVisits: 20 },
+  { tier: "gold", label: "ゴールド", emoji: "🥇", minVisits: 10 },
+  { tier: "silver", label: "シルバー", emoji: "🥈", minVisits: 5 },
+  { tier: "bronze", label: "ブロンズ", emoji: "🥉", minVisits: 0 },
+];
+
+function computeCustomerRank(visitCount: number): CustomerRank {
+  let currentIdx = RANK_TIERS.length - 1;
+  for (let i = 0; i < RANK_TIERS.length; i++) {
+    if (visitCount >= RANK_TIERS[i].minVisits) {
+      currentIdx = i;
+      break;
+    }
+  }
+  const current = RANK_TIERS[currentIdx];
+  const next = currentIdx > 0 ? RANK_TIERS[currentIdx - 1] : null;
+  const visitsToNext = next ? next.minVisits - visitCount : 0;
+  const rangeStart = current.minVisits;
+  const rangeEnd = next ? next.minVisits : current.minVisits + 10;
+  const progress =
+    rangeEnd > rangeStart
+      ? Math.min(1, (visitCount - rangeStart) / (rangeEnd - rangeStart))
+      : 1;
+
+  return {
+    tier: current.tier,
+    label: current.label,
+    emoji: current.emoji,
+    visitCount,
+    nextTierLabel: next ? next.label : null,
+    visitsToNextTier: Math.max(0, visitsToNext),
+    progress,
+  };
+}
 
 export async function getCustomerStoreOverviews(
   customerId: string,
@@ -866,6 +910,10 @@ export async function getCustomerStoreOverviews(
     const castId = nominatedVisits[0]?.cast_id;
     const cast = castId ? mockCasts.find((c) => c.id === castId) : null;
 
+    const storeCoupons = mockCoupons.filter(
+      (c) => c.customer_id === customerId && c.store_id === storeId,
+    );
+
     overviews.push({
       store_id: storeId,
       store_name: store?.name ?? "（不明）",
@@ -877,7 +925,10 @@ export async function getCustomerStoreOverviews(
           : 22_000),
       bottles,
       nomination_cast: cast?.name ?? null,
+      nomination_cast_id: castId ?? null,
       last_visit: visits[0]?.visited_at ?? null,
+      coupons: storeCoupons,
+      rank: computeCustomerRank(visits.length),
     });
   }
   return overviews;

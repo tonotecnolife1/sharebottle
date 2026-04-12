@@ -1,0 +1,279 @@
+import { notFound } from "next/navigation";
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  ChevronRight,
+  Clock,
+  Coins,
+  Sparkles,
+  Ticket,
+  User,
+  Wine,
+} from "lucide-react";
+import { PageHeader } from "@/components/nightos/page-header";
+import { Card } from "@/components/nightos/card";
+import { Badge } from "@/components/nightos/badge";
+import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
+import { getCustomerStoreOverviews } from "@/lib/nightos/supabase-queries";
+import { cn, formatCurrency } from "@/lib/utils";
+import type { Coupon, CustomerRank, CouponType, RankTier } from "@/types/nightos";
+
+export default async function CustomerStoreDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const overviews = await getCustomerStoreOverviews(CURRENT_CUSTOMER_ID);
+  const store = overviews.find((o) => o.store_id === params.id);
+  if (!store) notFound();
+
+  const activeCoupons = store.coupons.filter((c) => !c.used_at);
+  const usedCoupons = store.coupons.filter((c) => c.used_at);
+
+  return (
+    <div className="animate-fade-in">
+      <PageHeader title={store.store_name} showBack />
+
+      <div className="px-5 pt-4 pb-6 space-y-5">
+        {/* Rank */}
+        <RankCard rank={store.rank} />
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-3 py-3 text-center">
+            <Calendar size={14} className="mx-auto text-ink-secondary mb-1" />
+            <div className="font-display text-display-sm text-ink">
+              {store.visit_count}
+            </div>
+            <div className="text-[10px] text-ink-muted">来店回数</div>
+          </div>
+          <div className="rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-3 py-3 text-center">
+            <Coins size={14} className="mx-auto text-roseGold-dark mb-1" />
+            <div className="font-display text-body-md text-ink">
+              {formatCurrency(store.total_spent_estimate)}
+            </div>
+            <div className="text-[10px] text-ink-muted">累計利用</div>
+          </div>
+          <div className="rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-3 py-3 text-center">
+            <Ticket size={14} className="mx-auto text-amethyst-dark mb-1" />
+            <div className="font-display text-display-sm text-amethyst-dark">
+              {activeCoupons.length}
+            </div>
+            <div className="text-[10px] text-ink-muted">使えるクーポン</div>
+          </div>
+        </div>
+
+        {/* Cast (指名) */}
+        {store.nomination_cast && (
+          <section className="space-y-2">
+            <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+              <User size={16} className="text-roseGold-dark" />
+              担当キャスト
+            </h2>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-rose-gold flex items-center justify-center text-pearl text-body-lg font-display font-semibold">
+                  {store.nomination_cast.charAt(0)}
+                </div>
+                <div>
+                  <div className="text-body-md font-semibold text-ink">
+                    {store.nomination_cast}
+                  </div>
+                  <div className="text-label-sm text-ink-muted">
+                    指名キャスト
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* Bottles */}
+        <section className="space-y-2">
+          <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+            <Wine size={16} className="text-roseGold-dark" />
+            キープボトル
+            <span className="text-label-sm text-ink-muted">
+              {store.bottles.length}本
+            </span>
+          </h2>
+          {store.bottles.length === 0 ? (
+            <Card className="p-4 text-center text-body-sm text-ink-secondary">
+              この店舗にキープボトルはありません
+            </Card>
+          ) : (
+            store.bottles.map((b) => {
+              const isLow = b.remaining_glasses <= 5;
+              const pct =
+                b.total_glasses > 0
+                  ? (b.remaining_glasses / b.total_glasses) * 100
+                  : 0;
+              return (
+                <Card key={b.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-body-md font-semibold text-ink">
+                      {b.brand}
+                    </span>
+                    <span className="text-body-sm text-ink-secondary">
+                      残 {b.remaining_glasses}/{b.total_glasses}杯
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-pearl-soft overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full",
+                        isLow ? "bg-amber" : "bg-gradient-rose-gold",
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  {isLow && (
+                    <div className="flex items-center gap-1 text-label-sm text-amber">
+                      <AlertTriangle size={11} />
+                      残りわずか
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
+        </section>
+
+        {/* Coupons */}
+        <section className="space-y-2">
+          <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+            <Sparkles size={16} className="text-amethyst-dark" />
+            クーポン
+          </h2>
+
+          {activeCoupons.length > 0 && (
+            <div className="space-y-2">
+              {activeCoupons.map((coupon) => (
+                <CouponCard key={coupon.id} coupon={coupon} />
+              ))}
+            </div>
+          )}
+
+          {activeCoupons.length === 0 && (
+            <Card className="p-4 text-center text-body-sm text-ink-secondary">
+              この店舗で使えるクーポンはありません
+            </Card>
+          )}
+
+          {usedCoupons.length > 0 && (
+            <div className="space-y-2 mt-3">
+              <h3 className="text-label-md text-ink-secondary font-medium">
+                利用済み
+              </h3>
+              {usedCoupons.map((coupon) => (
+                <CouponCard key={coupon.id} coupon={coupon} isUsed />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Last visit */}
+        {store.last_visit && (
+          <div className="text-label-sm text-ink-muted text-center">
+            最終来店:{" "}
+            {new Date(store.last_visit).toLocaleDateString("ja-JP")}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════ Sub-components ═══════════════
+
+const tierColors: Record<RankTier, { bg: string; border: string; text: string }> = {
+  diamond: { bg: "bg-gradient-amethyst", border: "border-amethyst", text: "text-pearl" },
+  platinum: { bg: "bg-gradient-rose-gold", border: "border-roseGold", text: "text-pearl" },
+  gold: { bg: "bg-gradient-champagne", border: "border-champagne-dark", text: "text-ink" },
+  silver: { bg: "bg-pearl-warm", border: "border-pearl-soft", text: "text-ink" },
+  bronze: { bg: "bg-pearl-warm", border: "border-pearl-soft", text: "text-ink-secondary" },
+};
+
+function RankCard({ rank }: { rank: CustomerRank }) {
+  const colors = tierColors[rank.tier];
+  return (
+    <Card className={`!${colors.bg} !${colors.border} p-5 space-y-3`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{rank.emoji}</span>
+          <div>
+            <div className={`text-display-sm font-semibold ${colors.text}`}>
+              {rank.label}ランク
+            </div>
+            <div className={`text-label-sm ${rank.tier === "diamond" || rank.tier === "platinum" ? "text-pearl/80" : "text-ink-secondary"}`}>
+              来店 {rank.visitCount}回
+            </div>
+          </div>
+        </div>
+      </div>
+      {rank.nextTierLabel && (
+        <div>
+          <div className="flex items-center justify-between text-label-sm mb-1">
+            <span className={rank.tier === "diamond" || rank.tier === "platinum" ? "text-pearl/80" : "text-ink-secondary"}>
+              次のランク: {rank.nextTierLabel}
+            </span>
+            <span className={rank.tier === "diamond" || rank.tier === "platinum" ? "text-pearl" : "text-ink"}>
+              あと{rank.visitsToNextTier}回
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-pearl/30 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-pearl"
+              style={{ width: `${rank.progress * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+      {!rank.nextTierLabel && (
+        <div className={`text-label-sm ${colors.text}`}>
+          最高ランクに到達しています ✨
+        </div>
+      )}
+    </Card>
+  );
+}
+
+const couponTypeIcon: Record<CouponType, string> = {
+  drink: "🍸",
+  discount: "💰",
+  birthday: "🎂",
+  vip: "👑",
+};
+
+function CouponCard({ coupon, isUsed }: { coupon: Coupon; isUsed?: boolean }) {
+  return (
+    <Card className={cn("p-3 relative overflow-hidden", isUsed && "opacity-50")}>
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-pearl rounded-r-full" />
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-pearl rounded-l-full" />
+      <div className="flex items-center gap-3 pl-2">
+        <span className="text-xl">{couponTypeIcon[coupon.type]}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-body-sm font-semibold text-ink truncate">
+              {coupon.title}
+            </span>
+            {isUsed && (
+              <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-badge bg-pearl-soft text-ink-muted text-[10px]">
+                <Check size={8} />
+                利用済
+              </span>
+            )}
+          </div>
+          <div className="text-label-sm text-ink-muted flex items-center gap-1">
+            <Clock size={9} />
+            〜{coupon.valid_until}
+            <span className="ml-1 font-mono text-[10px] bg-pearl-soft px-1.5 rounded">
+              {coupon.code}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
