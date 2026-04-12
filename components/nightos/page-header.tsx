@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { RuriMamaAvatar } from "./ruri-mama-avatar";
 
 interface Props {
   title: string;
@@ -50,6 +51,7 @@ export function PageHeader({
             <ArrowLeft size={22} />
           </button>
         )}
+        {isRuri && <RuriMamaAvatar size={44} withGlow />}
         <div className="flex-1 min-w-0">
           <h1
             className={cn(

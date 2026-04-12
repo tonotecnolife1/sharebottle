@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Background gradient circle -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#f7e6d8" />
+      <stop offset="50%" stop-color="#e4a3b0" />
+      <stop offset="100%" stop-color="#9a7bbb" />
+    </radialGradient>
+    <linearGradient id="kimono" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fdfcf9" />
+      <stop offset="100%" stop-color="#f5efe6" />
+    </linearGradient>
+    <linearGradient id="obi" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a6695c" />
+      <stop offset="50%" stop-color="#c98d80" />
+      <stop offset="100%" stop-color="#a6695c" />
+    </linearGradient>
+    <linearGradient id="hair" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3d2f3a" />
+      <stop offset="100%" stop-color="#2b232a" />
+    </linearGradient>
+    <radialGradient id="cheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e4a3b0" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#e4a3b0" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#bg)" />
+
+  <!-- Subtle sparkles in background -->
+  <g opacity="0.4" fill="#fdfcf9">
+    <circle cx="35" cy="40" r="1.5" />
+    <circle cx="170" cy="55" r="1" />
+    <circle cx="160" cy="120" r="1.2" />
+    <circle cx="30" cy="130" r="1" />
+    <circle cx="50" cy="170" r="1.5" />
+    <circle cx="155" cy="170" r="1" />
+  </g>
+
+  <!-- Kimono body (V-collared, rounded shoulders) -->
+  <path d="M 45 200 L 55 130 Q 60 115 75 110 L 100 130 L 125 110 Q 140 115 145 130 L 155 200 Z"
+        fill="url(#kimono)" stroke="#d9c7a8" stroke-width="0.8" />
+
+  <!-- Obi (belt) -->
+  <rect x="55" y="155" width="90" height="14" fill="url(#obi)" />
+  <line x1="55" y1="158" x2="145" y2="158" stroke="#a6695c" stroke-width="0.5" opacity="0.5" />
+  <line x1="55" y1="166" x2="145" y2="166" stroke="#a6695c" stroke-width="0.5" opacity="0.5" />
+
+  <!-- Subtle decorative cherry blossoms on kimono -->
+  <g fill="#e4a3b0" opacity="0.55">
+    <circle cx="72" cy="140" r="2.2" />
+    <circle cx="74" cy="142" r="1.5" />
+    <circle cx="128" cy="145" r="2" />
+    <circle cx="80" cy="180" r="1.8" />
+    <circle cx="120" cy="178" r="2" />
+    <circle cx="100" cy="190" r="1.5" />
+  </g>
+
+  <!-- Neck -->
+  <path d="M 90 110 L 90 122 L 110 122 L 110 110 Z" fill="#fdf3eb" />
+
+  <!-- Hair back (frames the face) -->
+  <path d="M 60 70 Q 55 100 70 125 L 85 120 Q 75 95 78 70 Z" fill="url(#hair)" />
+  <path d="M 140 70 Q 145 100 130 125 L 115 120 Q 125 95 122 70 Z" fill="url(#hair)" />
+
+  <!-- Face -->
+  <ellipse cx="100" cy="85" rx="24" ry="29" fill="#fdf3eb" />
+
+  <!-- Cheeks -->
+  <circle cx="84" cy="93" r="6" fill="url(#cheek)" />
+  <circle cx="116" cy="93" r="6" fill="url(#cheek)" />
+
+  <!-- Hair front (bangs) -->
+  <path d="M 76 70 Q 85 55 100 56 Q 115 55 124 70 Q 122 78 100 75 Q 78 78 76 70 Z" fill="url(#hair)" />
+
+  <!-- Hair bun on top -->
+  <ellipse cx="100" cy="48" rx="14" ry="11" fill="url(#hair)" />
+  <!-- Bun decoration (kanzashi flower) -->
+  <g transform="translate(115 45)">
+    <circle cx="0" cy="0" r="3.5" fill="#e4a3b0" />
+    <circle cx="-2.5" cy="-1.5" r="2.2" fill="#f2c9d1" />
+    <circle cx="2.5" cy="-1.5" r="2.2" fill="#f2c9d1" />
+    <circle cx="0" cy="2.5" r="2.2" fill="#f2c9d1" />
+    <circle cx="0" cy="0" r="1" fill="#c98d80" />
+  </g>
+
+  <!-- Eyes (closed/smiling — gentle curves) -->
+  <path d="M 86 88 Q 89 91 92 88" stroke="#2b232a" stroke-width="2" stroke-linecap="round" fill="none" />
+  <path d="M 108 88 Q 111 91 114 88" stroke="#2b232a" stroke-width="2" stroke-linecap="round" fill="none" />
+
+  <!-- Eyelashes hint -->
+  <line x1="86" y1="86" x2="85" y2="84" stroke="#2b232a" stroke-width="0.8" stroke-linecap="round" />
+  <line x1="92" y1="86" x2="93" y2="84" stroke="#2b232a" stroke-width="0.8" stroke-linecap="round" />
+  <line x1="108" y1="86" x2="107" y2="84" stroke="#2b232a" stroke-width="0.8" stroke-linecap="round" />
+  <line x1="114" y1="86" x2="115" y2="84" stroke="#2b232a" stroke-width="0.8" stroke-linecap="round" />
+
+  <!-- Nose hint -->
+  <path d="M 99 95 Q 100 100 101 95" stroke="#c98d80" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.6" />
+
+  <!-- Mouth (gentle smile) -->
+  <path d="M 95 104 Q 100 108 105 104" stroke="#a6695c" stroke-width="1.8" stroke-linecap="round" fill="none" />
+  <!-- Lipstick subtle -->
+  <path d="M 96 105 Q 100 107 104 105" stroke="#c98d80" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.7" />
+</svg>
