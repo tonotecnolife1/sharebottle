@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export type AvatarVariant = "a" | "b" | "c" | "d";
+export type AvatarVariant = "a" | "b" | "c" | "d" | "photo";
 
 export const AVATAR_VARIANTS: {
   id: AvatarVariant;
@@ -13,14 +13,20 @@ export const AVATAR_VARIANTS: {
   src: string;
 }[] = [
   {
+    id: "photo",
+    label: "瑠璃ママ（実写風）",
+    description: "白い着物の銀座のママ・油絵調の温かい雰囲気",
+    src: "/ruri-mama-photo.jpg",
+  },
+  {
     id: "a",
-    label: "親しみ系（着物）",
+    label: "親しみ系（イラスト）",
     description: "やわらかい雰囲気・笑顔・ピンク基調",
     src: "/ruri-mama.svg",
   },
   {
     id: "b",
-    label: "大人っぽい系（着物）",
+    label: "大人っぽい系（イラスト）",
     description: "落ち着いた表情・しっかりメイク・パープル基調",
     src: "/ruri-mama-b.svg",
   },
@@ -39,13 +45,20 @@ export const AVATAR_VARIANTS: {
 ];
 
 const STORAGE_KEY = "nightos.avatar-variant";
-// 「大人っぽい系（着物）」をデフォルトに。30年経験の銀座のママという設定に一番マッチする。
-const DEFAULT_VARIANT: AvatarVariant = "b";
+// 実写風の着物ママをデフォルトに。銀座30年のママという設定に最もマッチ。
+const DEFAULT_VARIANT: AvatarVariant = "photo";
 
 export function getStoredVariant(): AvatarVariant {
   if (typeof window === "undefined") return DEFAULT_VARIANT;
   const v = window.localStorage.getItem(STORAGE_KEY);
-  if (v === "a" || v === "b" || v === "c" || v === "d") return v;
+  if (
+    v === "a" ||
+    v === "b" ||
+    v === "c" ||
+    v === "d" ||
+    v === "photo"
+  )
+    return v;
   return DEFAULT_VARIANT;
 }
 
@@ -72,8 +85,8 @@ interface Props {
  * style on the picker page (`/cast/avatars`) and have it persist
  * everywhere — header, message bubbles, template generator card, etc.
  *
- * To replace any variant with a real photo: drop the JPG/PNG into
- * `public/` and update the `src` field in AVATAR_VARIANTS above.
+ * To replace with your own photo: drop the image into `public/` and
+ * update the `src` field in AVATAR_VARIANTS above.
  */
 export function RuriMamaAvatar({
   size = 40,
@@ -98,7 +111,8 @@ export function RuriMamaAvatar({
     return () => window.removeEventListener("ruri-avatar-changed", onChange);
   }, [variant]);
 
-  const config = AVATAR_VARIANTS.find((v) => v.id === resolved) ?? AVATAR_VARIANTS[0];
+  const config =
+    AVATAR_VARIANTS.find((v) => v.id === resolved) ?? AVATAR_VARIANTS[0];
 
   return (
     <div
@@ -116,6 +130,7 @@ export function RuriMamaAvatar({
         height={size}
         className="object-cover"
         priority={withGlow}
+        unoptimized={config.src.endsWith(".jpg") || config.src.endsWith(".png")}
       />
     </div>
   );
