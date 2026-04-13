@@ -171,6 +171,15 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
         </button>
       </div>
 
+      {/* ── Add form (directly below button) ── */}
+      {showForm && (
+        <AddForm
+          customers={customers}
+          onAdd={addEntry}
+          onClose={() => setShowForm(false)}
+        />
+      )}
+
       {/* Progress */}
       <Card className="p-3">
         <div className="flex items-center justify-between mb-1.5">
@@ -188,15 +197,6 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
           />
         </div>
       </Card>
-
-      {/* ── Add form ── */}
-      {showForm && (
-        <AddForm
-          customers={customers}
-          onAdd={addEntry}
-          onClose={() => setShowForm(false)}
-        />
-      )}
 
       {/* ── Scheduled ── */}
       {scheduled.length > 0 && (
