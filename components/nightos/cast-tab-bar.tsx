@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, Home, LogOut, MessageSquare, Sparkles, Users } from "lucide-react";
+import {
+  BarChart3,
+  Home,
+  LogOut,
+  MessageCircle,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { clearRole } from "@/lib/nightos/role-store";
 import { cn } from "@/lib/utils";
 
@@ -24,18 +31,18 @@ const TABS: Tab[] = [
     match: (p) => p === "/cast/home",
   },
   {
+    key: "chat",
+    label: "チャット",
+    href: "/cast/chat",
+    icon: MessageCircle,
+    match: (p) => p.startsWith("/cast/chat"),
+  },
+  {
     key: "customers",
     label: "顧客",
     href: "/cast/customers",
     icon: Users,
     match: (p) => p.startsWith("/cast/customers"),
-  },
-  {
-    key: "templates",
-    label: "テンプレ",
-    href: "/cast/templates",
-    icon: MessageSquare,
-    match: (p) => p.startsWith("/cast/templates"),
   },
   {
     key: "ruri-mama",
@@ -63,8 +70,9 @@ export function CastTabBar() {
   const pathname = usePathname() ?? "";
   const router = useRouter();
 
-  // Hide on the full-screen Ruri-Mama chat — the chat has its own sticky input.
+  // Hide on full-screen views (さくらママ chat, chat room detail)
   if (pathname.startsWith("/cast/ruri-mama")) return null;
+  if (pathname.match(/^\/cast\/chat\/.+/)) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
