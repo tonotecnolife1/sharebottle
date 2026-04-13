@@ -10,15 +10,13 @@ import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import {
   getUnreadCastMessages,
-  getDouhanSummary,
   getCustomersForCast,
 } from "@/lib/nightos/supabase-queries";
 
 export default async function CastHomePage() {
-  const [data, storeMessages, douhanSummary, customers] = await Promise.all([
+  const [data, storeMessages, customers] = await Promise.all([
     fetchCastHomeData(CURRENT_CAST_ID),
     getUnreadCastMessages(CURRENT_CAST_ID),
-    getDouhanSummary(CURRENT_CAST_ID),
     getCustomersForCast(CURRENT_CAST_ID),
   ]);
 
@@ -52,7 +50,7 @@ export default async function CastHomePage() {
         <MorningBriefing castId={data.cast.id} />
 
         {/* 同伴 tracker (club mode) */}
-        <DouhanTracker summary={douhanSummary} customers={customers} />
+        <DouhanTracker customers={customers} />
 
         <RuriMamaEntryCard />
 
