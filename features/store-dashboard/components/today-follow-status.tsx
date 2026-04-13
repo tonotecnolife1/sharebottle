@@ -55,7 +55,7 @@ export function TodayFollowStatus({
     <Card className="p-4 space-y-3">
       <h3 className="text-label-md font-semibold text-ink flex items-center gap-1.5">
         <CheckCircle2 size={14} className="text-emerald" />
-        今日のフォロー実施状況
+        今日の連絡状況
       </h3>
       <div className="space-y-2.5">
         {statuses.map((s) => {

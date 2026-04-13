@@ -490,13 +490,13 @@ export const mockBottles: Bottle[] = [
   },
 ];
 
-// 来店履歴（フォロー対象判定で使用）
-// 田中太郎: 来店12回, 最終 2026-03-07 (12日前 → 要フォロー)
+// 来店履歴（連絡リスト判定で使用）
+// 田中太郎: 来店12回, 最終 2026-03-07 (12日前 → 連絡が必要)
 // 高橋 誠: 来店3回, 最終 2026-03-08 (11日前 → 指名化チャンス・新規)
 // 渡辺浩二: 来店20回, 最終 2026-02-28 (19日前 → 誕生日3/25間近)
 // 佐藤健一: 来店8回, 最終 2026-03-12 (7日前)
 export const mockVisits: Visit[] = [
-  // 田中太郎 — VIPは毎週ペースで来ていたのが12日空いている → 要フォロー
+  // 田中太郎 — VIPは毎週ペースで来ていたのが12日空いている → 連絡が必要
   ...generateVisitSeries({
     customer_id: "cust1",
     cast_id: "cast1",
@@ -590,7 +590,7 @@ export const mockVisits: Visit[] = [
     count: 25,
     is_nominated: true,
   }),
-  // cust9 小林翔太 — 常連、2週間ペースだが20日空き → 要フォロー
+  // cust9 小林翔太 — 常連、2週間ペースだが20日空き → 連絡が必要
   ...generateVisitSeries({
     customer_id: "cust9",
     cast_id: "cast1",

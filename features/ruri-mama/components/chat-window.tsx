@@ -491,7 +491,7 @@ function synthesizeIntentText(
     const period = answers.period ?? "最近";
     const cause = answers.cause ?? "気になることがある";
     const frequency = answers.frequency ?? "未確認";
-    return `営業戦略の相談です。${period}くらいから「${cause}」という状況です。フォロー頻度は「${frequency}」。アドバイスください。`;
+    return `営業戦略の相談です。${period}くらいから「${cause}」という状況です。連絡の頻度は「${frequency}」。アドバイスください。`;
   }
 
   return `${subject}について相談したいことがあります。`;

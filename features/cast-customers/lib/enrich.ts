@@ -17,31 +17,31 @@ export const STATUS_CONFIG: Record<
   { label: string; emoji: string; color: string; sortOrder: number }
 > = {
   vip_alert: {
-    label: "VIP要注意",
+    label: "大事なお客様！",
     emoji: "🔴",
     color: "text-rose bg-rose/10 border-rose/20",
     sortOrder: 0,
   },
   at_risk: {
-    label: "要フォロー",
+    label: "連絡しよう",
     emoji: "🟡",
     color: "text-amber bg-amber/10 border-amber/20",
     sortOrder: 1,
   },
   new: {
-    label: "新規",
+    label: "新しいお客様",
     emoji: "🔵",
     color: "text-blue-500 bg-blue-500/10 border-blue-500/20",
     sortOrder: 2,
   },
   active: {
-    label: "アクティブ",
+    label: "順調",
     emoji: "🟢",
     color: "text-emerald bg-emerald/10 border-emerald/20",
     sortOrder: 3,
   },
   dormant: {
-    label: "休眠",
+    label: "しばらく来てない",
     emoji: "⚪",
     color: "text-ink-muted bg-pearl-soft border-pearl-soft",
     sortOrder: 4,
@@ -236,11 +236,11 @@ export type SortKey =
   | "name";
 
 export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "priority", label: "優先度（高い順）" },
-  { value: "daysSince", label: "来店間隔（空いている順）" },
-  { value: "visitCount", label: "来店回数（多い順）" },
-  { value: "recentVisits", label: "半年来店（多い順）" },
-  { value: "name", label: "名前（あいうえお順）" },
+  { value: "priority", label: "大事な順" },
+  { value: "daysSince", label: "来てない順" },
+  { value: "visitCount", label: "来店が多い順" },
+  { value: "recentVisits", label: "最近よく来る順" },
+  { value: "name", label: "名前順" },
 ];
 
 export function sortCustomers(

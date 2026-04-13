@@ -31,7 +31,7 @@ export function CustomerStats({ context }: { context: CustomerContext }) {
         icon={<Calendar size={12} className="text-ink-secondary" />}
       />
       <StatCard
-        label="累計売上"
+        label="使ってくれた金額"
         value={formatCurrency(estimatedSales).replace("¥", "")}
         unit="円"
         icon={<Coins size={12} className="text-roseGold-dark" />}

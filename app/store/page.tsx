@@ -55,7 +55,7 @@ export default async function StoreHubPage() {
             unit="万円"
           />
           <StatCard
-            label="フォロー率"
+            label="連絡達成率"
             value={Math.round(data.averageFollowRate * 100)}
             unit="%"
             tone="amethyst"

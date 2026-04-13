@@ -142,7 +142,7 @@ function buildContextPrefix(opts: {
           : "冬";
   const timeLabel =
     hour < 12
-      ? "午前（フォロー・連絡の時間帯）"
+      ? "午前（お客様への連絡の時間帯）"
       : hour < 17
         ? "午後"
         : hour < 20
@@ -204,7 +204,7 @@ function buildContextPrefix(opts: {
 
   if (opts.intent && opts.intent !== "freeform") {
     const intentLabel: Record<Intent, string> = {
-      follow: "フォロー・連絡",
+      follow: "お客様への連絡",
       serving: "接客中の急ぎ相談",
       strategy: "営業戦略",
       freeform: "",

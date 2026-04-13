@@ -10,7 +10,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
   return (
     <div className="grid grid-cols-3 gap-2.5">
       <StatCard
-        label="指名（今月）"
+        label="今月の指名"
         value={summary.nominationCount}
         unit="本"
         icon={<Bookmark size={12} className="text-roseGold-dark" />}
@@ -18,7 +18,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
       />
       <Link href="/cast/stats#repeat" className="block">
         <StatCard
-          label="リピート率"
+          label="また来てくれた率"
           value={repeatPct}
           unit="%"
           icon={<Heart size={12} className="text-blush-dark" />}
@@ -27,7 +27,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
         />
       </Link>
       <StatCard
-        label="新規（今月）"
+        label="今月の新しいお客様"
         value={summary.newCustomerCount}
         unit="人"
         icon={<UserPlus size={12} className="text-amethyst-dark" />}

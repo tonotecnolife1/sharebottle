@@ -64,7 +64,7 @@ export default async function StoreDashboardPage() {
             tone="amethyst"
           />
           <StatCard
-            label="平均フォロー率"
+            label="平均連絡達成率"
             value={Math.round(data.averageFollowRate * 100)}
             unit="%"
             tone="rose"

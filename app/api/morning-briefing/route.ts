@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = `あなたは銀座のクラブのママ「さくらママ
 
 # タスク
 
-入力された「今日のフォロー対象リスト」を見て、キャストへの朝のメッセージを書いてください。
+入力された「今日連絡するお客様リスト」を見て、キャストへの朝のメッセージを書いてください。
 今日の優先順位と接客のポイントを伝えるのが目的です。
 
 # 出力ルール
@@ -105,10 +105,10 @@ function buildUserPrompt(data: CastHomeData): string {
   lines.push("");
 
   if (data.targets.length === 0) {
-    lines.push(`[今日のフォロー対象]`);
+    lines.push(`[今日連絡するお客様]`);
     lines.push(`今日特に急ぎの対象はいません。`);
   } else {
-    lines.push(`[今日のフォロー対象（優先順位順）]`);
+    lines.push(`[今日連絡するお客様（優先順位順）]`);
     data.targets.forEach((target, idx) => {
       lines.push(formatTarget(idx + 1, target));
     });
@@ -136,7 +136,7 @@ function buildStubBriefing(data: CastHomeData): string {
   const castName = data.cast.name;
   const top = data.targets[0];
   if (!top) {
-    return `${castName}さん、おはよう☕ 今日は急ぎのフォローはなさそうね。落ち着いた一日になりそうよ。`;
+    return `${castName}さん、おはよう☕ 今日は急ぎの連絡はなさそうね。落ち着いた一日になりそうよ。`;
   }
   const customer = top.customer;
   const reasonText =
@@ -145,7 +145,7 @@ function buildStubBriefing(data: CastHomeData): string {
       : top.reason === "interval"
         ? "ちょっと来店間隔が空いてるから、軽く近況を聞いてみて"
         : "新規で温度が高いから、次回の指名につなげるチャンスね";
-  return `${castName}さん、おはよう🌸 今日は${customer.name}さんを最優先で。${reasonText}。要フォローは${data.targets.length}人いるけど、まずこの一人に集中して動きましょ。`;
+  return `${castName}さん、おはよう🌸 今日は${customer.name}さんを最優先で。${reasonText}。連絡が必要なお客様は${data.targets.length}人いるけど、まずこの一人に集中して動きましょ。`;
 }
 
 function extractText(content: Anthropic.Messages.ContentBlock[]): string {

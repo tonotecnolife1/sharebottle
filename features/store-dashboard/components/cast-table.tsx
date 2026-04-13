@@ -22,7 +22,7 @@ export function CastTable({
         <div>キャスト</div>
         <div className="text-right">指名</div>
         <div className="text-right">リピート</div>
-        <div className="text-right">フォロー</div>
+        <div className="text-right">連絡率</div>
         <div className="text-right">担当</div>
         <div className="text-right">月売上</div>
       </div>
@@ -89,7 +89,7 @@ export function CastTable({
           売上トップ
         </div>
         <div>
-          フォロー率: <span className="text-emerald font-medium">緑70%↑</span>
+          連絡達成率: <span className="text-emerald font-medium">緑70%↑</span>
           /<span className="text-amber"> 黄50%↓</span>
         </div>
         <div>ARPU = 月売上 ÷ 担当顧客数</div>

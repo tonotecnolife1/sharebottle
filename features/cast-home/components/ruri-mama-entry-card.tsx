@@ -24,7 +24,7 @@ export function RuriMamaEntryCard() {
               さくらママに相談する
             </div>
             <div className="text-body-sm text-pearl/80 mt-0.5">
-              顧客の情報を参照して、具体的にアドバイスします
+              LINE文面・接客・ボトル提案、何でも聞いてね
             </div>
           </div>
         </div>

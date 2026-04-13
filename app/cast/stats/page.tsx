@@ -24,7 +24,7 @@ export default async function CastStatsPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="あなたの成績" subtitle="今月の進捗とトレンド" showBack />
+      <PageHeader title="あなたの成績" subtitle="今月のがんばり" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Goal progress */}
@@ -48,7 +48,7 @@ export default async function CastStatsPage() {
         <div className="grid grid-cols-3 gap-2.5">
           <div id="repeat">
             <StatCard
-              label="リピート率"
+              label="また来てくれた率"
               value={Math.round(data.monthly.repeatRate * 100)}
               unit="%"
               tone="rose"
@@ -56,14 +56,14 @@ export default async function CastStatsPage() {
             />
           </div>
           <StatCard
-            label="フォロー率"
+            label="連絡達成率"
             value={Math.round(data.monthly.followRate * 100)}
             unit="%"
             tone="amethyst"
             icon={<TrendingUp size={12} className="text-amethyst-dark" />}
           />
           <StatCard
-            label="新規獲得"
+            label="新しいお客様"
             value={data.monthly.newCustomerCount}
             unit="人"
             tone="default"
@@ -72,7 +72,7 @@ export default async function CastStatsPage() {
         </div>
 
         <StatCard
-          label="連続フォロー"
+          label="連続連絡"
           value={data.followStreakDays}
           unit="日"
           tone="default"
@@ -83,8 +83,8 @@ export default async function CastStatsPage() {
         {/* Nomination trend */}
         <section>
           <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-display-sm text-ink">指名本数の推移</h2>
-            <span className="text-label-sm text-ink-muted">過去14日間</span>
+            <h2 className="text-display-sm text-ink">指名の動き</h2>
+            <span className="text-label-sm text-ink-muted">この2週間</span>
           </div>
           <Card className="p-4">
             <SingleCastTrend points={data.nominationTrend} />
@@ -94,8 +94,8 @@ export default async function CastStatsPage() {
         {/* Repeat trend */}
         <section>
           <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-display-sm text-ink">リピート率の推移</h2>
-            <span className="text-label-sm text-ink-muted">直近4週間</span>
+            <h2 className="text-display-sm text-ink">また来てくれた率の動き</h2>
+            <span className="text-label-sm text-ink-muted">この1ヶ月</span>
           </div>
           <Card className="p-4">
             <CastRepeatTrend points={data.repeatTrend} />
@@ -121,7 +121,7 @@ export default async function CastStatsPage() {
               tone="rose"
             />
             <StatCard
-              label="年間リピート率"
+              label="年間リピート"
               value={Math.round(data.yearly.repeatRate * 100)}
               unit="%"
               tone="default"
@@ -178,10 +178,10 @@ function buildEncouragement(data: Awaited<ReturnType<typeof getCastStatsData>>):
     return `今月は目標2つとも達成🌸 この調子なら来月の目標も伸ばしてみていいかもね✨`;
   }
   if (nomPct >= 80) {
-    return `指名は目標の${nomPct}%まで来てるわ。あと${data.targets.nominationGoal - data.monthly.nominationCount}本で達成、要フォローのVIPを優先して動きましょ。`;
+    return `指名は目標の${nomPct}%まで来てるわ。あと${data.targets.nominationGoal - data.monthly.nominationCount}本で達成、大事なお客様から連絡していきましょ。`;
   }
   if (rate < 50) {
-    return `フォロー率${rate}%はちょっと寂しいわね💌 1日3人だけ、お礼LINEを送る習慣からスタートしてみて。`;
+    return `連絡達成率${rate}%はちょっと寂しいわね💌 1日3人だけ、お礼LINEを送る習慣からスタートしてみて。`;
   }
-  return `指名${nomPct}%、売上${salesPct}%の進捗ね。連続${data.followStreakDays}日フォローできてるから、このペースで続けましょ☕`;
+  return `指名${nomPct}%、売上${salesPct}%の進捗ね。連続${data.followStreakDays}日お客様に連絡できてるから、このペースで続けましょ☕`;
 }

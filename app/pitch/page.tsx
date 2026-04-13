@@ -36,7 +36,7 @@ export default function PitchPage() {
         </p>
         <p className="text-body-md text-ink-secondary max-w-xs mx-auto">
           夜のお店のためのAIワークスペース。
-          顧客管理・フォロー・接客アドバイスを1つに。
+          顧客管理・お客様への連絡・接客アドバイスを1つに。
         </p>
       </section>
 
@@ -45,7 +45,7 @@ export default function PitchPage() {
         <SectionTitle emoji="😰" title="こんな課題ありませんか？" />
         <div className="space-y-3 mt-4">
           <ProblemCard
-            title="フォローが属人的"
+            title="お客様への連絡がバラバラ"
             body="誰がいつ連絡したか分からない。ベテランが辞めると顧客情報も消える"
           />
           <ProblemCard
@@ -64,7 +64,7 @@ export default function PitchPage() {
         <SectionTitle emoji="✨" title="NIGHTOSの解決策" />
         <p className="text-body-md text-ink-secondary mt-2 mb-5">
           店舗スタッフは<strong className="text-ink">1日5分の入力だけ</strong>。
-          分析もフォロー提案もAIが自動でやります。
+          分析も連絡の提案もAIが自動でやります。
         </p>
 
         <div className="space-y-3">
@@ -149,7 +149,7 @@ export default function PitchPage() {
         <div className="space-y-2.5 mt-4">
           <BenefitRow icon={<TrendingUp size={16} />} text="指名数・リピート率の推移グラフ" />
           <BenefitRow icon={<Users size={16} />} text="離脱リスク顧客をAIが自動検知" />
-          <BenefitRow icon={<BarChart3 size={16} />} text="キャスト別の成績・フォロー率・ARPU" />
+          <BenefitRow icon={<BarChart3 size={16} />} text="キャスト別の成績・連絡達成率・ARPU" />
           <BenefitRow icon={<Zap size={16} />} text="顧客カテゴリ構成（VIP/常連/新規の比率）" />
           <BenefitRow icon={<MessageCircle size={16} />} text="キャストへの連絡機能" />
         </div>

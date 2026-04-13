@@ -58,7 +58,7 @@ export default async function CastHomePage() {
 
         <section className="space-y-3">
           <header className="flex items-baseline justify-between">
-            <h2 className="text-display-sm text-ink">今日のフォロー対象</h2>
+            <h2 className="text-display-sm text-ink">今日連絡するお客様</h2>
             <span className="text-label-sm text-ink-muted">
               {data.targets.length}人
             </span>

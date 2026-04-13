@@ -31,7 +31,7 @@ export default function StorePitchDoc() {
           </p>
           <p className="text-base text-[#675d66] leading-relaxed">
             店舗が入力するだけで、キャストの売上が上がる。<br />
-            AI が顧客フォローを自動化し、指名数・リピート率を仕組みで改善します。
+            AI がお客様への連絡を自動化し、指名数・リピート率を仕組みで改善します。
           </p>
           <div className="mt-10 flex justify-center gap-3">
             <Stat label="初期費用" value="¥0" />
@@ -48,7 +48,7 @@ export default function StorePitchDoc() {
           <ProblemCard
             icon={<Users size={24} />}
             color="#c98d80"
-            title="フォローが属人的"
+            title="お客様への連絡がバラバラ"
             items={["誰がいつ連絡したか分からない", "ベテランが辞めると顧客情報も消える", "新人は何をすればいいか分からない"]}
           />
           <ProblemCard
@@ -71,7 +71,7 @@ export default function StorePitchDoc() {
         <div className="max-w-3xl mx-auto">
           <SectionHeader emoji="✨" title="NIGHTOSの解決策" />
           <p className="text-center text-[#675d66] mt-2 mb-10">
-            店舗スタッフは <strong className="text-[#2b232a]">1日5分の入力だけ</strong>。分析もフォロー提案もAIが自動。
+            店舗スタッフは <strong className="text-[#2b232a]">1日5分の入力だけ</strong>。分析も連絡の提案もAIが自動。
           </p>
 
           {/* Before/After */}
@@ -79,7 +79,7 @@ export default function StorePitchDoc() {
             <div className="rounded-2xl bg-[#f0e8e0] p-6">
               <h3 className="text-lg font-bold text-[#a08060] mb-4">😓 Before（今まで）</h3>
               <ul className="space-y-3 text-sm text-[#675d66]">
-                <li className="flex gap-2"><span className="text-[#c98d80]">✕</span> キャストが自力でフォロー先を決める</li>
+                <li className="flex gap-2"><span className="text-[#c98d80]">✕</span> キャストが自力で連絡先を決める</li>
                 <li className="flex gap-2"><span className="text-[#c98d80]">✕</span> LINE文面を毎回考える</li>
                 <li className="flex gap-2"><span className="text-[#c98d80]">✕</span> 顧客の好みは記憶頼み</li>
                 <li className="flex gap-2"><span className="text-[#c98d80]">✕</span> 来店はスタッフが口頭で伝える</li>
@@ -109,11 +109,11 @@ export default function StorePitchDoc() {
         <div className="flex flex-col items-center gap-4">
           <FlowStep icon={<Users />} color="#c9a84c" label="店舗スタッフ" desc="顧客登録 2分 / 来店登録 15秒 / ボトル登録 30秒" />
           <Arrow />
-          <FlowStep icon={<Zap />} color="#9a7bbb" label="NIGHTOS AI" desc="フォロー対象の自動選定 / テンプレート生成 / さくらママAI" />
+          <FlowStep icon={<Zap />} color="#9a7bbb" label="NIGHTOS AI" desc="連絡リストの自動選定 / テンプレート生成 / さくらママAI" />
           <Arrow />
           <FlowStep icon={<Sparkles />} color="#c98d80" label="キャスト" desc="ホーム画面で確認 / コピペで LINE送信 / AIに相談" />
           <Arrow />
-          <FlowStep icon={<TrendingUp />} color="#50966a" label="成果" desc="指名数↑ リピート率↑ フォロー率80%↑" />
+          <FlowStep icon={<TrendingUp />} color="#50966a" label="成果" desc="指名数↑ リピート率↑ 連絡達成率80%↑" />
         </div>
       </section>
 
@@ -124,7 +124,7 @@ export default function StorePitchDoc() {
           <p className="text-center text-[#675d66] mt-2 mb-8">キャストの入力作業はゼロ。見るだけで使える。</p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <BenefitCard icon={<Bell />} color="#c98d80" title="来店通知" desc="来店登録→30秒で自動通知" />
-            <BenefitCard icon={<Calendar />} color="#9a7bbb" title="フォロー対象" desc="AIが今日の優先顧客を選定" />
+            <BenefitCard icon={<Calendar />} color="#9a7bbb" title="今日連絡するお客様" desc="AIが今日の優先顧客を選定" />
             <BenefitCard icon={<MessageCircle />} color="#c9a84c" title="テンプレート" desc="顧客名・話題が自動挿入" />
             <BenefitCard icon={<Sparkles />} color="#c98d80" title="さくらママAI" desc="接客・LINE文面を即座に相談" />
             <BenefitCard icon={<Wine />} color="#9a7bbb" title="ボトル管理" desc="残量警告+次のおすすめ提案" />
@@ -142,8 +142,8 @@ export default function StorePitchDoc() {
           <TimelineItem time="30秒後" who="キャスト" action="スマホに来店通知 → カルテで好みを確認してテーブルへ" highlight />
           <TimelineItem time="営業中" who="キャスト" action="必要ならさくらママAIに接客相談" />
           <TimelineItem time="閉店後" who="キャスト" action="テンプレートからお礼LINEをコピペ送信" highlight />
-          <TimelineItem time="翌朝" who="キャスト" action="ホーム画面で今日のフォロー対象を確認 → LINE" highlight />
-          <TimelineItem time="週次" who="店長" action="ダッシュボードでフォロー率・指名数を確認" />
+          <TimelineItem time="翌朝" who="キャスト" action="ホーム画面で今日連絡するお客様を確認 → LINE" highlight />
+          <TimelineItem time="週次" who="店長" action="ダッシュボードで連絡達成率・指名数を確認" />
         </div>
       </section>
 

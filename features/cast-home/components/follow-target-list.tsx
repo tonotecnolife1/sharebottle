@@ -21,7 +21,7 @@ export function FollowTargetList({ targets }: { targets: FollowTarget[] }) {
   if (targets.length === 0) {
     return (
       <div className="text-center py-8 text-ink-secondary">
-        今日フォローが必要なお客様はいません
+        今日連絡するお客様はいません
       </div>
     );
   }

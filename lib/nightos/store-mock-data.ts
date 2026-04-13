@@ -78,7 +78,7 @@ export const MOCK_REPEAT_TREND: RepeatPoint[] = [
 ];
 
 /**
- * フォロー実施率（follow_logs / 要フォロー件数）の直近スナップショット。
+ * 連絡達成率（follow_logs / 連絡が必要な件数）の直近スナップショット。
  * MVP では固定値。
  */
 export const MOCK_FOLLOW_RATE: Record<string, number> = {

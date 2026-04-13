@@ -86,16 +86,16 @@ function buildPrompt(
   lines.push("[店舗データ]");
   lines.push(`月間指名: ${data.totalNominations}本`);
   lines.push(`月間売上: ¥${data.totalSales.toLocaleString()}`);
-  lines.push(`平均フォロー率: ${Math.round(data.averageFollowRate * 100)}%`);
+  lines.push(`平均連絡達成率: ${Math.round(data.averageFollowRate * 100)}%`);
   lines.push("");
   lines.push("[キャスト別]");
   data.castStats.forEach((s) => {
     lines.push(
-      `- ${s.cast.name}: 指名${s.cast.nomination_count}本, フォロー率${Math.round(s.followRate * 100)}%, 担当${s.customerCount}人`,
+      `- ${s.cast.name}: 指名${s.cast.nomination_count}本, 連絡達成率${Math.round(s.followRate * 100)}%, 担当${s.customerCount}人`,
     );
   });
   lines.push("");
-  lines.push(`[リスク顧客] ${riskCount}人がフォロー必要`);
+  lines.push(`[リスク顧客] ${riskCount}人が連絡が必要`);
   lines.push(`[ボトル残量注意] ${lowBottleCount}本が残りわずか`);
   lines.push("");
   lines.push("今夜の営業に向けてスタッフに伝えるべきポイントを書いてください。");
@@ -113,5 +113,5 @@ function buildStubBriefing(
   const lowCast = data.castStats.sort(
     (a, b) => a.followRate - b.followRate,
   )[0];
-  return `スタッフの皆さん、今夜もよろしくお願いします🌙 ${topCast ? `${topCast.cast.name}さんは指名${topCast.cast.nomination_count}本で好調です。` : ""}${lowCast && lowCast.followRate < 0.7 ? `${lowCast.cast.name}さんのフォロー率が${Math.round(lowCast.followRate * 100)}%なので、今日はLINE送信を促してあげてください。` : ""}${riskCount > 0 ? `フォロー対象は${riskCount}人、` : ""}${lowBottleCount > 0 ? `ボトル残量注意は${lowBottleCount}本。` : ""}各テーブルの準備をお願いします。`;
+  return `スタッフの皆さん、今夜もよろしくお願いします🌙 ${topCast ? `${topCast.cast.name}さんは指名${topCast.cast.nomination_count}本で好調です。` : ""}${lowCast && lowCast.followRate < 0.7 ? `${lowCast.cast.name}さんの連絡達成率が${Math.round(lowCast.followRate * 100)}%なので、今日はLINE送信を促してあげてください。` : ""}${riskCount > 0 ? `今日連絡するお客様は${riskCount}人、` : ""}${lowBottleCount > 0 ? `ボトル残量注意は${lowBottleCount}本。` : ""}各テーブルの準備をお願いします。`;
 }

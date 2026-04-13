@@ -59,18 +59,18 @@ type CategoryFilter = "all" | "vip" | "regular" | "new";
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "全て" },
-  { value: "vip_alert", label: "🔴 VIP要注意" },
-  { value: "at_risk", label: "🟡 要フォロー" },
-  { value: "new", label: "🔵 新規" },
-  { value: "active", label: "🟢 アクティブ" },
-  { value: "dormant", label: "⚪ 休眠" },
+  { value: "vip_alert", label: "🔴 大事なお客様！" },
+  { value: "at_risk", label: "🟡 連絡しよう" },
+  { value: "new", label: "🔵 新しいお客様" },
+  { value: "active", label: "🟢 順調" },
+  { value: "dormant", label: "⚪ しばらく来てない" },
 ];
 
 const CATEGORY_FILTERS: { value: CategoryFilter; label: string }[] = [
-  { value: "all", label: "全カテゴリ" },
+  { value: "all", label: "全タイプ" },
   { value: "vip", label: "VIP" },
-  { value: "regular", label: "常連" },
-  { value: "new", label: "新規" },
+  { value: "regular", label: "常連さん" },
+  { value: "new", label: "新しいお客様" },
 ];
 
 export function CustomerListView({ contexts, today }: Props) {

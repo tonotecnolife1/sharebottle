@@ -59,7 +59,7 @@ export function selectFollowTargets(args: SelectArgs): FollowTarget[] {
       out.push({
         customer,
         reason: "birthday",
-        reasonLabel: "誕生日間近",
+        reasonLabel: "もうすぐ誕生日🎂",
         reasonDetail: `${birthdayInfo.monthDay}（あと${birthdayInfo.daysUntil}日）`,
         bottle,
         lastTopic: memo?.last_topic ?? null,
@@ -74,8 +74,8 @@ export function selectFollowTargets(args: SelectArgs): FollowTarget[] {
       out.push({
         customer,
         reason: "interval",
-        reasonLabel: "来店間隔が空いています",
-        reasonDetail: `${daysSinceLastVisit}日ぶり（通常${avgInterval}日間隔）`,
+        reasonLabel: "しばらく来てない",
+        reasonDetail: `${daysSinceLastVisit}日ぶり（いつもは${avgInterval}日ごと）`,
         bottle,
         lastTopic: memo?.last_topic ?? null,
         daysSinceLastVisit,
@@ -89,8 +89,8 @@ export function selectFollowTargets(args: SelectArgs): FollowTarget[] {
       out.push({
         customer,
         reason: "nomination_chance",
-        reasonLabel: "指名化チャンス",
-        reasonDetail: `${visitCount}回目来店、${daysSinceLastVisit}日前にご来店`,
+        reasonLabel: "指名をもらえるかも✨",
+        reasonDetail: `${visitCount}回目のお客様、${daysSinceLastVisit}日前に来てくれた`,
         bottle,
         lastTopic: memo?.last_topic ?? null,
         daysSinceLastVisit,

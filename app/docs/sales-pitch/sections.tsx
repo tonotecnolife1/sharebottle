@@ -18,7 +18,7 @@ export function Sections() {
         </p>
         <div className="flex gap-6 mt-10">
           <KPI value="+15%" label="リピート率UP" />
-          <KPI value="2倍" label="フォロー実施率" />
+          <KPI value="2倍" label="連絡達成率" />
           <KPI value="¥0" label="初期費用" />
         </div>
       </section>
@@ -72,7 +72,7 @@ export function Sections() {
               color="#9a7bbb"
               number="2"
               title="全キャストの売上が上がる"
-              desc="AIがフォロー対象を選び、LINE文面まで作成。新人でもベテラン並みの接客フォローが可能に。"
+              desc="AIが連絡リストを選び、LINE文面まで作成。新人でもベテラン並みのお客様への連絡が可能に。"
             />
             <SolutionCard
               icon={<Shield size={24} />}
@@ -120,10 +120,10 @@ export function Sections() {
           <div>
             <Badge text="キャスト支援 — 誰でも成果が出る" />
             <h2 className="text-3xl font-bold mt-3 mb-4">
-              新人でもベテラン並みの<br />フォローができる
+              新人でもベテラン並みの<br />お客様対応ができる
             </h2>
             <p className="text-[#675d66] leading-relaxed mb-6">
-              AIがフォロー対象を毎朝選定し、テンプレートで文面を生成。
+              AIが今日連絡するお客様を毎朝選定し、テンプレートで文面を生成。
               さくらママAIが接客アドバイスまで。<strong>キャストの属人的スキルに
               依存しない「仕組み」で売上を上げる。</strong>
             </p>
@@ -147,7 +147,7 @@ export function Sections() {
             </h2>
             <p className="text-[#675d66] leading-relaxed mb-6">
               顧客カルテを見ながら、具体的なLINE文面とアドバイスを提案。
-              新人キャストも<strong>初日から的確なフォロー</strong>ができる。
+              新人キャストも<strong>初日から的確なお客様対応</strong>ができる。
             </p>
             <FeatureList items={[
               "顧客のカテゴリ（VIP/常連/新規）に応じたトーン調整",
@@ -206,12 +206,12 @@ export function Sections() {
               顧客資産の状態が<br />数字で見える
             </h2>
             <p className="text-[#675d66] leading-relaxed mb-6">
-              離脱リスク顧客、キャスト別のフォロー率、顧客カテゴリの構成比。
+              離脱リスク顧客、キャスト別の連絡達成率、顧客カテゴリの構成比。
               <strong>顧客資産の健康状態を定量的に把握</strong>し、先手の対策が打てる。
             </p>
             <FeatureList items={[
               "離脱リスク顧客をAIが自動検知",
-              "キャスト別 ARPU・フォロー率・指名数",
+              "キャスト別 ARPU・連絡達成率・指名数",
               "顧客カテゴリ構成（VIP/常連/新規の比率）",
               "トレンドグラフで推移を可視化",
             ]} />
@@ -357,13 +357,13 @@ function MockCastHome() {
       <div className="flex gap-1.5 mb-2">
         <MiniStat label="指名" value="18" unit="本" color="#c98d80" />
         <MiniStat label="リピート" value="72" unit="%" color="#c98d80" />
-        <MiniStat label="要フォロー" value="7" unit="人" color="#9a7bbb" />
+        <MiniStat label="連絡が必要" value="7" unit="人" color="#9a7bbb" />
       </div>
       <div className="rounded-lg bg-gradient-to-r from-[#9a7bbb] to-[#6e4f8f] text-white p-2.5 mb-2">
         <div className="text-[8px] opacity-80">✨ 今朝のさくらママから</div>
         <div className="text-[9px] mt-1">あかりさん、今日は山本さんを最優先で。ドンペリの残りが2杯だから...</div>
       </div>
-      <div className="text-[9px] font-bold mb-1">今日のフォロー対象</div>
+      <div className="text-[9px] font-bold mb-1">今日連絡するお客様</div>
       {[
         { name: "山本 隆", reason: "🎂 誕生日間近", tag: "VIP" },
         { name: "田中 太郎", reason: "📅 来店間隔空き", tag: "VIP" },

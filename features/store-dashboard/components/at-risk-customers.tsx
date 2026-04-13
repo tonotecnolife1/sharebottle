@@ -16,7 +16,7 @@ export function AtRiskCustomers({ targets }: Props) {
   if (targets.length === 0) {
     return (
       <Card className="p-4 text-center text-body-sm text-ink-secondary">
-        現在フォローが必要な顧客はいません ✅
+        現在連絡が必要な顧客はいません ✅
       </Card>
     );
   }
@@ -26,7 +26,7 @@ export function AtRiskCustomers({ targets }: Props) {
       <div className="flex items-center gap-2 text-ink">
         <AlertTriangle size={14} className="text-amber" />
         <span className="text-label-md font-semibold">
-          要フォロー顧客 — {targets.length}人
+          連絡が必要な顧客 — {targets.length}人
         </span>
       </div>
       <div className="space-y-2">
