@@ -3,6 +3,7 @@ import type {
   Cast,
   CastMemo,
   Customer,
+  Douhan,
   LineScreenshot,
   Store,
   Visit,
@@ -149,9 +150,9 @@ export const mockCoupons: Coupon[] = [
 export const MOCK_TODAY = new Date("2026-03-19T00:00:00+09:00");
 
 export const mockStores: Store[] = [
-  { id: CURRENT_STORE_ID, name: "CLUB NIGHTOS 銀座本店" },
-  { id: "store2", name: "Lounge ÉTOILE 六本木" },
-  { id: "store3", name: "BAR VELVET 赤坂" },
+  { id: CURRENT_STORE_ID, name: "CLUB NIGHTOS 銀座本店", venue_type: "club" },
+  { id: "store2", name: "Lounge ÉTOILE 六本木", venue_type: "club" },
+  { id: "store3", name: "BAR VELVET 赤坂", venue_type: "cabaret" },
 ];
 
 export const mockCasts: Cast[] = [
@@ -162,6 +163,7 @@ export const mockCasts: Cast[] = [
     nomination_count: 18,
     monthly_sales: 1_840_000,
     repeat_rate: 0.72,
+    club_role: "oneesan",
   },
   {
     id: "cast2",
@@ -170,6 +172,17 @@ export const mockCasts: Cast[] = [
     nomination_count: 14,
     monthly_sales: 1_420_000,
     repeat_rate: 0.65,
+    club_role: "help",
+    assigned_oneesan_id: "cast1",
+  },
+  {
+    id: "cast_mama1",
+    store_id: CURRENT_STORE_ID,
+    name: "瑠璃",
+    nomination_count: 45,
+    monthly_sales: 5_200_000,
+    repeat_rate: 0.85,
+    club_role: "mama",
   },
   // ── Lounge ÉTOILE 六本木 ──
   {
@@ -179,8 +192,9 @@ export const mockCasts: Cast[] = [
     nomination_count: 22,
     monthly_sales: 2_100_000,
     repeat_rate: 0.78,
+    club_role: "oneesan",
   },
-  // ── BAR VELVET 赤坂 ──
+  // ── BAR VELVET 赤坂（キャバクラ） ──
   {
     id: "cast4",
     store_id: "store3",
@@ -188,6 +202,50 @@ export const mockCasts: Cast[] = [
     nomination_count: 10,
     monthly_sales: 980_000,
     repeat_rate: 0.60,
+  },
+];
+
+// ── 同伴データ（クラブモード用） ──
+export const mockDouhans: Douhan[] = [
+  {
+    id: "douhan1",
+    cast_id: "cast1",
+    customer_id: "cust1",
+    store_id: CURRENT_STORE_ID,
+    date: "2026-03-05",
+    status: "completed",
+    note: "イタリアンレストランで食事後に来店",
+    created_at: "2026-03-04T15:00:00+09:00",
+  },
+  {
+    id: "douhan2",
+    cast_id: "cast1",
+    customer_id: "cust3",
+    store_id: CURRENT_STORE_ID,
+    date: "2026-03-12",
+    status: "completed",
+    note: "銀座の寿司屋",
+    created_at: "2026-03-11T14:00:00+09:00",
+  },
+  {
+    id: "douhan3",
+    cast_id: "cast1",
+    customer_id: "cust5",
+    store_id: CURRENT_STORE_ID,
+    date: "2026-03-20",
+    status: "scheduled",
+    note: "六本木のフレンチ予約済み",
+    created_at: "2026-03-18T10:00:00+09:00",
+  },
+  {
+    id: "douhan4",
+    cast_id: "cast1",
+    customer_id: "cust11",
+    store_id: CURRENT_STORE_ID,
+    date: "2026-03-25",
+    status: "scheduled",
+    note: null,
+    created_at: "2026-03-19T09:00:00+09:00",
   },
 ];
 

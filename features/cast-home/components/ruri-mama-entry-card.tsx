@@ -18,10 +18,10 @@ export function RuriMamaEntryCard() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5 text-label-sm text-pearl/90 uppercase tracking-wider">
               <Sparkles size={12} />
-              Ruri Mama AI
+              Sakura Mama AI
             </div>
             <div className="text-display-sm font-display text-pearl">
-              瑠璃ママに相談する
+              さくらママに相談する
             </div>
             <div className="text-body-sm text-pearl/80 mt-0.5">
               顧客の情報を参照して、具体的にアドバイスします

@@ -5,24 +5,22 @@ import { FollowTargetList } from "@/features/cast-home/components/follow-target-
 import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
 import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
 import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
+import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
-import { getUnreadCastMessages } from "@/lib/nightos/supabase-queries";
+import {
+  getUnreadCastMessages,
+  getDouhanSummary,
+  getCustomersForCast,
+} from "@/lib/nightos/supabase-queries";
 
 export default async function CastHomePage() {
-  const [data, storeMessages] = await Promise.all([
+  const [data, storeMessages, douhanSummary, customers] = await Promise.all([
     fetchCastHomeData(CURRENT_CAST_ID),
     getUnreadCastMessages(CURRENT_CAST_ID),
+    getDouhanSummary(CURRENT_CAST_ID),
+    getCustomersForCast(CURRENT_CAST_ID),
   ]);
-
-  // Time-based greeting
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12
-      ? "おはようございます"
-      : hour < 17
-        ? "こんにちは"
-        : "おかえりなさい";
 
   return (
     <div className="animate-fade-in">
@@ -34,11 +32,8 @@ export default async function CastHomePage() {
           NIGHTOS
         </div>
         <h1 className="font-display font-semibold text-ink text-[clamp(1.4rem,5vw,2rem)] leading-tight whitespace-nowrap">
-          {greeting}、{data.cast.name}さん
+          おかえりなさい、{data.cast.name}さん
         </h1>
-        <p className="text-body-sm text-ink-secondary mt-0.5">
-          今日のフォロー対象と瑠璃ママが待っています
-        </p>
       </div>
 
       <div className="px-5 pt-3 pb-6 space-y-5">
@@ -55,6 +50,9 @@ export default async function CastHomePage() {
         <SummaryCards summary={data.summary} />
 
         <MorningBriefing castId={data.cast.id} />
+
+        {/* 同伴 tracker (club mode) */}
+        <DouhanTracker summary={douhanSummary} customers={customers} />
 
         <RuriMamaEntryCard />
 

@@ -39,7 +39,7 @@ const TABS: Tab[] = [
   },
   {
     key: "ruri-mama",
-    label: "瑠璃ママ",
+    label: "さくらママ",
     href: "/cast/ruri-mama",
     icon: Sparkles,
     match: (p) => p.startsWith("/cast/ruri-mama"),

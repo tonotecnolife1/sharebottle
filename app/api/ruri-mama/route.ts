@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import {
-  RURI_MAMA_MODEL,
-  RURI_MAMA_SYSTEM_PROMPT,
+  SAKURA_MAMA_MODEL,
+  SAKURA_MAMA_SYSTEM_PROMPT,
 } from "@/features/ruri-mama/data/system-prompt";
 import { generateStubReply } from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
@@ -88,17 +88,17 @@ export async function POST(req: Request) {
     });
 
     const response = await client.messages.create({
-      model: RURI_MAMA_MODEL,
+      model: SAKURA_MAMA_MODEL,
       max_tokens: 800,
       temperature: 0.7,
-      system: RURI_MAMA_SYSTEM_PROMPT,
+      system: SAKURA_MAMA_SYSTEM_PROMPT,
       messages: apiMessages,
     });
 
     const reply = extractText(response.content);
     return NextResponse.json<RuriMamaResponse>({ reply, isStub: false });
   } catch (err) {
-    console.error("[ruri-mama] Claude call failed:", err);
+    console.error("[sakura-mama] Claude call failed:", err);
     // Graceful fallback: return a stub reply so the UX never breaks.
     // Mark isStub:true so the UI can surface that we're degraded.
     const reply = generateStubReply({

@@ -4,9 +4,11 @@ import { ActionButtons } from "@/features/customer-card/components/action-button
 import { CustomerHeader } from "@/features/customer-card/components/customer-header";
 import { CustomerStats } from "@/features/customer-card/components/customer-stats";
 import { LineImportPanel } from "@/features/customer-card/components/line-import-panel";
+import { LineHistoryTimeline } from "@/features/customer-card/components/line-history-timeline";
 import { MemoSection } from "@/features/customer-card/components/memo-section";
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
 import { VisitHistory } from "@/features/customer-card/components/visit-history";
+import { CustomerPhotoUpload } from "@/features/customer-card/components/customer-photo-upload";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import {
   getCustomerContext,
@@ -29,6 +31,7 @@ export default async function CustomerCardPage({
       <PageHeader title="顧客カルテ" showBack />
       <div className="px-5 pt-4 pb-6 space-y-5">
         <CustomerHeader customer={context.customer} />
+        <CustomerPhotoUpload customerId={context.customer.id} customerName={context.customer.name} />
         <CustomerStats context={context} />
         <VisitHistory visits={context.visits} />
         <StoreInfoSection context={context} />
@@ -37,6 +40,10 @@ export default async function CustomerCardPage({
           customer={context.customer}
           memo={context.memo}
           screenshots={screenshots}
+        />
+        <LineHistoryTimeline
+          screenshots={screenshots}
+          customerName={context.customer.name}
         />
         <ActionButtons customerId={context.customer.id} />
       </div>

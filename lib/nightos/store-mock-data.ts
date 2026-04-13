@@ -18,22 +18,23 @@ export const MOCK_TABLES: { id: string; label: string; seats: number }[] = [
  * MVP this is a static list the store can pick from. New brands can be
  * typed free-form via the "新規追加" option in the form.
  */
-export const MOCK_BRANDS: string[] = [
-  "山崎12年",
-  "山崎18年",
-  "白州12年",
-  "白州18年",
-  "響17年",
-  "響21年",
-  "響 JH",
-  "マッカラン12年",
-  "マッカラン18年",
-  "グレンフィディック12年",
-  "グレンリベット12年",
-  "ドンペリニヨン",
-  "クリュッグ",
-  "ルイロデレール クリスタル",
+// Club mode: ウイスキー＆焼酎がメイン（シャンパンはボトルキープ対象外）
+export const MOCK_BRANDS_CLUB: { category: string; brands: string[] }[] = [
+  {
+    category: "ウイスキー（国産）",
+    brands: ["山崎12年", "山崎18年", "白州12年", "白州18年", "響17年", "響21年", "響 JH", "竹鶴17年"],
+  },
+  {
+    category: "ウイスキー（海外）",
+    brands: ["マッカラン12年", "マッカラン18年", "グレンフィディック12年", "グレンリベット12年", "ジャックダニエル"],
+  },
+  {
+    category: "焼酎",
+    brands: ["森伊蔵", "魔王", "村尾", "佐藤（黒）", "佐藤（白）", "百年の孤独"],
+  },
 ];
+
+export const MOCK_BRANDS: string[] = MOCK_BRANDS_CLUB.flatMap((c) => c.brands);
 
 /**
  * 過去14日分のダミー指名数トレンド（あかり・みさき）。

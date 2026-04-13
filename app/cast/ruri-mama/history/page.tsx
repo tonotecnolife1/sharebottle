@@ -42,7 +42,7 @@ export default function ChatHistoryPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="相談履歴" subtitle="過去の瑠璃ママとのやりとり" showBack />
+      <PageHeader title="相談履歴" subtitle="過去のさくらママとのやりとり" showBack />
       <div className="px-5 pt-3 pb-6 space-y-3">
         {/* Search */}
         <div className="relative">
@@ -73,7 +73,7 @@ export default function ChatHistoryPage() {
               href="/cast/ruri-mama"
               className="inline-block mt-3 text-label-sm text-amethyst-dark underline underline-offset-2"
             >
-              瑠璃ママに相談する
+              さくらママに相談する
             </Link>
           </Card>
         ) : (

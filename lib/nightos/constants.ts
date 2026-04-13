@@ -7,9 +7,21 @@ export const CURRENT_CAST_ID = "cast1"; // あかり
 export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード用）
 
 export const ROLE_STORAGE_KEY = "nightos.role";
+export const VENUE_TYPE_STORAGE_KEY = "nightos.venue-type";
 
-// Claude Haiku 4.5 — Anthropic の最新ハイク。Sonnet 4.6 と比べて
-// 約 1/3 のコスト（入力 $1 / 出力 $5 per 1M tokens）。few-shot 例の
-// おかげで瑠璃ママのペルソナ品質は実用範囲を保てる。
-// もし品質が足りないと感じたら "claude-sonnet-4-6" に戻すだけでよい。
-export const RURI_MAMA_MODEL = "claude-haiku-4-5-20251001";
+// ── Venue type ──
+// クラブ: ママ・お姉さん・ヘルプの階層構造。同伴が重要。担当制。
+// キャバクラ: 指名制。フリー→指名の指名化が最重要。
+export type VenueType = "club" | "cabaret";
+
+// ── Club role hierarchy ──
+// ママ: 店舗のオーナー/管理者。役職給あり。全顧客を管理。
+// お姉さん: 担当を持つ。同伴ノルマあり。お姉さんの売上はママの売上に直結しない。
+// ヘルプ: お姉さんの補助。担当なし。
+export type ClubRole = "mama" | "oneesan" | "help";
+
+// Claude Haiku 4.5 — コスパ重視。
+export const SAKURA_MAMA_MODEL = "claude-haiku-4-5-20251001";
+
+/** @deprecated Use SAKURA_MAMA_MODEL instead */
+export const RURI_MAMA_MODEL = SAKURA_MAMA_MODEL;

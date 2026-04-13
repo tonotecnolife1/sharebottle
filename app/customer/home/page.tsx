@@ -2,13 +2,16 @@ import Link from "next/link";
 import {
   Calendar,
   ChevronRight,
+  Crown,
+  Diamond,
   MapPin,
   Sparkles,
+  Star,
   Ticket,
   User,
   Wine,
 } from "lucide-react";
-import { Card } from "@/components/nightos/card";
+import { Card, GemCard } from "@/components/nightos/card";
 import { Badge } from "@/components/nightos/badge";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
@@ -32,6 +35,16 @@ export default async function CustomerHomePage() {
   );
   const totalVisits = overviews.reduce((sum, o) => sum + o.visit_count, 0);
   const activeCoupons = coupons.filter((c) => !c.used_at);
+
+  // Global rank: highest rank across all stores
+  const rankOrder: RankTier[] = ["diamond", "platinum", "gold", "silver", "bronze"];
+  const highestRank = overviews.reduce<CustomerStoreOverview | null>((best, o) => {
+    if (!best) return o;
+    return rankOrder.indexOf(o.rank.tier) < rankOrder.indexOf(best.rank.tier) ? o : best;
+  }, null);
+
+  const isDiamond = highestRank?.rank.tier === "diamond";
+  const isPlatinumOrAbove = highestRank?.rank.tier === "diamond" || highestRank?.rank.tier === "platinum";
 
   return (
     <div className="animate-fade-in">
@@ -68,6 +81,36 @@ export default async function CustomerHomePage() {
       </header>
 
       <div className="px-5 pb-6 space-y-5">
+        {/* ── Global Diamond/Platinum status banner ── */}
+        {isPlatinumOrAbove && highestRank && (
+          <GemCard className="p-4">
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.35),transparent_60%)]"
+            />
+            <div className="relative flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                {isDiamond ? (
+                  <Diamond size={28} className="text-pearl" />
+                ) : (
+                  <Crown size={28} className="text-pearl" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="text-label-sm text-pearl/80 uppercase tracking-wider">
+                  {isDiamond ? "Diamond Member" : "Platinum Member"}
+                </div>
+                <div className="text-display-sm font-display text-pearl">
+                  {highestRank.rank.emoji} {highestRank.rank.label}
+                </div>
+                <div className="text-body-sm text-pearl/70 mt-0.5">
+                  全{overviews.length}店舗で特別なおもてなしを受けられます
+                </div>
+              </div>
+            </div>
+          </GemCard>
+        )}
+
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-2.5">
           <StatCard
@@ -92,7 +135,29 @@ export default async function CustomerHomePage() {
           />
         </div>
 
-        {/* Store cards — tappable, link to per-store detail */}
+        {/* Cross-store rank summary */}
+        {overviews.length > 1 && (
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Star size={14} className="text-roseGold-dark" />
+              <h3 className="text-body-md font-semibold text-ink">店舗別ランク</h3>
+            </div>
+            <div className="space-y-2">
+              {overviews.map((o) => (
+                <div key={o.store_id} className="flex items-center justify-between">
+                  <span className="text-body-sm text-ink">{o.store_name}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-badge text-[10px] font-semibold ${rankBadgeStyles[o.rank.tier]}`}
+                  >
+                    {o.rank.emoji} {o.rank.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Store cards */}
         <section className="space-y-3">
           <h2 className="text-display-sm text-ink flex items-center gap-1.5">
             <MapPin size={16} className="text-roseGold-dark" />

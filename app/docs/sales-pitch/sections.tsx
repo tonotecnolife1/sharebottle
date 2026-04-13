@@ -124,13 +124,13 @@ export function Sections() {
             </h2>
             <p className="text-[#675d66] leading-relaxed mb-6">
               AIがフォロー対象を毎朝選定し、テンプレートで文面を生成。
-              瑠璃ママAIが接客アドバイスまで。<strong>キャストの属人的スキルに
+              さくらママAIが接客アドバイスまで。<strong>キャストの属人的スキルに
               依存しない「仕組み」で売上を上げる。</strong>
             </p>
             <FeatureList items={[
               "AIが来店間隔・誕生日・指名化チャンスを自動判定",
               "顧客名・話題・ボトル名が入ったLINEテンプレート",
-              "銀座30年の瑠璃ママAIに即座に相談",
+              "銀座30年のさくらママAIに即座に相談",
               "接客データは全て店舗に蓄積（キャストの私物にならない）",
             ]} />
           </div>
@@ -156,7 +156,7 @@ export function Sections() {
               "音声入力対応 — 接客中も話すだけで相談",
             ]} />
           </div>
-          <PhoneFrame caption="瑠璃ママ AI チャット">
+          <PhoneFrame caption="さくらママ AI チャット">
             <MockRuriMama />
           </PhoneFrame>
         </div>
@@ -360,7 +360,7 @@ function MockCastHome() {
         <MiniStat label="要フォロー" value="7" unit="人" color="#9a7bbb" />
       </div>
       <div className="rounded-lg bg-gradient-to-r from-[#9a7bbb] to-[#6e4f8f] text-white p-2.5 mb-2">
-        <div className="text-[8px] opacity-80">✨ 今朝の瑠璃ママから</div>
+        <div className="text-[8px] opacity-80">✨ 今朝のさくらママから</div>
         <div className="text-[9px] mt-1">あかりさん、今日は山本さんを最優先で。ドンペリの残りが2杯だから...</div>
       </div>
       <div className="text-[9px] font-bold mb-1">今日のフォロー対象</div>
@@ -389,7 +389,7 @@ function MockRuriMama() {
   return (
     <div className="px-3">
       <div className="rounded-t-lg bg-gradient-to-r from-[#9a7bbb] to-[#6e4f8f] text-white p-2 text-center">
-        <div className="text-[10px] font-bold">瑠璃ママ</div>
+        <div className="text-[10px] font-bold">さくらママ</div>
         <div className="text-[7px] opacity-80">銀座30年の経験者</div>
       </div>
       <div className="mt-2 flex gap-1.5">

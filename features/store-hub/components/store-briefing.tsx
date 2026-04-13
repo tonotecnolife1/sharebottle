@@ -71,7 +71,7 @@ export function StoreBriefing() {
       {loading ? (
         <div className="flex items-center gap-2 text-ink-secondary text-body-sm py-1">
           <Loader2 size={14} className="animate-spin" />
-          瑠璃ママが今夜の準備メモを書いてます…
+          さくらママが今夜の準備メモを書いてます…
         </div>
       ) : briefing ? (
         <>

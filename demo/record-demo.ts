@@ -106,7 +106,7 @@ async function main() {
     console.log("📱 Scene 5: Ruri-Mama chat");
     // Navigate via tab bar
     await page.goto(`${BASE_URL}/cast/ruri-mama`);
-    await page.waitForSelector("text=瑠璃ママ");
+    await page.waitForSelector("text=さくらママ");
     await wait(1500);
     await screenshot(page, "09-ruri-mama-picker");
 

@@ -109,7 +109,7 @@ export default function StorePitchDoc() {
         <div className="flex flex-col items-center gap-4">
           <FlowStep icon={<Users />} color="#c9a84c" label="店舗スタッフ" desc="顧客登録 2分 / 来店登録 15秒 / ボトル登録 30秒" />
           <Arrow />
-          <FlowStep icon={<Zap />} color="#9a7bbb" label="NIGHTOS AI" desc="フォロー対象の自動選定 / テンプレート生成 / 瑠璃ママAI" />
+          <FlowStep icon={<Zap />} color="#9a7bbb" label="NIGHTOS AI" desc="フォロー対象の自動選定 / テンプレート生成 / さくらママAI" />
           <Arrow />
           <FlowStep icon={<Sparkles />} color="#c98d80" label="キャスト" desc="ホーム画面で確認 / コピペで LINE送信 / AIに相談" />
           <Arrow />
@@ -126,7 +126,7 @@ export default function StorePitchDoc() {
             <BenefitCard icon={<Bell />} color="#c98d80" title="来店通知" desc="来店登録→30秒で自動通知" />
             <BenefitCard icon={<Calendar />} color="#9a7bbb" title="フォロー対象" desc="AIが今日の優先顧客を選定" />
             <BenefitCard icon={<MessageCircle />} color="#c9a84c" title="テンプレート" desc="顧客名・話題が自動挿入" />
-            <BenefitCard icon={<Sparkles />} color="#c98d80" title="瑠璃ママAI" desc="接客・LINE文面を即座に相談" />
+            <BenefitCard icon={<Sparkles />} color="#c98d80" title="さくらママAI" desc="接客・LINE文面を即座に相談" />
             <BenefitCard icon={<Wine />} color="#9a7bbb" title="ボトル管理" desc="残量警告+次のおすすめ提案" />
             <BenefitCard icon={<BarChart3 />} color="#c9a84c" title="成績可視化" desc="指名数・目標進捗がグラフで" />
           </div>
@@ -140,7 +140,7 @@ export default function StorePitchDoc() {
           <TimelineItem time="開店前" who="店舗" action="予約客の来店登録を準備" />
           <TimelineItem time="来店時" who="店舗" action="来店登録（テーブル+顧客+指名） → 15秒" highlight />
           <TimelineItem time="30秒後" who="キャスト" action="スマホに来店通知 → カルテで好みを確認してテーブルへ" highlight />
-          <TimelineItem time="営業中" who="キャスト" action="必要なら瑠璃ママAIに接客相談" />
+          <TimelineItem time="営業中" who="キャスト" action="必要ならさくらママAIに接客相談" />
           <TimelineItem time="閉店後" who="キャスト" action="テンプレートからお礼LINEをコピペ送信" highlight />
           <TimelineItem time="翌朝" who="キャスト" action="ホーム画面で今日のフォロー対象を確認 → LINE" highlight />
           <TimelineItem time="週次" who="店長" action="ダッシュボードでフォロー率・指名数を確認" />

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { RURI_MAMA_MODEL } from "@/lib/nightos/constants";
+import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import type { CustomerContext } from "@/types/nightos";
 
@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `あなたは銀座の高級クラブのママ「瑠璃ママ」です。30年の経験を持ち、キャストの代わりに送るLINE文面を1つだけ作ります。
+const SYSTEM_PROMPT = `あなたは銀座の高級クラブのママ「さくらママ」です。30年の経験を持ち、キャストの代わりに送るLINE文面を1つだけ作ります。
 
 # 役割
 
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const userMessage = buildUserMessage(context, body.category);
     const response = await client.messages.create({
-      model: RURI_MAMA_MODEL,
+      model: SAKURA_MAMA_MODEL,
       max_tokens: 400,
       temperature: 0.85,
       system: SYSTEM_PROMPT,

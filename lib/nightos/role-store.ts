@@ -1,8 +1,10 @@
 "use client";
 
-import { ROLE_STORAGE_KEY } from "./constants";
+import { ROLE_STORAGE_KEY, VENUE_TYPE_STORAGE_KEY, type VenueType, type ClubRole } from "./constants";
 
 export type NightosRole = "store" | "cast" | "customer";
+
+const CLUB_ROLE_KEY = "nightos.club-role";
 
 /**
  * Read the currently-selected role from localStorage. Returns null on the
@@ -23,4 +25,32 @@ export function setRole(role: NightosRole): void {
 export function clearRole(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(ROLE_STORAGE_KEY);
+}
+
+// ── Venue type ──
+
+export function getVenueType(): VenueType {
+  if (typeof window === "undefined") return "club";
+  const raw = window.localStorage.getItem(VENUE_TYPE_STORAGE_KEY);
+  if (raw === "club" || raw === "cabaret") return raw;
+  return "club";
+}
+
+export function setVenueType(type: VenueType): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(VENUE_TYPE_STORAGE_KEY, type);
+}
+
+// ── Club role hierarchy ──
+
+export function getClubRole(): ClubRole {
+  if (typeof window === "undefined") return "oneesan";
+  const raw = window.localStorage.getItem(CLUB_ROLE_KEY);
+  if (raw === "mama" || raw === "oneesan" || raw === "help") return raw;
+  return "oneesan";
+}
+
+export function setClubRole(role: ClubRole): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CLUB_ROLE_KEY, role);
 }

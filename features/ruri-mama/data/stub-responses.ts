@@ -1,7 +1,7 @@
 import type { CustomerContext, Intent } from "@/types/nightos";
 
 /**
- * Deterministic "瑠璃ママ" replies used when ANTHROPIC_API_KEY is unset
+ * Deterministic "さくらママ" replies used when ANTHROPIC_API_KEY is unset
  * OR when the live Claude call errors out. Customer-aware: if a context
  * is provided the name and last topic are woven into the reply.
  *

@@ -31,13 +31,13 @@ export default function AvatarPickerPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="瑠璃ママのイラスト"
+        title="さくらママのイラスト"
         subtitle="お気に入りを選んでください"
         showBack
       />
       <div className="px-5 pt-4 pb-8 space-y-3">
         <p className="text-body-sm text-ink-secondary leading-relaxed">
-          アバターは瑠璃ママのチャット画面・テンプレート画面・顧客カルテで
+          アバターはさくらママのチャット画面・テンプレート画面・顧客カルテで
           使われます。タップした瞬間に反映されて、この端末に保存されます。
         </p>
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { RURI_MAMA_MODEL } from "@/lib/nightos/constants";
+import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import type { MemoExtractionResult } from "@/types/nightos";
 
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await client.messages.create({
-      model: RURI_MAMA_MODEL,
+      model: SAKURA_MAMA_MODEL,
       max_tokens: 1024,
       temperature: 0.3, // lower for structured output
       system: SYSTEM_PROMPT,

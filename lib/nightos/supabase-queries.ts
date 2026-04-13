@@ -19,6 +19,7 @@ import {
   mockCastMessages,
   mockCasts,
   mockCustomers,
+  mockDouhans,
   mockScreenshots,
   mockStores,
   mockVisits,
@@ -650,6 +651,14 @@ export interface CastStatsData {
     sales: number;
     repeatRate: number;
     followRate: number;
+    newCustomerCount: number;
+  };
+  yearly: {
+    nominationCount: number;
+    sales: number;
+    repeatRate: number;
+    newCustomerCount: number;
+    douhanCount: number;
   };
   targets: {
     nominationGoal: number;
@@ -696,6 +705,27 @@ function getCastStatsDataMock(castId: string): CastStatsData {
   const followRate = MOCK_FOLLOW_RATE[castId] ?? 0;
   const followStreakDays = Math.round(followRate * 7);
 
+  // Monthly new customers
+  const myCustomers = mockCustomers.filter((c) => c.cast_id === castId);
+  const now = MOCK_TODAY;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthNewCount = myCustomers.filter(
+    (c) => new Date(c.created_at) >= monthStart,
+  ).length;
+
+  // Yearly stats (approximated from mock data)
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  const yearVisits = mockVisits.filter(
+    (v) => v.cast_id === castId && new Date(v.visited_at) >= yearStart,
+  );
+  const yearNominations = yearVisits.filter((v) => v.is_nominated).length;
+  const yearNewCount = myCustomers.filter(
+    (c) => new Date(c.created_at) >= yearStart,
+  ).length;
+  const yearDouhans = mockDouhans.filter(
+    (d) => d.cast_id === castId && new Date(d.date) >= yearStart && d.status === "completed",
+  ).length;
+
   return {
     cast,
     monthly: {
@@ -703,6 +733,14 @@ function getCastStatsDataMock(castId: string): CastStatsData {
       sales: cast.monthly_sales,
       repeatRate: cast.repeat_rate,
       followRate,
+      newCustomerCount: monthNewCount,
+    },
+    yearly: {
+      nominationCount: yearNominations,
+      sales: cast.monthly_sales * 3, // approx 3 months of data
+      repeatRate: cast.repeat_rate - 0.03, // slightly lower avg
+      newCustomerCount: yearNewCount,
+      douhanCount: yearDouhans,
     },
     targets,
     nominationTrend,
@@ -760,6 +798,21 @@ function getCastHomeDataMock(castId: string): CastHomeData {
     today: MOCK_TODAY,
   });
 
+  // Count new customers this month
+  const now = MOCK_TODAY;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const newCustomerCount = myCustomers.filter(
+    (c) => new Date(c.created_at) >= monthStart,
+  ).length;
+
+  // Count douhans this month (club mode)
+  const monthDouhans = mockDouhans.filter(
+    (d) =>
+      d.cast_id === castId &&
+      new Date(d.date) >= monthStart &&
+      new Date(d.date) <= now,
+  );
+
   return {
     cast,
     summary: {
@@ -767,6 +820,9 @@ function getCastHomeDataMock(castId: string): CastHomeData {
       repeatRate: cast.repeat_rate,
       followTargetCount: targets.length,
       monthlySales: cast.monthly_sales,
+      newCustomerCount,
+      douhanCount: monthDouhans.filter((d) => d.status === "completed").length,
+      douhanGoal: 8,
     },
     targets,
   };
@@ -791,6 +847,29 @@ function getCustomerContextMock(
         new Date(b.visited_at).getTime() - new Date(a.visited_at).getTime(),
     );
   return { customer, memo, bottles, visits };
+}
+
+// ═══════════════ Douhan (同伴) ═══════════════
+
+export async function getDouhanSummary(
+  castId: string,
+): Promise<import("@/types/nightos").DouhanSummary> {
+  const now = MOCK_TODAY;
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const thisMonthDouhans = mockDouhans.filter(
+    (d) =>
+      d.cast_id === castId &&
+      new Date(d.date) >= monthStart &&
+      new Date(d.date) <= monthEnd,
+  );
+
+  return {
+    monthlyCount: thisMonthDouhans.filter((d) => d.status === "completed").length,
+    monthlyGoal: 8,
+    thisMonthDouhans,
+  };
 }
 
 // ═══════════════ Store → Cast messaging ═══════════════

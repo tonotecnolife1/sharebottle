@@ -1,10 +1,13 @@
 // ═══════════════ NIGHTOS domain types ═══════════════
 
+import type { ClubRole, VenueType } from "@/lib/nightos/constants";
+
 export type CustomerCategory = "vip" | "regular" | "new";
 
 export interface Store {
   id: string;
   name: string;
+  venue_type: VenueType;
 }
 
 export interface Cast {
@@ -14,6 +17,29 @@ export interface Cast {
   nomination_count: number;
   monthly_sales: number;
   repeat_rate: number; // 0..1
+  /** Club only: role in the hierarchy */
+  club_role?: ClubRole;
+  /** Club only: the oneesan this help is assigned to */
+  assigned_oneesan_id?: string;
+}
+
+// ═══════════════ Club-specific types ═══════════════
+
+export interface Douhan {
+  id: string;
+  cast_id: string;
+  customer_id: string;
+  store_id: string;
+  date: string; // YYYY-MM-DD
+  status: "scheduled" | "completed" | "cancelled";
+  note: string | null;
+  created_at: string;
+}
+
+export interface DouhanSummary {
+  monthlyCount: number;
+  monthlyGoal: number;
+  thisMonthDouhans: Douhan[];
 }
 
 export interface Customer {
@@ -178,6 +204,11 @@ export interface CastHomeSummary {
   repeatRate: number; // 0..1
   followTargetCount: number;
   monthlySales: number;
+  /** 今月の新規顧客数 */
+  newCustomerCount: number;
+  /** Club mode: 今月の同伴数 */
+  douhanCount?: number;
+  douhanGoal?: number;
 }
 
 export interface CastHomeData {

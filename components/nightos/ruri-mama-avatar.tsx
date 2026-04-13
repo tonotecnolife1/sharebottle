@@ -14,7 +14,7 @@ export const AVATAR_VARIANTS: {
 }[] = [
   {
     id: "photo",
-    label: "瑠璃ママ（実写風）",
+    label: "さくらママ（実写風）",
     description: "白い着物の銀座のママ・油絵調の温かい雰囲気",
     src: "/ruri-mama-photo.jpg",
   },
@@ -125,7 +125,7 @@ export function RuriMamaAvatar({
     >
       <Image
         src={config.src}
-        alt="瑠璃ママ"
+        alt="さくらママ"
         width={size}
         height={size}
         className="object-cover"

@@ -1,18 +1,59 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
-import { useState, useTransition } from "react";
+import { AlertCircle, Check, Copy, Users } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
 import { cn, copyToClipboard } from "@/lib/utils";
 import { recordFollowLogAction } from "../actions";
 import type { Template } from "../data/templates";
 
+// Track template usage per customer to warn about duplicates
+const USAGE_KEY = "nightos.template-usage";
+
+interface UsageRecord {
+  templateId: string;
+  customerId: string;
+  castId: string;
+  usedAt: string;
+}
+
+function getRecentUsages(): UsageRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(USAGE_KEY);
+    if (!raw) return [];
+    const all = JSON.parse(raw) as UsageRecord[];
+    // Only keep last 30 days
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return all.filter((u) => new Date(u.usedAt).getTime() > cutoff);
+  } catch {
+    return [];
+  }
+}
+
+function recordUsage(templateId: string, customerId: string, castId: string) {
+  if (typeof window === "undefined") return;
+  const usages = getRecentUsages();
+  usages.push({
+    templateId,
+    customerId,
+    castId,
+    usedAt: new Date().toISOString(),
+  });
+  try {
+    localStorage.setItem(USAGE_KEY, JSON.stringify(usages));
+  } catch {
+    // quota
+  }
+}
+
 interface Props {
   template: Template;
   filled: string;
   customerId?: string;
   disabled?: boolean;
+  castId?: string;
 }
 
 export function TemplateCard({
@@ -20,9 +61,20 @@ export function TemplateCard({
   filled,
   customerId,
   disabled,
+  castId = "cast1",
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [usedBefore, setUsedBefore] = useState(false);
+
+  useEffect(() => {
+    if (!customerId) return;
+    const usages = getRecentUsages();
+    const match = usages.find(
+      (u) => u.templateId === template.id && u.customerId === customerId,
+    );
+    setUsedBefore(!!match);
+  }, [customerId, template.id]);
 
   const handleCopy = () => {
     if (disabled || !customerId) return;
@@ -32,7 +84,9 @@ export function TemplateCard({
         customerId,
         templateType: template.category,
       });
+      recordUsage(template.id, customerId, castId);
       setCopied(true);
+      setUsedBefore(true);
       setTimeout(() => setCopied(false), 2200);
     });
   };
@@ -50,7 +104,15 @@ export function TemplateCard({
       <p className="text-body-md text-ink leading-relaxed whitespace-pre-wrap rounded-btn bg-pearl-soft px-3.5 py-3">
         {filled}
       </p>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        {usedBefore ? (
+          <span className="flex items-center gap-1 text-label-sm text-amber">
+            <AlertCircle size={12} />
+            このお客様に送信済み
+          </span>
+        ) : (
+          <span />
+        )}
         <button
           type="button"
           onClick={handleCopy}

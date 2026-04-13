@@ -175,6 +175,11 @@ export async function getCastHomeDataReal(
     today,
   });
 
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const newCustomerCount = myCustomers.filter(
+    (c) => new Date(c.created_at) >= monthStart,
+  ).length;
+
   return {
     cast,
     summary: {
@@ -182,6 +187,7 @@ export async function getCastHomeDataReal(
       repeatRate: cast.repeat_rate,
       followTargetCount: targets.length,
       monthlySales: cast.monthly_sales,
+      newCustomerCount,
     },
     targets,
   };

@@ -1,4 +1,12 @@
-import { Award, Flame, Heart, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Award,
+  Calendar,
+  Flame,
+  Heart,
+  Sparkles,
+  TrendingUp,
+  UserPlus,
+} from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
@@ -36,15 +44,17 @@ export default async function CastStatsPage() {
           />
         </div>
 
-        {/* Quick stats */}
+        {/* Monthly quick stats */}
         <div className="grid grid-cols-3 gap-2.5">
-          <StatCard
-            label="リピート率"
-            value={Math.round(data.monthly.repeatRate * 100)}
-            unit="%"
-            tone="rose"
-            icon={<Heart size={12} className="text-blush-dark" />}
-          />
+          <div id="repeat">
+            <StatCard
+              label="リピート率"
+              value={Math.round(data.monthly.repeatRate * 100)}
+              unit="%"
+              tone="rose"
+              icon={<Heart size={12} className="text-blush-dark" />}
+            />
+          </div>
           <StatCard
             label="フォロー率"
             value={Math.round(data.monthly.followRate * 100)}
@@ -53,13 +63,22 @@ export default async function CastStatsPage() {
             icon={<TrendingUp size={12} className="text-amethyst-dark" />}
           />
           <StatCard
-            label="連続フォロー"
-            value={data.followStreakDays}
-            unit="日"
+            label="新規獲得"
+            value={data.monthly.newCustomerCount}
+            unit="人"
             tone="default"
-            icon={<Flame size={12} className="text-amber" />}
+            icon={<UserPlus size={12} className="text-amethyst-dark" />}
           />
         </div>
+
+        <StatCard
+          label="連続フォロー"
+          value={data.followStreakDays}
+          unit="日"
+          tone="default"
+          icon={<Flame size={12} className="text-amber" />}
+          className="!flex-row items-center justify-between"
+        />
 
         {/* Nomination trend */}
         <section>
@@ -83,6 +102,47 @@ export default async function CastStatsPage() {
           </Card>
         </section>
 
+        {/* ── Yearly stats ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar size={16} className="text-ink-secondary" />
+            <h2 className="text-display-sm text-ink">年間成績</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <StatCard
+              label="年間指名"
+              value={data.yearly.nominationCount}
+              unit="本"
+              tone="rose"
+            />
+            <StatCard
+              label="年間売上"
+              value={currencyFormatter(data.yearly.sales)}
+              tone="rose"
+            />
+            <StatCard
+              label="年間リピート率"
+              value={Math.round(data.yearly.repeatRate * 100)}
+              unit="%"
+              tone="default"
+            />
+            <StatCard
+              label="年間新規"
+              value={data.yearly.newCustomerCount}
+              unit="人"
+              tone="amethyst"
+            />
+            {data.yearly.douhanCount > 0 && (
+              <StatCard
+                label="年間同伴"
+                value={data.yearly.douhanCount}
+                unit="回"
+                tone="default"
+              />
+            )}
+          </div>
+        </section>
+
         {/* Encouragement */}
         <Card className="!bg-gradient-champagne !border-champagne-dark p-4">
           <div className="flex items-start gap-3">
@@ -92,7 +152,7 @@ export default async function CastStatsPage() {
             <div className="flex-1">
               <div className="text-label-md font-semibold text-ink mb-1">
                 <Sparkles size={11} className="inline mr-1" />
-                {data.cast.name}さんの今月のひとこと
+                {data.cast.name}さんへ
               </div>
               <p className="text-body-sm text-ink leading-relaxed">
                 {buildEncouragement(data)}

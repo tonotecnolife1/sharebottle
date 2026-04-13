@@ -366,7 +366,7 @@ export function ChatWindow({
             <Info size={14} className="mt-0.5 text-amber shrink-0" />
             <div className="leading-relaxed">
               <span className="font-semibold">デモ応答モード</span>です。
-              本物の瑠璃ママ（Claude AI）を有効にするには、Vercel の
+              本物のさくらママ（Claude AI）を有効にするには、Vercel の
               環境変数に <code className="font-mono text-xs">ANTHROPIC_API_KEY</code> を設定して
               再デプロイしてください。
             </div>
@@ -411,7 +411,7 @@ export function ChatWindow({
         {phase.name === "loading" && (
           <div className="flex items-center gap-2 text-ink-muted text-body-sm pl-2">
             <Sparkles size={14} className="text-amethyst animate-shimmer" />
-            瑠璃ママが考え中…
+            さくらママが考え中…
           </div>
         )}
 

@@ -100,7 +100,7 @@ export default function PitchPage() {
         <div className="space-y-2.5">
           <BenefitRow icon={<TrendingUp size={16} />} text="AIが「今日連絡すべき人」を自動選定" />
           <BenefitRow icon={<MessageCircle size={16} />} text="テンプレートに顧客名・ボトル名が自動挿入" />
-          <BenefitRow icon={<Sparkles size={16} />} text="瑠璃ママAIに接客やLINE文面を相談" />
+          <BenefitRow icon={<Sparkles size={16} />} text="さくらママAIに接客やLINE文面を相談" />
           <BenefitRow icon={<Camera size={16} />} text="LINEスクショを貼ると会話内容をAIが読み取り" />
           <BenefitRow icon={<Mic size={16} />} text="音声入力対応 → 忙しい時も話すだけ" />
           <BenefitRow icon={<BarChart3 size={16} />} text="自分の指名数・リピート率が可視化" />
@@ -114,7 +114,7 @@ export default function PitchPage() {
         <div className="flex items-center gap-3 mb-4">
           <RuriMamaAvatar size={52} withGlow />
           <div>
-            <h2 className="text-display-sm text-ink">瑠璃ママAI</h2>
+            <h2 className="text-display-sm text-ink">さくらママAI</h2>
             <p className="text-body-sm text-ink-secondary">銀座30年の経験者</p>
           </div>
         </div>

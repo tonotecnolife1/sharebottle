@@ -128,7 +128,7 @@ export function LineImportPanel({ customer, memo, screenshots }: Props) {
             label={
               phase.name === "compressing"
                 ? "画像を準備中…"
-                : "瑠璃ママが読み取り中…"
+                : "さくらママが読み取り中…"
             }
           />
         )}

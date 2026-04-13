@@ -1,28 +1,46 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  Crown,
   Sparkles,
   Store as StoreIcon,
   Ticket,
   User,
+  Wine,
 } from "lucide-react";
-import { getRole, setRole, type NightosRole } from "@/lib/nightos/role-store";
+import {
+  getRole,
+  getVenueType,
+  setRole,
+  setVenueType,
+  type NightosRole,
+} from "@/lib/nightos/role-store";
+import type { VenueType } from "@/lib/nightos/constants";
 import { Card } from "@/components/nightos/card";
 
 export default function RoleSelectorPage() {
   const router = useRouter();
+  const [venue, setVenue] = useState<VenueType>("club");
+  const [step, setStep] = useState<"venue" | "role">("venue");
 
-  // Auto-redirect if role is already persisted.
   useEffect(() => {
     const existing = getRole();
     if (existing === "cast") router.replace("/cast/home");
     else if (existing === "store") router.replace("/store");
     else if (existing === "customer") router.replace("/customer/home");
+    // Restore venue preference
+    setVenue(getVenueType());
   }, [router]);
 
-  const pick = (role: NightosRole) => {
+  const pickVenue = (type: VenueType) => {
+    setVenue(type);
+    setVenueType(type);
+    setStep("role");
+  };
+
+  const pickRole = (role: NightosRole) => {
     setRole(role);
     const dest =
       role === "cast"
@@ -50,84 +68,161 @@ export default function RoleSelectorPage() {
           </p>
         </div>
 
-        {/* Role cards */}
-        <div className="grid gap-3 animate-fade-in">
-          {/* Cast */}
-          <button
-            type="button"
-            onClick={() => pick("cast")}
-            className="text-left transition-transform active:scale-[0.98]"
-          >
-            <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full rose-gradient flex items-center justify-center shadow-soft-card">
-                  <User size={26} className="text-pearl" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-label-sm text-roseGold-dark tracking-wider uppercase mb-0.5">
-                    For Cast
-                  </div>
-                  <div className="text-display-sm text-ink">
-                    キャスト（あかり）
-                  </div>
-                  <div className="text-body-sm text-ink-secondary mt-0.5">
-                    フォロー・瑠璃ママ・テンプレート・成績
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </button>
+        {step === "venue" ? (
+          /* ── Venue type selector ── */
+          <div className="grid gap-3 animate-fade-in">
+            <p className="text-body-md text-ink text-center font-medium">
+              業態を選択してください
+            </p>
 
-          {/* Store staff */}
-          <button
-            type="button"
-            onClick={() => pick("store")}
-            className="text-left transition-transform active:scale-[0.98]"
-          >
-            <Card className="p-5">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-champagne-dark flex items-center justify-center shadow-soft-card">
-                  <StoreIcon size={26} className="text-ink" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-label-sm text-ink-secondary tracking-wider uppercase mb-0.5">
-                    For Store Staff
+            {/* Club */}
+            <button
+              type="button"
+              onClick={() => pickVenue("club")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="!border-amethyst-border !bg-gradient-pearl p-5 shadow-glow-amethyst">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
+                    <Crown size={26} className="text-pearl" />
                   </div>
-                  <div className="text-display-sm text-ink">店舗スタッフ</div>
-                  <div className="text-body-sm text-ink-secondary mt-0.5">
-                    顧客・来店・ボトル管理・ダッシュボード
+                  <div className="flex-1">
+                    <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
+                      Club
+                    </div>
+                    <div className="text-display-sm text-ink">
+                      クラブ
+                    </div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      ママ・お姉さん・ヘルプの連携プレー
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </button>
+              </Card>
+            </button>
 
-          {/* Customer */}
-          <button
-            type="button"
-            onClick={() => pick("customer")}
-            className="text-left transition-transform active:scale-[0.98]"
-          >
-            <Card className="!border-amethyst-border p-5">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
-                  <Ticket size={26} className="text-pearl" />
+            {/* Cabaret */}
+            <button
+              type="button"
+              onClick={() => pickVenue("cabaret")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full rose-gradient flex items-center justify-center shadow-soft-card">
+                    <Wine size={26} className="text-pearl" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-label-sm text-roseGold-dark tracking-wider uppercase mb-0.5">
+                      Cabaret
+                    </div>
+                    <div className="text-display-sm text-ink">
+                      キャバクラ
+                    </div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      さくらママAIチャットで接客力UP
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
-                    For Guest
+              </Card>
+            </button>
+          </div>
+        ) : (
+          /* ── Role selector ── */
+          <div className="grid gap-3 animate-fade-in">
+            <button
+              type="button"
+              onClick={() => setStep("venue")}
+              className="text-label-sm text-ink-muted text-left mb-1 hover:text-ink-secondary"
+            >
+              ← 業態選択に戻る
+            </button>
+
+            <p className="text-body-md text-ink text-center font-medium">
+              {venue === "club" ? "クラブ" : "キャバクラ"} — 役割を選択
+            </p>
+
+            {/* Cast / Oneesan */}
+            <button
+              type="button"
+              onClick={() => pickRole("cast")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full rose-gradient flex items-center justify-center shadow-soft-card">
+                    <User size={26} className="text-pearl" />
                   </div>
-                  <div className="text-display-sm text-ink">
-                    来店客（田中太郎）
-                  </div>
-                  <div className="text-body-sm text-ink-secondary mt-0.5">
-                    ボトル管理・指名確認・クーポン
+                  <div className="flex-1">
+                    <div className="text-label-sm text-roseGold-dark tracking-wider uppercase mb-0.5">
+                      {venue === "club" ? "For お姉さん" : "For Cast"}
+                    </div>
+                    <div className="text-display-sm text-ink">
+                      {venue === "club"
+                        ? "お姉さん（あかり）"
+                        : "キャスト（あかり）"}
+                    </div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      {venue === "club"
+                        ? "担当管理・同伴・さくらママ・成績"
+                        : "フォロー・さくらママ・テンプレート・成績"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </button>
-        </div>
+              </Card>
+            </button>
+
+            {/* Store staff */}
+            <button
+              type="button"
+              onClick={() => pickRole("store")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-champagne-dark flex items-center justify-center shadow-soft-card">
+                    <StoreIcon size={26} className="text-ink" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-label-sm text-ink-secondary tracking-wider uppercase mb-0.5">
+                      For Store Staff
+                    </div>
+                    <div className="text-display-sm text-ink">店舗スタッフ</div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      顧客・来店・ボトル管理・ダッシュボード
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </button>
+
+            {/* Customer */}
+            <button
+              type="button"
+              onClick={() => pickRole("customer")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="!border-amethyst-border p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
+                    <Ticket size={26} className="text-pearl" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
+                      For Guest
+                    </div>
+                    <div className="text-display-sm text-ink">
+                      来店客（田中太郎）
+                    </div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      ボトル管理・クーポン・会員ステータス
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </button>
+          </div>
+        )}
 
         <p className="text-label-sm text-ink-muted text-center">
           検証版のため、選択に応じて画面が切り替わります
