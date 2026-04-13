@@ -10,10 +10,11 @@ export function Sections() {
         <div className="w-16 h-0.5 bg-[#c9a84c] my-5" />
         <p className="text-2xl font-semibold text-center leading-snug">
           顧客を「キャストの客」から<br />
-          <span className="text-[#c9a84c]">「店舗の資産」</span>に変える
+          <span className="text-[#c9a84c]">「店舗の資産」</span>に変えて<br />
+          売上を上げる
         </p>
         <p className="text-sm text-[#675d66] mt-3 max-w-xs text-center">
-          来店客CRM × キャスト支援AI で<br />リピート率と指名数を仕組みで上げる
+          来店客CRM × キャスト支援AI で<br />リピート率と指名数を仕組みで改善
         </p>
         <div className="flex gap-6 mt-10">
           <KPI value="80%" label="フォロー率" sub="30%→" />
