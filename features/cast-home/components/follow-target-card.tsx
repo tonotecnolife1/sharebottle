@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  AlertTriangle,
   Cake,
   Check,
   Clock,
@@ -47,7 +46,24 @@ export function FollowTargetCard({
   const { customer, bottle, lastTopic } = target;
 
   return (
-    <Card className={cn("p-0 overflow-hidden", contacted && "opacity-60")}>
+    <Card className={cn("p-0 overflow-hidden transition-all", contacted && "opacity-50")}>
+      {/* ── Contacted overlay banner ── */}
+      {contacted && (
+        <div className="bg-emerald/10 px-4 py-2 flex items-center justify-between border-b border-emerald/20">
+          <span className="text-body-sm text-emerald font-medium flex items-center gap-1.5">
+            <Check size={14} />
+            連絡済み
+          </span>
+          <button
+            type="button"
+            onClick={() => onToggleContacted(customer.id)}
+            className="text-label-sm text-ink-muted underline underline-offset-2"
+          >
+            取り消す
+          </button>
+        </div>
+      )}
+
       {/* Main area — tappable to customer card */}
       <Link
         href={`/cast/customers/${customer.id}`}
@@ -106,52 +122,49 @@ export function FollowTargetCard({
           )}
           {lastTopic && (
             <div className="text-ink-secondary truncate">
-              前回: {lastTopic}
+              前回の話題: {lastTopic}
             </div>
           )}
         </div>
       </Link>
 
       {/* Bottom action bar */}
-      <div className="flex items-center gap-1.5 px-3 pb-2.5 pt-1 border-t border-pearl-soft">
-        {/* Contacted toggle */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            onToggleContacted(customer.id);
-          }}
-          className={cn(
-            "flex items-center gap-1 px-2.5 h-7 rounded-full text-[10px] font-medium border transition-all active:scale-95",
-            contacted
-              ? "bg-emerald/15 text-emerald border-emerald/30"
-              : "bg-pearl-warm text-ink-secondary border-pearl-soft",
-          )}
-        >
-          <Check
-            size={10}
-            className={contacted ? "text-emerald" : "text-ink-muted"}
-          />
-          {contacted ? "連絡済み" : "未連絡"}
-        </button>
+      <div className="flex items-center gap-1.5 px-3 pb-2.5 pt-1.5 border-t border-pearl-soft">
+        {/* Big contacted button */}
+        {!contacted && (
+          <button
+            type="button"
+            onClick={() => onToggleContacted(customer.id)}
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-btn bg-emerald/10 text-emerald border border-emerald/25 text-label-sm font-medium transition-all active:scale-[0.98] active:bg-emerald/20"
+          >
+            <Check size={14} />
+            連絡したよ！
+          </button>
+        )}
 
         {/* Quick action: template */}
         <Link
           href={`/cast/templates?customerId=${customer.id}`}
-          className="flex items-center gap-1 px-2.5 h-7 rounded-full text-[10px] font-medium border border-roseGold-border bg-roseGold-muted text-roseGold-dark active:scale-95"
+          className={cn(
+            "flex items-center justify-center gap-1 h-9 rounded-btn text-label-sm font-medium border border-roseGold-border bg-roseGold-muted text-roseGold-dark active:scale-[0.98]",
+            contacted ? "flex-1" : "px-3",
+          )}
           onClick={(e) => e.stopPropagation()}
         >
-          <MessageCircle size={10} />
-          テンプレ
+          <MessageCircle size={13} />
+          LINE文面を作る
         </Link>
 
-        {/* Quick action: ruri-mama */}
+        {/* Quick action: sakura-mama */}
         <Link
           href={`/cast/ruri-mama?customerId=${customer.id}`}
-          className="flex items-center gap-1 px-2.5 h-7 rounded-full text-[10px] font-medium border border-amethyst-border bg-amethyst-muted text-amethyst-dark active:scale-95"
+          className={cn(
+            "flex items-center justify-center gap-1 h-9 rounded-btn text-label-sm font-medium border border-amethyst-border bg-amethyst-muted text-amethyst-dark active:scale-[0.98]",
+            contacted ? "flex-1" : "px-3",
+          )}
           onClick={(e) => e.stopPropagation()}
         >
-          <Sparkles size={10} />
+          <Sparkles size={13} />
           相談
         </Link>
       </div>
