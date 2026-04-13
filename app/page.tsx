@@ -34,7 +34,7 @@ export default function RoleSelectorPage() {
   };
 
   return (
-    <main className="pearl-sheen min-h-dvh flex flex-col items-center justify-center px-6 py-12">
+    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-md w-full flex flex-col gap-8">
         {/* Brand header */}
         <div className="text-center space-y-2 animate-fade-in">

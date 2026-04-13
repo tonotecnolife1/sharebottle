@@ -21,7 +21,7 @@ export default function PitchPage() {
   return (
     <div className="bg-pearl min-h-dvh">
       {/* Hero */}
-      <section className="px-6 pt-12 pb-8 text-center bg-gradient-pearl">
+      <section className="px-6 pt-12 pb-8 text-center bg-pearl-soft">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-badge bg-amethyst-muted text-amethyst-dark text-label-sm border border-amethyst-border mb-4">
           <Sparkles size={12} />
           夜のお店専用
