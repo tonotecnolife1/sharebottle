@@ -178,7 +178,7 @@ export const mockCasts: Cast[] = [
   {
     id: "cast_mama1",
     store_id: CURRENT_STORE_ID,
-    name: "瑠璃",
+    name: "さくら",
     nomination_count: 45,
     monthly_sales: 5_200_000,
     repeat_rate: 0.85,
