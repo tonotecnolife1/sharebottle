@@ -12,13 +12,14 @@ export function Sections() {
           顧客を店舗の資産に変え、<br />
           <span className="text-[#c9a84c]">店舗の売上を上げる</span>
         </p>
-        <p className="text-sm text-[#675d66] mt-3 max-w-xs text-center">
-          来店客CRM × キャスト支援AI で<br />リピート率と指名数を仕組みで改善
+        <p className="text-base text-[#675d66] mt-3 max-w-sm text-center">
+          キャストが辞めても顧客が残る。<br />
+          スマホだけで始められる夜のお店専用ツール。
         </p>
         <div className="flex gap-6 mt-10">
-          <KPI value="80%" label="フォロー率" sub="30%→" />
-          <KPI value="+15%" label="リピート率" sub="改善" />
-          <KPI value="0%" label="顧客流出" sub="キャスト退職時" />
+          <KPI value="+15%" label="リピート率UP" />
+          <KPI value="2倍" label="フォロー実施率" />
+          <KPI value="¥0" label="初期費用" />
         </div>
       </section>
 
@@ -32,18 +33,18 @@ export function Sections() {
           <div className="grid md:grid-cols-3 gap-5">
             <ProblemCard
               emoji="🚪"
-              title="顧客 = キャストの私物"
-              desc="顧客情報はキャストの記憶とLINEの中。退職時に全て消える。"
+              title="キャストが辞める = 客が消える"
+              desc="好み・LINE履歴・信頼関係。全てキャストの頭の中にある。"
             />
             <ProblemCard
               emoji="📉"
-              title="売上が人に依存"
-              desc="エースキャストが抜けると売上が30〜50%落ちることも。店舗の経営が不安定に。"
+              title="エースが抜けると売上激減"
+              desc="1人の退職で売上の30〜50%を失うリスク。"
             />
             <ProblemCard
-              emoji="🔒"
-              title="顧客を可視化できない"
-              desc="誰が何回来て、何を飲んで、誰に指名しているか。店舗オーナーが把握できていない。"
+              emoji="👤"
+              title="誰がVIPか分からない"
+              desc="来店回数・利用額・好み。オーナーが把握できていない。"
             />
           </div>
         </div>
@@ -57,28 +58,28 @@ export function Sections() {
             NIGHTOSは顧客データを<br />
             <span className="text-[#c9a84c]">店舗の資産</span>にする
           </h2>
-          <p className="text-center text-[#675d66] mb-10">3つの仕組みで「キャストが辞めても顧客が残る」を実現</p>
+          <p className="text-center text-[#675d66] mb-10">店舗の売上を上げる3つの仕組み</p>
           <div className="grid md:grid-cols-3 gap-6">
             <SolutionCard
               icon={<Users size={24} />}
               color="#c9a84c"
               number="1"
-              title="来店客CRM"
-              desc="顧客が自分のアプリでボトル残量やクーポンを確認。店舗と顧客が直接つながる。キャストを介さないエンゲージメント。"
+              title="顧客が店舗のファンになる"
+              desc="来店客アプリでボトル残量・クーポン・ランクを管理。お客様が「キャストの客」ではなく「お店のファン」に。"
             />
             <SolutionCard
               icon={<Sparkles size={24} />}
               color="#9a7bbb"
               number="2"
-              title="キャスト支援AI"
-              desc="フォロー対象の自動選定、LINEテンプレート、瑠璃ママAI。キャストの能力に依存せず成果が出る仕組み。"
+              title="全キャストの売上が上がる"
+              desc="AIがフォロー対象を選び、LINE文面まで作成。新人でもベテラン並みの接客フォローが可能に。"
             />
             <SolutionCard
               icon={<Shield size={24} />}
               color="#c98d80"
               number="3"
-              title="データ永続化"
-              desc="来店履歴・好み・ボトル・メモが全て店舗のDBに蓄積。キャストが辞めても次の担当に即引き継ぎ。"
+              title="キャストが辞めても売上が落ちない"
+              desc="顧客データは全て店舗に蓄積。退職しても来店履歴・好み・メモが次の担当にそのまま引き継がれる。"
             />
           </div>
         </div>
