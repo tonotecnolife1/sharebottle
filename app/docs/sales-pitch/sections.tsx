@@ -9,9 +9,8 @@ export function Sections() {
         <h1 className="text-6xl font-bold tracking-tight" style={{ fontFamily: '"Cormorant Garamond", serif' }}>NIGHTOS</h1>
         <div className="w-16 h-0.5 bg-[#c9a84c] my-5" />
         <p className="text-2xl font-semibold text-center leading-snug">
-          顧客を「キャストの客」から<br />
-          <span className="text-[#c9a84c]">「店舗の資産」</span>に変えて<br />
-          売上を上げる
+          顧客を店舗の資産に変え、<br />
+          <span className="text-[#c9a84c]">店舗の売上を上げる</span>
         </p>
         <p className="text-sm text-[#675d66] mt-3 max-w-xs text-center">
           来店客CRM × キャスト支援AI で<br />リピート率と指名数を仕組みで改善
@@ -238,7 +237,7 @@ export function Sections() {
       {/* ═══ CTA ═══ */}
       <section className="px-8 py-24 text-center bg-gradient-to-br from-[#9a7bbb]/10 to-[#c98d80]/10">
         <h2 className="text-3xl font-bold mb-3">
-          顧客を店舗の資産にしませんか？
+          顧客を店舗の資産に変え、<br />売上を上げませんか？
         </h2>
         <p className="text-[#675d66] mb-8">スマホで実際に動くデモをお見せします</p>
         <div className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-[#9a7bbb] to-[#c98d80] text-white font-semibold text-xl shadow-lg">
