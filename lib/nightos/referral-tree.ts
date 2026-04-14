@@ -1,5 +1,77 @@
 import type { Cast, Customer, CustomerReferralNode, CustomerFunnelStats } from "@/types/nightos";
 
+// ═══════════════ Cast-based tree ═══════════════
+
+/**
+ * キャストベースのツリーノード。
+ * 管理者（ママ/姉さん）→ 担当キャスト → 顧客 の3階層。
+ */
+export interface CastBasedNode {
+  manager: Cast | null; // null = 管理者未割り当て
+  byCast: Array<{
+    cast: Cast | null; // null = 担当者未割り当て
+    customers: Customer[];
+  }>;
+  totalCustomers: number;
+}
+
+/**
+ * 顧客データを「管理者→担当者→顧客」の3階層にまとめる。
+ */
+export function buildCastBasedTree(args: {
+  customers: Customer[];
+  casts: Cast[];
+}): CastBasedNode[] {
+  const { customers, casts } = args;
+  const castById = new Map(casts.map((c) => [c.id, c]));
+
+  const byManager = new Map<string | null, Customer[]>();
+  for (const c of customers) {
+    const key = c.manager_cast_id ?? null;
+    const list = byManager.get(key) ?? [];
+    list.push(c);
+    byManager.set(key, list);
+  }
+
+  const nodes: CastBasedNode[] = [];
+  for (const [managerId, managerCustomers] of Array.from(byManager.entries())) {
+    const manager = managerId ? (castById.get(managerId) ?? null) : null;
+
+    const byCast = new Map<string | null, Customer[]>();
+    for (const c of managerCustomers) {
+      const castKey = c.cast_id ?? null;
+      const list = byCast.get(castKey) ?? [];
+      list.push(c);
+      byCast.set(castKey, list);
+    }
+
+    const byCastArray: CastBasedNode["byCast"] = [];
+    for (const [castId, custs] of Array.from(byCast.entries())) {
+      byCastArray.push({
+        cast: castId ? (castById.get(castId) ?? null) : null,
+        customers: custs,
+      });
+    }
+    byCastArray.sort((a, b) =>
+      (a.cast?.name ?? "zzz").localeCompare(b.cast?.name ?? "zzz"),
+    );
+
+    nodes.push({
+      manager,
+      byCast: byCastArray,
+      totalCustomers: managerCustomers.length,
+    });
+  }
+
+  nodes.sort((a, b) => {
+    if (!a.manager && b.manager) return 1;
+    if (a.manager && !b.manager) return -1;
+    return (a.manager?.name ?? "").localeCompare(b.manager?.name ?? "");
+  });
+
+  return nodes;
+}
+
 /**
  * 顧客の紹介ツリーを構築する。
  * ルート = referred_by_customer_id が null の顧客。

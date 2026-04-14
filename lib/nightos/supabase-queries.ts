@@ -545,6 +545,8 @@ export interface CreateCustomerInput {
   funnel_stage?: "store_only" | "assigned" | "line_exchanged";
   /** LINE交換済みで登録時、交換日時（ISO） */
   line_exchanged_at?: string | null;
+  /** 管理者キャスト id（ママor姉さん）。未指定なら null。 */
+  manager_cast_id?: string | null;
 }
 
 export async function createCustomer(
@@ -578,6 +580,7 @@ function createCustomerMock(input: CreateCustomerInput): Customer {
       stage === "line_exchanged"
         ? input.line_exchanged_at ?? new Date().toISOString()
         : null,
+    manager_cast_id: input.manager_cast_id ?? null,
   };
   mockCustomers.push(customer);
   return customer;

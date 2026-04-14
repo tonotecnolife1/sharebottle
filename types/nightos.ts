@@ -70,6 +70,13 @@ export interface Customer {
 
   /** LINE交換した日時 */
   line_exchanged_at?: string | null;
+
+  /**
+   * この顧客を「管理する」ママまたは姉さんの id。
+   * 現場の担当者 (cast_id) とは別概念で、上位ポジション。
+   * 担当者がキャスト(help)なら、管理者はその上の姉さんかママ。
+   */
+  manager_cast_id?: string | null;
 }
 
 // ═══════════════ Customer referral map types ═══════════════

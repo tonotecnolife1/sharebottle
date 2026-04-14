@@ -468,6 +468,16 @@ export const mockCustomers: Customer[] = [
   },
 ];
 
+// ── 管理者（ママ/姉さん）の自動割り当て ──
+// 既存顧客は全員、最上位姉さんの「ゆき」を管理者として付与
+// 新規登録時は CreateCustomerInput で明示的に指定可能
+const TOP_ONEESAN_ID = "cast_oneesan2"; // ゆき
+for (const c of mockCustomers) {
+  if (c.manager_cast_id === undefined) {
+    c.manager_cast_id = TOP_ONEESAN_ID;
+  }
+}
+
 export const mockBottles: Bottle[] = [
   {
     id: "btl1",
