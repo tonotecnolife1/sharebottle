@@ -17,6 +17,8 @@ import { CustomerContextPicker } from "./customer-context-picker";
 import { FeedbackButtons } from "./feedback-buttons";
 import { IntentPicker } from "./intent-picker";
 import { MessageBubble } from "./message-bubble";
+import { PickedOptionBadge, ReplyOptionPicker } from "./reply-option-picker";
+import { recordChoice } from "../lib/option-choice-store";
 import type {
   ChatMessage,
   Customer,
@@ -207,9 +209,16 @@ export function ChatWindow({
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data: RuriMamaResponse = await res.json();
       setStubMode(data.isStub);
+      // Keep options array so user can pick; content shows a placeholder
+      // until they pick. After they pick, the component replaces content.
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply, isStub: data.isStub },
+        {
+          role: "assistant",
+          content: data.reply, // fallback/placeholder — picker replaces
+          isStub: data.isStub,
+          options: data.options && data.options.length >= 2 ? data.options : undefined,
+        },
       ]);
       setPhase({ name: "responded" });
     } catch (err) {
@@ -224,6 +233,27 @@ export function ChatWindow({
       ]);
       setPhase({ name: "responded" });
     }
+  };
+
+  /** ユーザーが3つの選択肢から1つをピックした時のハンドラ。A/B集計用にも記録。 */
+  const handleOptionPick = (messageIndex: number, opt: import("@/types/nightos").ReplyOption) => {
+    setMessages((prev) =>
+      prev.map((m, i) =>
+        i === messageIndex
+          ? { ...m, pickedOptionId: opt.id, content: opt.content }
+          : m,
+      ),
+    );
+    recordChoice({
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      pickedStyle: opt.style,
+      pickedId: opt.id,
+      pickedLabel: opt.label,
+      intent: undefined, // 現状 intent を component で保持してないので将来拡張
+      customerCategory: undefined,
+      pickedAt: new Date().toISOString(),
+      castId: CURRENT_CAST_ID,
+    });
   };
 
   /** Adds a NEW user message, then fires the API call with the updated history. */
@@ -386,14 +416,39 @@ export function ChatWindow({
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-4 space-y-3 relative z-0"
       >
-        {messages.map((m, i) => (
-          <div key={i} className="space-y-2">
-            <MessageBubble message={m} />
-            {m.role === "assistant" && i > 0 && m !== FREEFORM_PROMPT && (
-              <FeedbackButtons assistantContent={m.content} />
-            )}
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          const showPicker =
+            m.role === "assistant" &&
+            m.options &&
+            m.options.length >= 2 &&
+            !m.pickedOptionId;
+          const pickedOpt =
+            m.pickedOptionId && m.options
+              ? m.options.find((o) => o.id === m.pickedOptionId)
+              : undefined;
+
+          return (
+            <div key={i} className="space-y-2">
+              {showPicker ? (
+                <ReplyOptionPicker
+                  options={m.options!}
+                  onPick={(opt) => handleOptionPick(i, opt)}
+                />
+              ) : (
+                <>
+                  {pickedOpt && <PickedOptionBadge option={pickedOpt} />}
+                  <MessageBubble message={m} />
+                </>
+              )}
+              {!showPicker &&
+                m.role === "assistant" &&
+                i > 0 &&
+                m !== FREEFORM_PROMPT && (
+                  <FeedbackButtons assistantContent={m.content} />
+                )}
+            </div>
+          );
+        })}
 
         {phase.name === "intent-pick" && (
           <IntentPicker onPick={handleIntentPick} />

@@ -237,6 +237,23 @@ export interface ChatMessage {
   // True when this assistant reply came from the deterministic stub
   // (ANTHROPIC_API_KEY unset or Claude call errored out)
   isStub?: boolean;
+  /**
+   * 3パターン選択肢。
+   * 未選択の assistant メッセージに含まれる。
+   * ユーザーが1つ選ぶと `content` がそのオプション内容に置き換わり、
+   * `pickedOptionId` が設定される。
+   */
+  options?: ReplyOption[];
+  pickedOptionId?: string;
+}
+
+export type ReplyOptionStyle = "safe" | "practical" | "warm";
+
+export interface ReplyOption {
+  id: "A" | "B" | "C";
+  style: ReplyOptionStyle;
+  label: string;
+  content: string;
 }
 
 export type Intent = "follow" | "serving" | "strategy" | "freeform";
@@ -270,6 +287,11 @@ export interface RuriMamaRequest {
 }
 
 export interface RuriMamaResponse {
+  /**
+   * 3パターンの回答選択肢。ユーザーが1つ選択して採用する。
+   * 後方互換のため reply プロパティも保持（options の最初の content が入る）。
+   */
+  options: ReplyOption[];
   reply: string;
   /** True when the reply came from the deterministic stub path. */
   isStub: boolean;

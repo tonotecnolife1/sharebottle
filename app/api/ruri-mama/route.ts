@@ -8,13 +8,14 @@ import {
   formatExamplesForPrompt,
   retrieveRelevantExamples,
 } from "@/features/ruri-mama/data/training-examples";
-import { generateStubReply } from "@/features/ruri-mama/data/stub-responses";
+import { generateStubOptions } from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import type {
   Bottle,
   CustomerContext,
   Intent,
+  ReplyOption,
   RuriMamaRequest,
   RuriMamaResponse,
   Visit,
@@ -64,28 +65,33 @@ export async function POST(req: Request) {
 
   // ── Stub mode ─────────────────────────────────────────────
   if (!process.env.ANTHROPIC_API_KEY) {
-    const reply = generateStubReply({
+    const options = generateStubOptions({
       intent: body.intent,
       hearingContext: body.hearingContext ?? {},
       customer: customerContext,
       userText,
     });
-    return NextResponse.json<RuriMamaResponse>({ reply, isStub: true });
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: true,
+    });
   }
 
   // ── Live Claude call ──────────────────────────────────────
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    // Convert the chat history. Prepend the context prefix to the LAST user
-    // message so Claude sees the customer info as part of the user's turn.
+    // Convert the chat history. Prepend the context prefix and the 3-option
+    // instruction to the LAST user message.
+    const optionInstruction = build3OptionInstruction();
     const apiMessages = body.messages.map((m, idx) => {
       if (idx === body.messages.length - 1 && m.role === "user") {
         return {
           role: "user" as const,
           content: contextPrefix
-            ? `${contextPrefix}\n\n${m.content}`
-            : m.content,
+            ? `${contextPrefix}\n\n${m.content}\n\n${optionInstruction}`
+            : `${m.content}\n\n${optionInstruction}`,
         };
       }
       return { role: m.role, content: m.content };
@@ -105,25 +111,130 @@ export async function POST(req: Request) {
 
     const response = await client.messages.create({
       model: SAKURA_MAMA_MODEL,
-      max_tokens: 800,
-      temperature: 0.7,
+      max_tokens: 1500, // 3 options need more tokens
+      temperature: 0.8, // slightly higher for variation between options
       system: enrichedSystem,
       messages: apiMessages,
     });
 
-    const reply = extractText(response.content);
-    return NextResponse.json<RuriMamaResponse>({ reply, isStub: false });
+    const rawText = extractText(response.content);
+    const options = parseOptionsFromText(rawText);
+
+    if (options.length < 3) {
+      // Parse failed — fall back to stub so UX isn't broken
+      console.warn("[sakura-mama] 3-option parse failed, using stub");
+      const stubOptions = generateStubOptions({
+        intent: body.intent,
+        hearingContext: body.hearingContext ?? {},
+        customer: customerContext,
+        userText,
+      });
+      return NextResponse.json<RuriMamaResponse>({
+        options: stubOptions,
+        reply: stubOptions[0].content,
+        isStub: true,
+      });
+    }
+
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: false,
+    });
   } catch (err) {
     console.error("[sakura-mama] Claude call failed:", err);
-    // Graceful fallback: return a stub reply so the UX never breaks.
-    // Mark isStub:true so the UI can surface that we're degraded.
-    const reply = generateStubReply({
+    const options = generateStubOptions({
       intent: body.intent,
       hearingContext: body.hearingContext ?? {},
       customer: customerContext,
       userText,
     });
-    return NextResponse.json<RuriMamaResponse>({ reply, isStub: true });
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: true,
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 3-option instruction appended to user message
+// ═══════════════════════════════════════════════════════════
+
+function build3OptionInstruction(): string {
+  return `【重要】今回の相談には、以下のフォーマットで**3つの異なるスタイルの回答**を出してください。
+同じ内容の焼き直しではなく、各オプションで切り口やトーンを変えること。
+
+出力は JSON だけ。前後の説明文は一切不要。
+
+{
+  "options": [
+    {
+      "id": "A",
+      "style": "safe",
+      "label": "丁寧に寄り添う",
+      "content": "安全策。王道で、品と丁寧さを最優先した回答。文面例を含めて3〜5行でまとめる。"
+    },
+    {
+      "id": "B",
+      "style": "practical",
+      "label": "端的で実用的",
+      "content": "実用派。短く切れ味よく、次の行動が明確な回答。文面例は短め。"
+    },
+    {
+      "id": "C",
+      "style": "warm",
+      "label": "温かみと遊び心",
+      "content": "情緒派。自嘲・温度・遊び心のある言い回しで心を掴む回答。"
+    }
+  ]
+}
+
+各 content は【文面例】や【なぜ効くか】のセクションを含む、実用に耐える具体性で。絵文字は1〜2個まで。`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Parse Claude's JSON response into ReplyOption[]
+// ═══════════════════════════════════════════════════════════
+
+function parseOptionsFromText(text: string): ReplyOption[] {
+  // Try to extract JSON from the response (in case there's extra text)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return [];
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      options?: Array<{
+        id?: string;
+        style?: string;
+        label?: string;
+        content?: string;
+      }>;
+    };
+    if (!parsed.options || !Array.isArray(parsed.options)) return [];
+
+    const validStyles = ["safe", "practical", "warm"] as const;
+    const validIds = ["A", "B", "C"] as const;
+
+    return parsed.options
+      .filter(
+        (o): o is Required<NonNullable<typeof parsed.options>[0]> =>
+          !!(o.id && o.style && o.label && o.content),
+      )
+      .map((o) => ({
+        id: (validIds as readonly string[]).includes(o.id)
+          ? (o.id as "A" | "B" | "C")
+          : "A",
+        style: (validStyles as readonly string[]).includes(o.style)
+          ? (o.style as "safe" | "practical" | "warm")
+          : "safe",
+        label: o.label,
+        content: o.content,
+      }))
+      .slice(0, 3);
+  } catch (err) {
+    console.warn("[sakura-mama] JSON parse error:", err);
+    return [];
   }
 }
 
