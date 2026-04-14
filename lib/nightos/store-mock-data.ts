@@ -84,5 +84,11 @@ export const MOCK_REPEAT_TREND: RepeatPoint[] = [
 export const MOCK_FOLLOW_RATE: Record<string, number> = {
   cast1: 0.82, // あかり
   cast_oneesan2: 0.88, // ゆき
+  cast_oneesan3: 0.81, // もえ
+  cast_oneesan4: 0.90, // れな
+  cast_oneesan5: 0.72, // ちひろ
+  cast_oneesan6: 0.78, // かなで
   cast_help2: 0.58, // あやな
+  cast_help3: 0.62, // みお
+  cast_help4: 0.54, // さら
 };
