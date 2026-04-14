@@ -53,6 +53,7 @@ import {
 interface Props {
   contexts: CustomerContext[];
   today: string; // ISO string
+  allCasts?: import("@/types/nightos").Cast[];
 }
 
 type StatusFilter = CustomerStatus | "all";
@@ -74,7 +75,8 @@ const CATEGORY_FILTERS: { value: CategoryFilter; label: string }[] = [
   { value: "new", label: "新しいお客様" },
 ];
 
-export function CustomerListView({ contexts, today }: Props) {
+export function CustomerListView({ contexts, today, allCasts = [] }: Props) {
+  const castById = new Map(allCasts.map((c) => [c.id, c]));
   const todayDate = useMemo(() => new Date(today), [today]);
 
   // Load from localStorage on mount
@@ -378,6 +380,15 @@ export function CustomerListView({ contexts, today }: Props) {
                 {e.memo?.last_topic && (
                   <div className="text-label-sm text-ink-secondary truncate">
                     前回: {e.memo.last_topic}
+                  </div>
+                )}
+
+                {/* Row 4: manager + cast */}
+                {allCasts.length > 0 && (
+                  <div className="text-[10px] text-ink-muted truncate mt-0.5">
+                    {e.customer.manager_cast_id &&
+                      `管理: ${castById.get(e.customer.manager_cast_id)?.name ?? "—"} / `}
+                    担当: {castById.get(e.customer.cast_id)?.name ?? "—"}
                   </div>
                 )}
               </Link>

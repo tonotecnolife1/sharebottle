@@ -1,17 +1,20 @@
 import { PageHeader } from "@/components/nightos/page-header";
-import { CustomerListView } from "@/features/cast-customers/components/customer-list-view";
+import { CustomerPageShell } from "@/features/cast-customers/components/customer-page-shell";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
 import {
+  getAllCasts,
   getCustomerContext,
   getCustomersForCast,
 } from "@/lib/nightos/supabase-queries";
 import type { CustomerContext } from "@/types/nightos";
 
 export default async function CastCustomerListPage() {
-  const customers = await getCustomersForCast(CURRENT_CAST_ID);
+  const [customers, allCasts] = await Promise.all([
+    getCustomersForCast(CURRENT_CAST_ID),
+    getAllCasts(),
+  ]);
 
-  // Fetch full context (bottles, visits, memos) for each customer
   const contexts: CustomerContext[] = (
     await Promise.all(
       customers.map((c) => getCustomerContext(CURRENT_CAST_ID, c.id)),
@@ -26,7 +29,11 @@ export default async function CastCustomerListPage() {
     <div className="animate-fade-in">
       <PageHeader title="顧客管理" subtitle={`担当 ${customers.length}人`} showBack />
       <div className="px-5 pt-3 pb-6">
-        <CustomerListView contexts={contexts} today={today} />
+        <CustomerPageShell
+          contexts={contexts}
+          today={today}
+          allCasts={allCasts}
+        />
       </div>
     </div>
   );
