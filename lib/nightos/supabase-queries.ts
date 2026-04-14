@@ -12,6 +12,7 @@ import type {
   Visit,
 } from "@/types/nightos";
 import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
+import { inferManagerCastId } from "./manager-assignment";
 import {
   MOCK_TODAY,
   mockBottles,
@@ -580,7 +581,8 @@ function createCustomerMock(input: CreateCustomerInput): Customer {
       stage === "line_exchanged"
         ? input.line_exchanged_at ?? new Date().toISOString()
         : null,
-    manager_cast_id: input.manager_cast_id ?? null,
+    manager_cast_id:
+      input.manager_cast_id ?? inferManagerCastId(input.cast_id, mockCasts),
   };
   mockCustomers.push(customer);
   return customer;

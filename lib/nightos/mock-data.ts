@@ -469,12 +469,19 @@ export const mockCustomers: Customer[] = [
 ];
 
 // ── 管理者（ママ/姉さん）の自動割り当て ──
-// 既存顧客は全員、最上位姉さんの「ゆき」を管理者として付与
-// 新規登録時は CreateCustomerInput で明示的に指定可能
-const TOP_ONEESAN_ID = "cast_oneesan2"; // ゆき
+// 担当者から推論: 担当が姉さん/ママなら本人、キャスト(help)なら上の姉さん
+// inferManagerCastId() と同じロジックをここでも（循環import回避のため一部再実装）
+function inferManagerForMock(castId: string): string | null {
+  const c = mockCasts.find((x) => x.id === castId);
+  if (!c) return null;
+  if (c.club_role === "mama" || c.club_role === "oneesan") return c.id;
+  if (c.club_role === "help" && c.assigned_oneesan_id)
+    return c.assigned_oneesan_id;
+  return null;
+}
 for (const c of mockCustomers) {
-  if (c.manager_cast_id === undefined) {
-    c.manager_cast_id = TOP_ONEESAN_ID;
+  if (c.manager_cast_id === undefined || c.manager_cast_id === null) {
+    c.manager_cast_id = inferManagerForMock(c.cast_id);
   }
 }
 
