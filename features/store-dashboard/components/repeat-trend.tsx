@@ -12,7 +12,7 @@ export function RepeatTrend({ points }: Props) {
           <div className="flex items-center justify-between text-label-sm mb-1">
             <span className="text-ink-secondary">{p.label}</span>
             <span className="text-ink">
-              あかり {Math.round(p.cast1 * 100)}% / みさき{" "}
+              あかり {Math.round(p.cast1 * 100)}% / ゆき{" "}
               {Math.round(p.cast2 * 100)}%
             </span>
           </div>

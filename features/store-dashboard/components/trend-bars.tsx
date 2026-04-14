@@ -26,7 +26,7 @@ export function NominationTrendBars({ points }: Props) {
             <div
               key={p.date}
               className="flex-1 flex flex-col items-center justify-end h-full group"
-              title={`${p.date} — あかり: ${p.cast1} / みさき: ${p.cast2}`}
+              title={`${p.date} — あかり: ${p.cast1} / ゆき: ${p.cast2}`}
             >
               <div
                 className={cn(
@@ -67,7 +67,7 @@ export function NominationTrendBars({ points }: Props) {
         </div>
         <div className="flex items-center gap-1.5 text-ink-secondary">
           <span className="w-2.5 h-2.5 rounded-sm bg-gradient-amethyst" />
-          みさき
+          ゆき
         </div>
       </div>
     </div>

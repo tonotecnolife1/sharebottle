@@ -37,13 +37,13 @@ export const MOCK_BRANDS_CLUB: { category: string; brands: string[] }[] = [
 export const MOCK_BRANDS: string[] = MOCK_BRANDS_CLUB.flatMap((c) => c.brands);
 
 /**
- * 過去14日分のダミー指名数トレンド（あかり・みさき）。
+ * 過去14日分のダミー指名数トレンド（あかり・ゆき）。
  * 実装上は `nightos_casts` + `visits` から計算するところ、MVP では固定配列。
  */
 export interface TrendPoint {
   date: string; // YYYY-MM-DD
   cast1: number; // あかり
-  cast2: number; // みさき
+  cast2: number; // ゆき（姉さん）
 }
 
 export const MOCK_NOMINATION_TREND: TrendPoint[] = [
@@ -66,8 +66,8 @@ export const MOCK_NOMINATION_TREND: TrendPoint[] = [
 export interface RepeatPoint {
   week: string; // e.g. "w1"
   label: string; // e.g. "1週目"
-  cast1: number; // 0..1
-  cast2: number;
+  cast1: number; // あかり 0..1
+  cast2: number; // ゆき 0..1
 }
 
 export const MOCK_REPEAT_TREND: RepeatPoint[] = [
@@ -83,5 +83,6 @@ export const MOCK_REPEAT_TREND: RepeatPoint[] = [
  */
 export const MOCK_FOLLOW_RATE: Record<string, number> = {
   cast1: 0.82, // あかり
-  cast2: 0.64, // みさき
+  cast_oneesan2: 0.88, // ゆき
+  cast_help2: 0.58, // あやな
 };

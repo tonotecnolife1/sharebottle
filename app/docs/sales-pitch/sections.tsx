@@ -431,7 +431,7 @@ function MockDashboard() {
       <div className="text-[8px] font-bold mb-1">キャスト別成績</div>
       <div className="text-[7px] space-y-1">
         <div className="flex justify-between"><span>📈 あかり</span><span>指名18 / ARPU¥460K</span></div>
-        <div className="flex justify-between"><span>みさき</span><span>指名14 / ARPU¥355K</span></div>
+        <div className="flex justify-between"><span>ゆき</span><span>指名32 / ARPU¥540K</span></div>
       </div>
     </div>
   );

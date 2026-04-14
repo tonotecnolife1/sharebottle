@@ -26,10 +26,11 @@ export default async function MamaHomePage() {
       {/* Header */}
       <div className="px-5 pt-8 pb-2">
         <div className="text-label-sm text-ink-muted tracking-wider uppercase mb-1">
-          NIGHTOS · ママ
+          NIGHTOS · {data.cast.club_role === "mama" ? "ママ" : "姉さん"}
         </div>
         <h1 className="font-display font-semibold text-ink text-[clamp(1.4rem,5vw,2rem)] leading-tight whitespace-nowrap">
-          おかえりなさい、{data.cast.name}ママ
+          おかえりなさい、{data.cast.name}
+          {data.cast.club_role === "mama" ? "ママ" : "姉さん"}
         </h1>
       </div>
 

@@ -1,6 +1,11 @@
 import type { ChatMessage, ChatRoom } from "../types";
 
 // ═══════════════ Mock Chat Rooms ═══════════════
+// Cast hierarchy:
+//   ゆき (cast_oneesan2, 姉さん, top)
+//     └─ あかり (cast1, 姉さん, middle)
+//         └─ あやな (cast_help2, キャスト, bottom)
+// さくらママは AI（ボット）なので cast ではない。
 
 export const mockChatRooms: ChatRoom[] = [
   // ── Channels ──
@@ -9,13 +14,13 @@ export const mockChatRooms: ChatRoom[] = [
     store_id: "store1",
     type: "channel",
     name: "全体連絡",
-    member_ids: ["cast_mama1", "cast1", "cast2"],
-    member_names: ["さくら（ママ）", "あかり", "みさき"],
+    member_ids: ["cast_oneesan2", "cast1", "cast_help2"],
+    member_names: ["ゆき（姉さん）", "あかり", "あやな"],
     visible_to_seniors: true,
     created_at: "2026-01-01T00:00:00+09:00",
     last_message: {
       content: "明日のシフト確認お願いします",
-      sender_name: "さくら（ママ）",
+      sender_name: "ゆき（姉さん）",
       sent_at: "2026-03-19T14:00:00+09:00",
     },
   },
@@ -24,8 +29,8 @@ export const mockChatRooms: ChatRoom[] = [
     store_id: "store1",
     type: "channel",
     name: "シフト相談",
-    member_ids: ["cast_mama1", "cast1", "cast2"],
-    member_names: ["さくら（ママ）", "あかり", "みさき"],
+    member_ids: ["cast_oneesan2", "cast1", "cast_help2"],
+    member_names: ["ゆき（姉さん）", "あかり", "あやな"],
     visible_to_seniors: true,
     created_at: "2026-01-01T00:00:00+09:00",
     last_message: {
@@ -39,41 +44,41 @@ export const mockChatRooms: ChatRoom[] = [
     store_id: "store1",
     type: "channel",
     name: "顧客情報共有",
-    member_ids: ["cast_mama1", "cast1", "cast2"],
-    member_names: ["さくら（ママ）", "あかり", "みさき"],
+    member_ids: ["cast_oneesan2", "cast1", "cast_help2"],
+    member_names: ["ゆき（姉さん）", "あかり", "あやな"],
     visible_to_seniors: true,
     created_at: "2026-01-01T00:00:00+09:00",
     last_message: {
-      content: "田中様、来週の水曜に来店予定です。お姉さんのテーブルに案内お願い",
-      sender_name: "さくら（ママ）",
+      content: "田中様、来週の水曜に来店予定です。担当テーブルにお願い",
+      sender_name: "ゆき（姉さん）",
       sent_at: "2026-03-19T15:00:00+09:00",
     },
   },
 
   // ── DMs ──
   {
-    id: "dm_mama_akari",
+    id: "dm_yuki_akari",
     store_id: "store1",
     type: "dm",
     name: null,
-    member_ids: ["cast_mama1", "cast1"],
-    member_names: ["さくら（ママ）", "あかり"],
+    member_ids: ["cast_oneesan2", "cast1"],
+    member_names: ["ゆき（姉さん）", "あかり"],
     visible_to_seniors: false,
     created_at: "2026-02-01T00:00:00+09:00",
     last_message: {
       content: "渡辺様の同伴の件、ありがとう。来月もよろしくね",
-      sender_name: "さくら（ママ）",
+      sender_name: "ゆき（姉さん）",
       sent_at: "2026-03-19T16:00:00+09:00",
     },
   },
   {
-    id: "dm_akari_misaki",
+    id: "dm_akari_ayana",
     store_id: "store1",
     type: "dm",
     name: null,
-    member_ids: ["cast1", "cast2"],
-    member_names: ["あかり", "みさき"],
-    visible_to_seniors: true, // ママ・お姉さんが見れる
+    member_ids: ["cast1", "cast_help2"],
+    member_names: ["あかり", "あやな"],
+    visible_to_seniors: true, // ゆき姉さんが見れる
     created_at: "2026-02-15T00:00:00+09:00",
     last_message: {
       content: "明日のT3のお客様、お酒弱めだから最初は薄めで作ってね",
@@ -90,9 +95,9 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: "msg_1",
     room_id: "room_all",
-    sender_id: "cast_mama1",
-    sender_name: "さくら（ママ）",
-    sender_role: "mama",
+    sender_id: "cast_oneesan2",
+    sender_name: "ゆき（姉さん）",
+    sender_role: "oneesan",
     content: "みなさん、おはようございます。今週末は予約が多いのでシフトの確認をお願いします。",
     thread_parent_id: null,
     reply_count: 2,
@@ -116,8 +121,8 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: "msg_3",
     room_id: "room_all",
-    sender_id: "cast2",
-    sender_name: "みさき",
+    sender_id: "cast_help2",
+    sender_name: "あやな",
     sender_role: "help",
     content: "土曜はOKです。金曜は確認します！",
     thread_parent_id: "msg_1",
@@ -129,9 +134,9 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: "msg_4",
     room_id: "room_all",
-    sender_id: "cast_mama1",
-    sender_name: "さくら（ママ）",
-    sender_role: "mama",
+    sender_id: "cast_oneesan2",
+    sender_name: "ゆき（姉さん）",
+    sender_role: "oneesan",
     content: "明日のシフト確認お願いします",
     thread_parent_id: null,
     reply_count: 0,
@@ -157,8 +162,8 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: "msg_cs_2",
     room_id: "room_customer_share",
-    sender_id: "cast2",
-    sender_name: "みさき",
+    sender_id: "cast_help2",
+    sender_name: "あやな",
     sender_role: "help",
     content: "了解です！山本様のマッカラン、残り少なかったので追加キープ提案してみますか？",
     thread_parent_id: "msg_cs_1",
@@ -195,10 +200,10 @@ export const mockChatMessages: ChatMessage[] = [
   {
     id: "msg_cs_5",
     room_id: "room_customer_share",
-    sender_id: "cast_mama1",
-    sender_name: "さくら（ママ）",
-    sender_role: "mama",
-    content: "田中様、来週の水曜に来店予定です。お姉さんのテーブルに案内お願い",
+    sender_id: "cast_oneesan2",
+    sender_name: "ゆき（姉さん）",
+    sender_role: "oneesan",
+    content: "田中様、来週の水曜に来店予定です。担当テーブルにお願い",
     thread_parent_id: null,
     reply_count: 0,
     mentions_ai: false,
@@ -206,13 +211,13 @@ export const mockChatMessages: ChatMessage[] = [
     created_at: "2026-03-19T15:00:00+09:00",
   },
 
-  // ── dm_mama_akari ──
+  // ── dm_yuki_akari ──
   {
     id: "msg_dm1_1",
-    room_id: "dm_mama_akari",
-    sender_id: "cast_mama1",
-    sender_name: "さくら（ママ）",
-    sender_role: "mama",
+    room_id: "dm_yuki_akari",
+    sender_id: "cast_oneesan2",
+    sender_name: "ゆき（姉さん）",
+    sender_role: "oneesan",
     content: "あかり、今月の同伴の進捗はどう？",
     thread_parent_id: null,
     reply_count: 0,
@@ -222,7 +227,7 @@ export const mockChatMessages: ChatMessage[] = [
   },
   {
     id: "msg_dm1_2",
-    room_id: "dm_mama_akari",
+    room_id: "dm_yuki_akari",
     sender_id: "cast1",
     sender_name: "あかり",
     sender_role: "oneesan",
@@ -235,10 +240,10 @@ export const mockChatMessages: ChatMessage[] = [
   },
   {
     id: "msg_dm1_3",
-    room_id: "dm_mama_akari",
-    sender_id: "cast_mama1",
-    sender_name: "さくら（ママ）",
-    sender_role: "mama",
+    room_id: "dm_yuki_akari",
+    sender_id: "cast_oneesan2",
+    sender_name: "ゆき（姉さん）",
+    sender_role: "oneesan",
     content: "渡辺様の同伴の件、ありがとう。来月もよろしくね",
     thread_parent_id: null,
     reply_count: 0,
@@ -247,14 +252,14 @@ export const mockChatMessages: ChatMessage[] = [
     created_at: "2026-03-19T16:00:00+09:00",
   },
 
-  // ── dm_akari_misaki ──
+  // ── dm_akari_ayana ──
   {
     id: "msg_dm2_1",
-    room_id: "dm_akari_misaki",
+    room_id: "dm_akari_ayana",
     sender_id: "cast1",
     sender_name: "あかり",
     sender_role: "oneesan",
-    content: "みさき、今日の営業で木村様がいらっしゃったら、静かめのテーブルにお願いね",
+    content: "あやな、今日の営業で木村様がいらっしゃったら、静かめのテーブルにお願いね",
     thread_parent_id: null,
     reply_count: 0,
     mentions_ai: false,
@@ -263,9 +268,9 @@ export const mockChatMessages: ChatMessage[] = [
   },
   {
     id: "msg_dm2_2",
-    room_id: "dm_akari_misaki",
-    sender_id: "cast2",
-    sender_name: "みさき",
+    room_id: "dm_akari_ayana",
+    sender_id: "cast_help2",
+    sender_name: "あやな",
     sender_role: "help",
     content: "了解！T5かT6あたりで準備しておきます",
     thread_parent_id: null,
@@ -276,7 +281,7 @@ export const mockChatMessages: ChatMessage[] = [
   },
   {
     id: "msg_dm2_3",
-    room_id: "dm_akari_misaki",
+    room_id: "dm_akari_ayana",
     sender_id: "cast1",
     sender_name: "あかり",
     sender_role: "oneesan",

@@ -3,7 +3,8 @@
 
 export const CURRENT_STORE_ID = "store1";
 export const CURRENT_CAST_ID = "cast1"; // あかり
-export const CURRENT_MAMA_ID = "cast_mama1"; // さくら（ママ）— mama ロール時に使用
+// ママ/姉さんアプリのデモログイン用 = ゆき（姉さん、チームの頂点）
+export const CURRENT_MAMA_ID = "cast_oneesan2";
 
 export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード用）
 

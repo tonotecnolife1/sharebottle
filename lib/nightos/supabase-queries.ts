@@ -135,27 +135,42 @@ export async function getAllCasts(): Promise<Cast[]> {
 }
 
 /**
- * mama/姉さん配下のキャスト一覧を取得。
- * - ママ: 同じ店舗の全キャスト（自分除く）
- * - お姉さん: 自分配下のキャスト + 自分
+ * mama/姉さん配下のキャスト一覧を取得（自分は含まない）。
+ * - ママ: 同じ店舗の全キャスト
+ * - お姉さん: 自分配下のキャスト（直属＋孫弟子まで再帰的に収集）
  */
 export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]> {
   const leader = mockCasts.find((c) => c.id === leaderCastId);
   if (!leader) return [];
+
   if (leader.club_role === "mama") {
-    // All casts in the same store except the mama herself
     return mockCasts.filter(
       (c) => c.store_id === leader.store_id && c.id !== leader.id,
     );
   }
+
   if (leader.club_role === "oneesan") {
-    // Own helps + self
-    return mockCasts.filter(
-      (c) =>
-        c.store_id === leader.store_id &&
-        (c.id === leader.id || c.assigned_oneesan_id === leader.id),
-    );
+    // Transitive subordinates: direct reports + their reports + ...
+    const result: Cast[] = [];
+    const queue: string[] = [leader.id];
+    const seen = new Set<string>([leader.id]);
+    while (queue.length > 0) {
+      const parentId = queue.shift()!;
+      const children = mockCasts.filter(
+        (c) =>
+          c.store_id === leader.store_id &&
+          c.assigned_oneesan_id === parentId &&
+          !seen.has(c.id),
+      );
+      for (const child of children) {
+        seen.add(child.id);
+        result.push(child);
+        queue.push(child.id);
+      }
+    }
+    return result;
   }
+
   return [];
 }
 
@@ -167,6 +182,7 @@ export async function getTeamCustomers(
   leaderCastId: string,
 ): Promise<Array<Customer & { cast_name: string }>> {
   const team = await getSubordinateCasts(leaderCastId);
+  // Include leader's own customers + all subordinates'
   const teamIds = new Set([leaderCastId, ...team.map((c) => c.id)]);
   const customers = mockCustomers.filter((c) => teamIds.has(c.cast_id));
   return customers.map((c) => {
@@ -722,10 +738,9 @@ function getCastStatsDataMock(castId: string): CastStatsData {
   const cast = mockCasts.find((c) => c.id === castId);
   if (!cast) throw new Error(`Cast not found: ${castId}`);
 
-  // Pick the matching column from the store-side trend fixtures
-  const trendKey = (castId === "cast1" ? "cast1" : "cast2") as
-    | "cast1"
-    | "cast2";
+  // Pick the matching column from the store-side trend fixtures.
+  // あかり→cast1, ゆき→cast2 column, others fallback to cast2.
+  const trendKey: "cast1" | "cast2" = castId === "cast1" ? "cast1" : "cast2";
   const nominationTrend = MOCK_NOMINATION_TREND.map((p) => ({
     date: p.date,
     count: p[trendKey],

@@ -155,7 +155,21 @@ export const mockStores: Store[] = [
   { id: "store3", name: "BAR VELVET 赤坂", venue_type: "cabaret" },
 ];
 
+// ── クラブのキャスト構成 ──
+// さくらママは AI（店舗キャストではない）
+// ゆき（姉さん、top）
+//   └─ あかり（ゆきの下の姉さん、あやなの姉さん）
+//       └─ あやな（あかり直属、ゆきの孫弟子）
 export const mockCasts: Cast[] = [
+  {
+    id: "cast_oneesan2",
+    store_id: CURRENT_STORE_ID,
+    name: "ゆき",
+    nomination_count: 32,
+    monthly_sales: 3_400_000,
+    repeat_rate: 0.82,
+    club_role: "oneesan",
+  },
   {
     id: "cast1",
     store_id: CURRENT_STORE_ID,
@@ -164,34 +178,7 @@ export const mockCasts: Cast[] = [
     monthly_sales: 1_840_000,
     repeat_rate: 0.72,
     club_role: "oneesan",
-  },
-  {
-    id: "cast2",
-    store_id: CURRENT_STORE_ID,
-    name: "みさき",
-    nomination_count: 14,
-    monthly_sales: 1_420_000,
-    repeat_rate: 0.65,
-    club_role: "help",
-    assigned_oneesan_id: "cast1",
-  },
-  {
-    id: "cast_mama1",
-    store_id: CURRENT_STORE_ID,
-    name: "さくら",
-    nomination_count: 45,
-    monthly_sales: 5_200_000,
-    repeat_rate: 0.85,
-    club_role: "mama",
-  },
-  {
-    id: "cast_oneesan2",
-    store_id: CURRENT_STORE_ID,
-    name: "ゆき",
-    nomination_count: 21,
-    monthly_sales: 2_100_000,
-    repeat_rate: 0.76,
-    club_role: "oneesan",
+    assigned_oneesan_id: "cast_oneesan2", // ゆきの下
   },
   {
     id: "cast_help2",
@@ -201,7 +188,7 @@ export const mockCasts: Cast[] = [
     monthly_sales: 580_000,
     repeat_rate: 0.54,
     club_role: "help",
-    assigned_oneesan_id: "cast_oneesan2",
+    assigned_oneesan_id: "cast1", // あかり直属（ゆきの孫）
   },
   // ── Lounge ÉTOILE 六本木 ──
   {
@@ -308,7 +295,7 @@ export const mockCustomers: Customer[] = [
   {
     id: "cust4",
     store_id: CURRENT_STORE_ID,
-    cast_id: "cast2",
+    cast_id: "cast_help2",
     name: "佐藤 健一",
     birthday: "1979-11-08",
     job: "広告代理店",
@@ -542,10 +529,10 @@ export const mockVisits: Visit[] = [
     count: 20,
     is_nominated: true,
   }),
-  // 佐藤健一 — みさき担当
+  // 佐藤健一 — あやな担当
   ...generateVisitSeries({
     customer_id: "cust4",
-    cast_id: "cast2",
+    cast_id: "cast_help2",
     lastVisit: "2026-03-12",
     intervalDays: 12,
     count: 8,

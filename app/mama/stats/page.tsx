@@ -24,7 +24,7 @@ export default async function MamaStatsPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="自分の成績" subtitle="ママ個人の今月" showBack />
+      <PageHeader title="自分の成績" subtitle="あなた個人の今月" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         <div className="grid grid-cols-1 gap-3">
@@ -138,7 +138,8 @@ export default async function MamaStatsPage() {
             <div className="flex-1">
               <div className="text-label-md font-semibold text-ink mb-1">
                 <Sparkles size={11} className="inline mr-1" />
-                {data.cast.name}ママへ
+                {data.cast.name}
+                {data.cast.club_role === "mama" ? "ママ" : "姉さん"}へ
               </div>
               <p className="text-body-sm text-ink leading-relaxed">
                 ご自身の成績はチーム全体の指針になります。チームタブで配下の動きも確認してみてくださいね。
