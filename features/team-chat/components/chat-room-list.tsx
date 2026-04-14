@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Hash, MessageCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/nightos/empty-state";
 import type { ChatRoom } from "../types";
 
 interface Props {
@@ -62,8 +63,13 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="py-12 text-center text-body-sm text-ink-muted">
-          まだメッセージがありません
+        <div className="p-5">
+          <EmptyState
+            icon={<MessageCircle size={22} />}
+            title="まだメッセージがありません"
+            description="チームとのやり取りや、@さくらママ相談を始めるとここに表示されます。"
+            tone="amethyst"
+          />
         </div>
       )}
     </div>

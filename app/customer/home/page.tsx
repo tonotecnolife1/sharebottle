@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Card, GemCard } from "@/components/nightos/card";
 import { Badge } from "@/components/nightos/badge";
+import { EmptyState } from "@/components/nightos/empty-state";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
@@ -166,9 +167,11 @@ export default async function CustomerHomePage() {
           </h2>
 
           {overviews.length === 0 ? (
-            <Card className="p-6 text-center text-body-sm text-ink-secondary">
-              まだ来店記録がありません
-            </Card>
+            <EmptyState
+              icon={<MapPin size={22} />}
+              title="まだ来店記録がありません"
+              description="店舗に来店されると、自動的にボトル・ポイント・クーポンがこちらに表示されます。"
+            />
           ) : (
             overviews.map((o) => (
               <StoreCard key={o.store_id} overview={o} />

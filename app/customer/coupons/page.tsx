@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Clock, Gift, MapPin, Sparkles, Ticket } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { Card } from "@/components/nightos/card";
+import { EmptyState } from "@/components/nightos/empty-state";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
 import {
   getCustomerCoupons,
@@ -54,15 +55,12 @@ export default async function CustomerCouponsPage() {
             </section>
           ))
         ) : (
-          <Card className="p-8 text-center">
-            <Gift size={32} className="mx-auto text-ink-muted mb-3" />
-            <p className="text-body-md text-ink-secondary">
-              現在使えるクーポンはありません
-            </p>
-            <p className="text-label-sm text-ink-muted mt-1">
-              来店を重ねるとクーポンが届きます
-            </p>
-          </Card>
+          <EmptyState
+            icon={<Gift size={22} />}
+            title="現在使えるクーポンはありません"
+            description="来店回数に応じて自動的にクーポンが届きます🎁 ダイヤモンド会員になると特別な特典もあります。"
+            tone="amethyst"
+          />
         )}
 
         {/* Used — flat list */}

@@ -1,6 +1,7 @@
 import { AlertTriangle, Store, Wine } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { Card } from "@/components/nightos/card";
+import { EmptyState } from "@/components/nightos/empty-state";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
 import { getCustomerBottleViews } from "@/lib/nightos/supabase-queries";
 import { cn } from "@/lib/utils";
@@ -34,9 +35,12 @@ export default async function CustomerBottlesPage() {
       />
       <div className="px-5 pt-4 pb-6 space-y-5">
         {bottles.length === 0 ? (
-          <Card className="p-8 text-center text-body-sm text-ink-secondary">
-            キープボトルがまだありません
-          </Card>
+          <EmptyState
+            icon={<Wine size={22} />}
+            title="キープボトルがまだありません"
+            description="お店でボトルをキープされると、残量と共にここに表示されます🥂"
+            tone="rose"
+          />
         ) : (
           storeGroups.map((group) => (
             <section key={group.storeName} className="space-y-2">

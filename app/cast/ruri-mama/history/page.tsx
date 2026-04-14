@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { Card } from "@/components/nightos/card";
+import { EmptyState } from "@/components/nightos/empty-state";
 import { cn } from "@/lib/utils";
 import {
   deleteSession,
@@ -64,18 +65,26 @@ export default function ChatHistoryPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <Card className="p-8 text-center">
-            <MessageCircle size={28} className="mx-auto text-ink-muted mb-2" />
-            <p className="text-body-sm text-ink-secondary">
-              {query ? "該当する履歴が見つかりません" : "まだ相談履歴がありません"}
-            </p>
-            <Link
-              href="/cast/ruri-mama"
-              className="inline-block mt-3 text-label-sm text-amethyst-dark underline underline-offset-2"
-            >
-              さくらママに相談する
-            </Link>
-          </Card>
+          <EmptyState
+            icon={<MessageCircle size={22} />}
+            title={query ? "該当する履歴が見つかりません" : "まだ相談履歴がありません"}
+            description={
+              query
+                ? "別のキーワードで試してみてくださいね"
+                : "さくらママに一度相談するとここに記録されます。いつでも振り返れます。"
+            }
+            tone="amethyst"
+            action={
+              !query && (
+                <Link
+                  href="/cast/ruri-mama"
+                  className="inline-block h-10 px-5 rounded-btn bg-amethyst text-pearl text-label-md font-medium active:scale-[0.98]"
+                >
+                  さくらママに相談する
+                </Link>
+              )
+            }
+          />
         ) : (
           groups.map((group) => {
             const groupKey = group.customerId ?? "__none__";

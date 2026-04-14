@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { Card } from "@/components/nightos/card";
+import { EmptyState } from "@/components/nightos/empty-state";
 import type { LineScreenshot } from "@/types/nightos";
 
 interface Props {
@@ -14,15 +15,12 @@ interface Props {
 export function LineHistoryTimeline({ screenshots, customerName }: Props) {
   if (screenshots.length === 0) {
     return (
-      <Card className="p-6 text-center">
-        <MessageCircle size={24} className="mx-auto text-ink-muted mb-2" />
-        <p className="text-body-sm text-ink-secondary">
-          LINE会話履歴がまだありません
-        </p>
-        <p className="text-label-sm text-ink-muted mt-1">
-          さくらママとのチャットでLINEスクショをアップロードすると、自動的にここに蓄積されます
-        </p>
-      </Card>
+      <EmptyState
+        icon={<MessageCircle size={22} />}
+        title="LINE会話履歴がまだありません"
+        description="お客様とのLINEスクショをアップロードすると、さくらママが内容を自動で解析してここに蓄積されます。"
+        tone="amethyst"
+      />
     );
   }
 

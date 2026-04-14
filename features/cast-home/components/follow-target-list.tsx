@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, PartyPopper } from "lucide-react";
+import { Check, PartyPopper, Sparkles } from "lucide-react";
+import { EmptyState } from "@/components/nightos/empty-state";
 import type { FollowTarget } from "@/types/nightos";
 import { loadContactedToday, toggleContacted } from "../lib/contacted-store";
 import { FollowTargetCard } from "./follow-target-card";
@@ -20,9 +21,12 @@ export function FollowTargetList({ targets }: { targets: FollowTarget[] }) {
 
   if (targets.length === 0) {
     return (
-      <div className="text-center py-6 text-body-sm text-ink-secondary">
-        今日連絡するお客様はいません
-      </div>
+      <EmptyState
+        icon={<Sparkles size={22} />}
+        title="今日は一息つける日🌸"
+        description="急ぎで連絡するお客様はいません。明日の準備やセルフケアに使ってくださいね。"
+        tone="amethyst"
+      />
     );
   }
 

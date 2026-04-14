@@ -6,6 +6,7 @@ import { cn, formatCustomerName } from "@/lib/utils";
 import type { CustomerReferralNode } from "@/types/nightos";
 import { countReferrals } from "@/lib/nightos/referral-tree";
 import { FunnelBadge } from "@/features/customer-card/components/funnel-badge";
+import { EmptyState } from "@/components/nightos/empty-state";
 
 const CATEGORY_BADGE: Record<string, { text: string; cls: string }> = {
   vip: { text: "VIP", cls: "bg-roseGold text-pearl" },
@@ -20,9 +21,12 @@ interface Props {
 export function ReferralTreeView({ nodes }: Props) {
   if (nodes.length === 0) {
     return (
-      <div className="text-center py-8 text-body-sm text-ink-secondary">
-        表示できる顧客がありません
-      </div>
+      <EmptyState
+        icon={<User size={22} />}
+        title="表示できる顧客がいません"
+        description="新しく登録したお客様に紹介元を選ぶと、ここに繋がりが描かれていきます。"
+        tone="amethyst"
+      />
     );
   }
   return (
