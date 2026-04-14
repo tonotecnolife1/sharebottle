@@ -13,7 +13,8 @@ import {
 } from "../lib/chat-session-store";
 import { ChatInput } from "./chat-input";
 import { ChipOptions } from "./chip-options";
-import { CustomerContextPicker } from "./customer-context-picker";
+import { CustomerContextPill } from "./customer-context-pill";
+import { CustomerSelectInline } from "./customer-select-inline";
 import { FeedbackButtons } from "./feedback-buttons";
 import { IntentPicker } from "./intent-picker";
 import { MessageBubble } from "./message-bubble";
@@ -475,8 +476,9 @@ export function ChatWindow({
         </div>
       )}
 
-      <div className="px-4 pt-3 pb-2 bg-[#faf7f2] relative z-30">
-        <CustomerContextPicker
+      {/* Persistent top pill — always visible "今の相談相手: 田中さま" */}
+      <div className="sticky top-0 px-4 pt-2 pb-2 bg-pearl/95 backdrop-blur-sm border-b border-pearl-soft z-30">
+        <CustomerContextPill
           customers={customers}
           selectedId={selectedCustomerId}
           onSelect={setSelectedCustomerId}
@@ -523,6 +525,19 @@ export function ChatWindow({
                   <MessageBubble message={m} />
                 </>
               )}
+
+              {/* Inline customer picker — shown below the very first greeting
+                  as long as we're still at the intent-pick phase. This makes
+                  the selection step unmissable for new chats. */}
+              {i === 0 &&
+                m === GREETING &&
+                phase.name === "intent-pick" && (
+                  <CustomerSelectInline
+                    customers={customers}
+                    selectedId={selectedCustomerId}
+                    onSelect={setSelectedCustomerId}
+                  />
+                )}
 
               {/* Refine direction picker (when user taps "ブラッシュアップ") */}
               {isRefiningThis && (
