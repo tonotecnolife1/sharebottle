@@ -2,7 +2,7 @@
 
 import { ROLE_STORAGE_KEY, VENUE_TYPE_STORAGE_KEY, type VenueType, type ClubRole } from "./constants";
 
-export type NightosRole = "store" | "cast" | "customer";
+export type NightosRole = "store" | "cast" | "customer" | "mama";
 
 const CLUB_ROLE_KEY = "nightos.club-role";
 
@@ -13,7 +13,7 @@ const CLUB_ROLE_KEY = "nightos.club-role";
 export function getRole(): NightosRole | null {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(ROLE_STORAGE_KEY);
-  if (raw === "store" || raw === "cast" || raw === "customer") return raw;
+  if (raw === "store" || raw === "cast" || raw === "customer" || raw === "mama") return raw;
   return null;
 }
 

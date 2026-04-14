@@ -28,6 +28,7 @@ export default function RoleSelectorPage() {
   useEffect(() => {
     const existing = getRole();
     if (existing === "cast") router.replace("/cast/home");
+    else if (existing === "mama") router.replace("/mama/home");
     else if (existing === "store") router.replace("/store");
     else if (existing === "customer") router.replace("/customer/home");
     // Restore venue preference
@@ -45,9 +46,11 @@ export default function RoleSelectorPage() {
     const dest =
       role === "cast"
         ? "/cast/home"
-        : role === "store"
-          ? "/store"
-          : "/customer/home";
+        : role === "mama"
+          ? "/mama/home"
+          : role === "store"
+            ? "/store"
+            : "/customer/home";
     router.push(dest);
   };
 
@@ -142,7 +145,7 @@ export default function RoleSelectorPage() {
               {venue === "club" ? "クラブ" : "キャバクラ"} — 役割を選択
             </p>
 
-            {/* Cast / Oneesan */}
+            {/* Cast / ヘルプ */}
             <button
               type="button"
               onClick={() => pickRole("cast")}
@@ -155,22 +158,50 @@ export default function RoleSelectorPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-label-sm text-roseGold-dark tracking-wider uppercase mb-0.5">
-                      {venue === "club" ? "For お姉さん" : "For Cast"}
+                      {venue === "club" ? "For ヘルプ" : "For Cast"}
                     </div>
                     <div className="text-display-sm text-ink">
                       {venue === "club"
-                        ? "お姉さん（あかり）"
+                        ? "ヘルプ（あかり）"
                         : "キャスト（あかり）"}
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
                       {venue === "club"
-                        ? "担当管理・同伴・さくらママ・成績"
+                        ? "お客様担当・同伴・さくらママ・成績"
                         : "お客様管理・さくらママ・成績"}
                     </div>
                   </div>
                 </div>
               </Card>
             </button>
+
+            {/* ママ & 姉さん (Club only) */}
+            {venue === "club" && (
+              <button
+                type="button"
+                onClick={() => pickRole("mama")}
+                className="text-left transition-transform active:scale-[0.98]"
+              >
+                <Card className="!border-amethyst-border !bg-gradient-pearl p-5 shadow-glow-amethyst">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
+                      <Crown size={26} className="text-pearl" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
+                        For ママ / 姉さん
+                      </div>
+                      <div className="text-display-sm text-ink">
+                        ママ・姉さん
+                      </div>
+                      <div className="text-body-sm text-ink-secondary mt-0.5">
+                        キャスト機能＋チーム全体の管理
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </button>
+            )}
 
             {/* Store staff */}
             <button
