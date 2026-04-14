@@ -137,7 +137,7 @@ export async function getAllCasts(): Promise<Cast[]> {
 /**
  * mama/姉さん配下のキャスト一覧を取得。
  * - ママ: 同じ店舗の全キャスト（自分除く）
- * - お姉さん: 自分のヘルプ + 自分
+ * - お姉さん: 自分配下のキャスト + 自分
  */
 export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]> {
   const leader = mockCasts.find((c) => c.id === leaderCastId);

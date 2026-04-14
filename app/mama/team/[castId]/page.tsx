@@ -27,7 +27,7 @@ export default async function MamaTeamCastDetailPage({
       : cast.club_role === "oneesan"
         ? "お姉さん"
         : cast.club_role === "help"
-          ? "ヘルプ"
+          ? "キャスト"
           : "キャスト";
 
   return (

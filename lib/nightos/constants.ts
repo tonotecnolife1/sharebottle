@@ -11,14 +11,14 @@ export const ROLE_STORAGE_KEY = "nightos.role";
 export const VENUE_TYPE_STORAGE_KEY = "nightos.venue-type";
 
 // ── Venue type ──
-// クラブ: ママ・お姉さん・ヘルプの階層構造。同伴が重要。担当制。
+// クラブ: ママ・お姉さん・キャストの階層構造。同伴が重要。担当制。
 // キャバクラ: 指名制。フリー→指名の指名化が最重要。
 export type VenueType = "club" | "cabaret";
 
 // ── Club role hierarchy ──
 // ママ: 店舗のオーナー/管理者。役職給あり。全顧客を管理。
 // お姉さん: 担当を持つ。同伴ノルマあり。お姉さんの売上はママの売上に直結しない。
-// ヘルプ: お姉さんの補助。担当なし。
+// キャスト（help 役割）: お姉さんの補助。担当なし。
 export type ClubRole = "mama" | "oneesan" | "help";
 
 // Claude Haiku 4.5 — コスパ重視。

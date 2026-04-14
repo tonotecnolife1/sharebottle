@@ -103,12 +103,12 @@ export default async function MamaTeamPage() {
           </section>
         )}
 
-        {/* ヘルプ */}
+        {/* キャスト */}
         {helps.length > 0 && (
           <section className="space-y-2.5">
             <h2 className="text-display-sm text-ink flex items-center gap-1.5">
               <Users size={16} className="text-amethyst-dark" />
-              ヘルプ（{helps.length}人）
+              キャスト（{helps.length}人）
             </h2>
             {helps.map((cast) => {
               const customersForThis = teamCustomers.filter(
@@ -188,7 +188,7 @@ function CastCard({
             </div>
             <div className="text-[10px] text-ink-muted mt-0.5">
               {customerCount}人担当
-              {helpCount !== undefined && ` · ヘルプ${helpCount}人`}
+              {helpCount !== undefined && ` · キャスト${helpCount}人`}
             </div>
           </div>
           <ChevronRight size={14} className="text-ink-muted" />

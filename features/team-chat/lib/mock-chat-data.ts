@@ -29,7 +29,7 @@ export const mockChatRooms: ChatRoom[] = [
     visible_to_seniors: true,
     created_at: "2026-01-01T00:00:00+09:00",
     last_message: {
-      content: "来週の金曜、ヘルプお願いできる？",
+      content: "来週の金曜、お手伝いお願いできる？",
       sender_name: "あかり",
       sent_at: "2026-03-18T11:30:00+09:00",
     },

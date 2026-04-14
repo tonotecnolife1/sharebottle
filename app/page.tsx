@@ -97,7 +97,7 @@ export default function RoleSelectorPage() {
                       クラブ
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
-                      ママ・お姉さん・ヘルプの連携プレー
+                      ママ・お姉さん・キャストの連携プレー
                     </div>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ export default function RoleSelectorPage() {
               {venue === "club" ? "クラブ" : "キャバクラ"} — 役割を選択
             </p>
 
-            {/* Cast / ヘルプ */}
+            {/* Cast */}
             <button
               type="button"
               onClick={() => pickRole("cast")}
@@ -158,12 +158,10 @@ export default function RoleSelectorPage() {
                   </div>
                   <div className="flex-1">
                     <div className="text-label-sm text-roseGold-dark tracking-wider uppercase mb-0.5">
-                      {venue === "club" ? "For ヘルプ" : "For Cast"}
+                      For Cast
                     </div>
                     <div className="text-display-sm text-ink">
-                      {venue === "club"
-                        ? "ヘルプ（あかり）"
-                        : "キャスト（あかり）"}
+                      キャスト（あかり）
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
                       {venue === "club"
