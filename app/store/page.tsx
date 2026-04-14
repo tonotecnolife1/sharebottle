@@ -4,6 +4,8 @@ import {
   BarChart3,
   CalendarPlus,
   ClipboardList,
+  Clock,
+  Filter,
   List,
   UserPlus,
   Users,
@@ -133,6 +135,18 @@ export default async function StoreHubPage() {
               icon={<BarChart3 size={18} />}
               label="効果ダッシュボード"
               description="売上推移・キャスト成績・ROI"
+            />
+            <ListLink
+              href="/store/funnel"
+              icon={<Filter size={18} />}
+              label="顧客ファネル"
+              description="店舗登録 → 担当 → LINE交換"
+            />
+            <ListLink
+              href="/store/douhan-pace"
+              icon={<Clock size={18} />}
+              label="同伴ペース"
+              description="週2/月7 ノルマ達成状況"
             />
           </div>
         </section>
