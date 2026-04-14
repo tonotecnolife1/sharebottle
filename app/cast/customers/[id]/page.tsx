@@ -8,6 +8,7 @@ import { LineExchangeButton } from "@/features/customer-card/components/line-exc
 import { LineImportPanel } from "@/features/customer-card/components/line-import-panel";
 import { LineHistoryTimeline } from "@/features/customer-card/components/line-history-timeline";
 import { MemoSection } from "@/features/customer-card/components/memo-section";
+import { RefreshMemoButton } from "@/features/customer-card/components/refresh-memo-button";
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
 import { VisitHistory } from "@/features/customer-card/components/visit-history";
 import { CustomerPhotoUpload } from "@/features/customer-card/components/customer-photo-upload";
@@ -65,6 +66,17 @@ export default async function CustomerCardPage({
         <VisitHistory visits={context.visits} />
         <StoreInfoSection context={context} />
         <MemoSection customer={customer} memo={context.memo} />
+
+        <RefreshMemoButton
+          customerId={customer.id}
+          castId={CURRENT_CAST_ID}
+          current={{
+            last_topic: context.memo?.last_topic ?? null,
+            service_tips: context.memo?.service_tips ?? null,
+            next_topics: context.memo?.next_topics ?? null,
+          }}
+        />
+
         <LineImportPanel
           customer={customer}
           memo={context.memo}
