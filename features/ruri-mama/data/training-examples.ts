@@ -6,12 +6,26 @@
 import { BATCH_1_LINE } from "./training-batch-1-line";
 import { BATCH_2_SERVING_STRATEGY } from "./training-batch-2-serving-strategy";
 import { BATCH_3_MIXED } from "./training-batch-3-mixed";
+import { BATCH_4_LINE_EXTRA } from "./training-batch-4-line-extra";
+import { BATCH_5_LINE_SERVING } from "./training-batch-5-line-serving";
+import { BATCH_6_SERVING_STRATEGY } from "./training-batch-6-serving-strategy";
+import { BATCH_7_STRATEGY_BOTTLE } from "./training-batch-7-strategy-bottle";
+import { BATCH_8_BOTTLE_DOUHAN_VIP } from "./training-batch-8-bottle-douhan-vip";
+import { BATCH_9_VIP_DIFFICULT } from "./training-batch-9-vip-difficult";
+import { BATCH_10_CAST_SEASON } from "./training-batch-10-cast-season";
 import type { TrainingExample } from "./training-types";
 
 export const ALL_EXAMPLES: TrainingExample[] = [
   ...BATCH_1_LINE,
   ...BATCH_2_SERVING_STRATEGY,
   ...BATCH_3_MIXED,
+  ...BATCH_4_LINE_EXTRA,
+  ...BATCH_5_LINE_SERVING,
+  ...BATCH_6_SERVING_STRATEGY,
+  ...BATCH_7_STRATEGY_BOTTLE,
+  ...BATCH_8_BOTTLE_DOUHAN_VIP,
+  ...BATCH_9_VIP_DIFFICULT,
+  ...BATCH_10_CAST_SEASON,
 ];
 
 /**
