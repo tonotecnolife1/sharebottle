@@ -333,8 +333,13 @@ export function ChatWindow({
     text: string,
     intent: Intent,
     hearingContext: Record<string, string>,
+    images?: string[],
   ) => {
-    const userMsg: ChatMessage = { role: "user", content: text };
+    const userMsg: ChatMessage = {
+      role: "user",
+      content: text,
+      images: images && images.length > 0 ? images : undefined,
+    };
     const updated = [...messages, userMsg];
     setMessages(updated);
     void callApi(intent, hearingContext, updated);
@@ -413,10 +418,16 @@ export function ChatWindow({
     }
   };
 
-  const handleUserSend = (text: string) => {
+  const handleUserSend = (text: string, images?: string[]) => {
     // Free-form / responded / freeform → just send the text as-is
     if (phase.name === "freeform" || phase.name === "responded") {
-      sendNewMessage(text, "freeform", {});
+      sendNewMessage(text, "freeform", {}, images);
+      return;
+    }
+    // If images are attached, always go to freeform (skip hearing flow)
+    // because images typically mean "check this" / "what do you think"
+    if (images && images.length > 0) {
+      sendNewMessage(text, "freeform", {}, images);
       return;
     }
     // intent-pick (or any other state with input enabled) — detect intent

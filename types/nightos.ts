@@ -293,6 +293,12 @@ export type ChatRole = "user" | "assistant";
 export interface ChatMessage {
   role: ChatRole;
   content: string;
+  /**
+   * 画像添付（自撮り・場の状況・ヘアメイクチェックなど）。
+   * data URL 形式 (e.g. "data:image/jpeg;base64,...") で保存。
+   * Claude のビジョン機能で内容を解釈。
+   */
+  images?: string[];
   // Present only on assistant messages when the backend stored a chatId
   id?: string;
   feedback?: "helpful" | "not_helpful" | null;

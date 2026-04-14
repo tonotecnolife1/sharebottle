@@ -92,17 +92,40 @@ export async function POST(req: Request) {
 
     // Convert the chat history. Prepend the context prefix and the 3-option
     // instruction to the LAST user message.
+    // If the message has attached images, use Claude's multi-content format
+    // (vision support) so the model can analyze the photos.
     const optionInstruction = build3OptionInstruction();
     const apiMessages = body.messages.map((m, idx) => {
-      if (idx === body.messages.length - 1 && m.role === "user") {
-        return {
-          role: "user" as const,
-          content: contextPrefix
-            ? `${contextPrefix}\n\n${m.content}\n\n${optionInstruction}`
-            : `${m.content}\n\n${optionInstruction}`,
-        };
+      const isLastUser =
+        idx === body.messages.length - 1 && m.role === "user";
+      const finalText = isLastUser
+        ? contextPrefix
+          ? `${contextPrefix}\n\n${m.content}\n\n${optionInstruction}`
+          : `${m.content}\n\n${optionInstruction}`
+        : m.content;
+
+      // Messages without images stay as plain text (simpler, cheaper)
+      if (!m.images || m.images.length === 0) {
+        return { role: m.role, content: finalText };
       }
-      return { role: m.role, content: m.content };
+
+      // With images: use the multi-content vision format
+      const contentBlocks: Anthropic.Messages.ContentBlockParam[] = [];
+      for (const dataUrl of m.images) {
+        const parsed = parseDataUrl(dataUrl);
+        if (parsed) {
+          contentBlocks.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: parsed.mediaType,
+              data: parsed.base64,
+            },
+          });
+        }
+      }
+      contentBlocks.push({ type: "text", text: finalText });
+      return { role: m.role, content: contentBlocks };
     });
 
     // ── RAG: retrieve relevant training examples ──
@@ -508,6 +531,20 @@ function formatBottles(bottles: Bottle[]): string {
   return bottles
     .map((b) => `${b.brand}（残${b.remaining_glasses}杯/${b.total_glasses}杯）`)
     .join("、");
+}
+
+/**
+ * "data:image/jpeg;base64,..." 形式から media_type と base64 data を抽出。
+ */
+function parseDataUrl(
+  dataUrl: string,
+): { mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif"; base64: string } | null {
+  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/);
+  if (!match) return null;
+  return {
+    mediaType: match[1] as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
+    base64: match[2],
+  };
 }
 
 function extractText(content: Anthropic.Messages.ContentBlock[]): string {
