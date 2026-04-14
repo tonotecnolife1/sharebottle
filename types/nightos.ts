@@ -53,6 +53,68 @@ export interface Customer {
   category: CustomerCategory;
   store_memo: string | null;
   created_at: string;
+
+  /** 紹介してくれた既存顧客の id。null = 自己来店または店舗経由 */
+  referred_by_customer_id?: string | null;
+
+  /**
+   * ファネルステージ:
+   * - "store_only": 店舗スタッフが登録しただけ、担当なし
+   * - "assigned":   姉さんが担当についた（初回以降）
+   * - "line_exchanged": LINE交換済み（能動的フォロー可能）
+   */
+  funnel_stage?: "store_only" | "assigned" | "line_exchanged";
+
+  /** LINE交換した担当キャスト id */
+  line_exchanged_cast_id?: string | null;
+
+  /** LINE交換した日時 */
+  line_exchanged_at?: string | null;
+}
+
+// ═══════════════ Customer referral map types ═══════════════
+
+/**
+ * 顧客紹介ツリーのノード。再帰的に children を持つ。
+ * ルートは referred_by_customer_id が null のお客様。
+ */
+export interface CustomerReferralNode {
+  customer: Customer;
+  assignedCastName: string | null;
+  depth: number;
+  children: CustomerReferralNode[];
+}
+
+/**
+ * 顧客ファネル集計（店舗全体 or キャスト別）。
+ */
+export interface CustomerFunnelStats {
+  storeOnly: number;
+  assigned: number;
+  lineExchanged: number;
+  total: number;
+  /** 担当付き転換率 (assigned + lineExchanged) / total */
+  assignedRate: number;
+  /** LINE交換転換率 lineExchanged / (assigned + lineExchanged) */
+  lineExchangedRate: number;
+}
+
+// ═══════════════ Douhan pace stats ═══════════════
+
+export type DouhanPaceStatus = "on_pace" | "behind" | "meeting_risk";
+
+export interface DouhanPaceStats {
+  castId: string;
+  castName: string;
+  thisWeekCount: number;
+  weekTarget: number;
+  thisMonthCount: number;
+  monthTarget: number;
+  /** 月末までの残り日数 */
+  daysLeftInMonth: number;
+  /** 今のペースで月末何回になる見込み */
+  projectedMonthCount: number;
+  status: DouhanPaceStatus;
 }
 
 export interface CastMemo {

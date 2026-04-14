@@ -267,6 +267,10 @@ export const mockCustomers: Customer[] = [
     category: "vip",
     store_memo: "息子さんの大学受験の話題はNG（落ちた）",
     created_at: "2025-04-01T19:00:00+09:00",
+    referred_by_customer_id: null, // 自己来店（ルート）
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2025-04-15T23:30:00+09:00",
   },
   {
     id: "cust2",
@@ -279,6 +283,10 @@ export const mockCustomers: Customer[] = [
     category: "new",
     store_memo: null,
     created_at: "2026-02-20T20:00:00+09:00",
+    referred_by_customer_id: "cust1", // 田中さまの紹介
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2026-03-15T23:00:00+09:00",
   },
   {
     id: "cust3",
@@ -291,6 +299,10 @@ export const mockCustomers: Customer[] = [
     category: "vip",
     store_memo: "有馬記念はお気に入りの話題",
     created_at: "2024-11-10T19:30:00+09:00",
+    referred_by_customer_id: null,
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2024-11-25T22:00:00+09:00",
   },
   {
     id: "cust4",
@@ -303,6 +315,10 @@ export const mockCustomers: Customer[] = [
     category: "regular",
     store_memo: null,
     created_at: "2025-07-15T20:00:00+09:00",
+    referred_by_customer_id: "cust3", // 渡辺さまの紹介
+    funnel_stage: "assigned",
+    line_exchanged_cast_id: null,
+    line_exchanged_at: null,
   },
   // ── あかり担当の追加顧客（様々なステータス） ──
   {
@@ -316,6 +332,10 @@ export const mockCustomers: Customer[] = [
     category: "vip",
     store_memo: "離婚調停中のため家庭の話題はNG。ゴルフと車が好き",
     created_at: "2025-01-10T19:00:00+09:00",
+    referred_by_customer_id: "cust1", // 田中さまの紹介
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2025-01-25T23:00:00+09:00",
   },
   {
     id: "cust6",
@@ -328,6 +348,10 @@ export const mockCustomers: Customer[] = [
     category: "regular",
     store_memo: "出張が多い。月末に来ることが多い",
     created_at: "2025-06-01T20:00:00+09:00",
+    referred_by_customer_id: "cust1", // 田中さまの紹介
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2025-06-15T22:00:00+09:00",
   },
   {
     id: "cust7",
@@ -340,6 +364,10 @@ export const mockCustomers: Customer[] = [
     category: "new",
     store_memo: null,
     created_at: "2026-03-10T20:30:00+09:00",
+    referred_by_customer_id: "cust5", // 山本さまの紹介
+    funnel_stage: "assigned",
+    line_exchanged_cast_id: null,
+    line_exchanged_at: null,
   },
   {
     id: "cust8",
@@ -352,6 +380,10 @@ export const mockCustomers: Customer[] = [
     category: "vip",
     store_memo: "接待利用が多い。静かなテーブル希望。犬の話が好き",
     created_at: "2024-08-01T19:00:00+09:00",
+    referred_by_customer_id: null,
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2024-08-20T23:00:00+09:00",
   },
   {
     id: "cust9",
@@ -364,6 +396,10 @@ export const mockCustomers: Customer[] = [
     category: "regular",
     store_memo: "夜勤明けに来ることがある。お酒は控えめ",
     created_at: "2025-09-15T21:00:00+09:00",
+    referred_by_customer_id: "cust8", // 木村さまの紹介
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2025-10-01T22:30:00+09:00",
   },
   {
     id: "cust10",
@@ -376,6 +412,10 @@ export const mockCustomers: Customer[] = [
     category: "regular",
     store_memo: "同業者なので接客の話は避ける。音楽好き（ジャズ）",
     created_at: "2025-03-20T20:00:00+09:00",
+    referred_by_customer_id: null,
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2025-04-05T23:00:00+09:00",
   },
   {
     id: "cust11",
@@ -388,6 +428,43 @@ export const mockCustomers: Customer[] = [
     category: "vip",
     store_memo: "ワインにも詳しい。知的な会話を好む",
     created_at: "2024-12-01T19:30:00+09:00",
+    referred_by_customer_id: "cust10", // 松田さまの紹介
+    funnel_stage: "line_exchanged",
+    line_exchanged_cast_id: "cast1",
+    line_exchanged_at: "2024-12-20T22:00:00+09:00",
+  },
+  // ── 店舗入力だけで担当なしのサンプル（ファネル最上段） ──
+  {
+    id: "cust12",
+    store_id: CURRENT_STORE_ID,
+    cast_id: "cast1", // とりあえず仮担当だが実質未接客
+    name: "青木 康介",
+    birthday: "1988-05-20",
+    job: "商社マン",
+    favorite_drink: null,
+    category: "new",
+    store_memo: "来店1回のみ、名刺交換のみ",
+    created_at: "2026-03-12T20:00:00+09:00",
+    referred_by_customer_id: null,
+    funnel_stage: "store_only",
+    line_exchanged_cast_id: null,
+    line_exchanged_at: null,
+  },
+  {
+    id: "cust13",
+    store_id: CURRENT_STORE_ID,
+    cast_id: "cast_help2",
+    name: "藤田 一馬",
+    birthday: "1992-02-10",
+    job: "ベンチャー投資家",
+    favorite_drink: null,
+    category: "new",
+    store_memo: "来店2回、担当あかり姉さん希望",
+    created_at: "2026-03-15T21:00:00+09:00",
+    referred_by_customer_id: "cust6", // 中村さまの紹介
+    funnel_stage: "assigned",
+    line_exchanged_cast_id: null,
+    line_exchanged_at: null,
   },
 ];
 
