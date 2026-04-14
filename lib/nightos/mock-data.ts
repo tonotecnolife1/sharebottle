@@ -485,6 +485,18 @@ for (const c of mockCustomers) {
   }
 }
 
+// ── デモの面白さのため、一部の顧客を明示的にゆき管理にする ──
+// （あかりが「ヘルプで入ったお客様」として表示されるよう）
+const OVERRIDE_MANAGER: Record<string, string> = {
+  cust3: "cast_oneesan2", // 渡辺浩二 → ゆき管理（あかりがヘルプで入る）
+  cust8: "cast_oneesan2", // 木村亮介 → ゆき管理
+  cust11: "cast_oneesan2", // 伊藤雅人 → ゆき管理
+};
+for (const c of mockCustomers) {
+  const override = OVERRIDE_MANAGER[c.id];
+  if (override) c.manager_cast_id = override;
+}
+
 export const mockBottles: Bottle[] = [
   {
     id: "btl1",
@@ -717,6 +729,34 @@ export const mockVisits: Visit[] = [
     count: 12,
     is_nominated: true,
   }),
+  // ── あかりがゆき管理顧客にヘルプで入った来店履歴 ──
+  {
+    id: "help_visit_1",
+    store_id: CURRENT_STORE_ID,
+    customer_id: "cust3", // 渡辺浩二 (ゆき管理)
+    cast_id: "cast1", // あかりがヘルプ
+    table_name: "T1",
+    is_nominated: false,
+    visited_at: "2026-03-18T20:30:00+09:00",
+  },
+  {
+    id: "help_visit_2",
+    store_id: CURRENT_STORE_ID,
+    customer_id: "cust8", // 木村亮介 (ゆき管理)
+    cast_id: "cast1",
+    table_name: "T2",
+    is_nominated: false,
+    visited_at: "2026-03-15T21:00:00+09:00",
+  },
+  {
+    id: "help_visit_3",
+    store_id: CURRENT_STORE_ID,
+    customer_id: "cust11", // 伊藤雅人 (ゆき管理)
+    cast_id: "cast1",
+    table_name: "T3",
+    is_nominated: false,
+    visited_at: "2026-03-10T20:00:00+09:00",
+  },
 ];
 
 function generateVisitSeries(opts: {
