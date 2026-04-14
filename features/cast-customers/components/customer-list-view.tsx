@@ -22,6 +22,7 @@ import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { cn, formatCustomerName } from "@/lib/utils";
+import { FunnelBadge } from "@/features/customer-card/components/funnel-badge";
 import type { CustomerContext } from "@/types/nightos";
 import {
   loadActions,
@@ -331,6 +332,10 @@ export function CustomerListView({ contexts, today }: Props) {
                   >
                     {STATUS_CONFIG[e.status].emoji} {STATUS_CONFIG[e.status].label}
                   </span>
+                  <FunnelBadge
+                    stage={e.customer.funnel_stage ?? "store_only"}
+                    compact
+                  />
                   {e.hasBirthday && (
                     <Cake size={12} className="text-blush-dark shrink-0" />
                   )}
