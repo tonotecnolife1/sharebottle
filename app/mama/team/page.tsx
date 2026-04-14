@@ -8,7 +8,12 @@ import {
   getSubordinateCasts,
   getTeamCustomers,
 } from "@/lib/nightos/supabase-queries";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
+import {
+  PACE_STATUS_CONFIG,
+  calculateDouhanPaceForAll,
+} from "@/lib/nightos/douhan-pace";
+import { MOCK_TODAY, mockDouhans } from "@/lib/nightos/mock-data";
 
 export default async function MamaTeamPage() {
   const [teamCasts, teamCustomers] = await Promise.all([
@@ -22,6 +27,14 @@ export default async function MamaTeamPage() {
     teamCasts.length > 0
       ? teamCasts.reduce((s, c) => s + c.repeat_rate, 0) / teamCasts.length
       : 0;
+
+  // Pace lookup (sorted by status priority)
+  const paceList = calculateDouhanPaceForAll({
+    casts: teamCasts,
+    douhans: mockDouhans,
+    today: MOCK_TODAY,
+  });
+  const paceById = new Map(paceList.map((p) => [p.castId, p]));
 
   // Group casts by hierarchy
   const oneesans = teamCasts.filter((c) => c.club_role === "oneesan");
@@ -97,6 +110,7 @@ export default async function MamaTeamPage() {
                   cast={cast}
                   customerCount={customersForThis.length}
                   helpCount={assignedHelps.length}
+                  pace={paceById.get(cast.id)}
                 />
               );
             })}
@@ -123,6 +137,7 @@ export default async function MamaTeamPage() {
                   cast={cast}
                   customerCount={customersForThis.length}
                   assignedOneesanName={assignedOneesan?.name}
+                  pace={paceById.get(cast.id)}
                 />
               );
             })}
@@ -142,6 +157,7 @@ export default async function MamaTeamPage() {
                   key={cast.id}
                   cast={cast}
                   customerCount={customersForThis.length}
+                  pace={paceById.get(cast.id)}
                 />
               );
             })}
@@ -159,6 +175,7 @@ interface CastCardProps {
   customerCount: number;
   helpCount?: number;
   assignedOneesanName?: string;
+  pace?: import("@/types/nightos").DouhanPaceStats;
 }
 
 function CastCard({
@@ -166,17 +183,25 @@ function CastCard({
   customerCount,
   helpCount,
   assignedOneesanName,
+  pace,
 }: CastCardProps) {
   const repeatPct = Math.round(cast.repeat_rate * 100);
+  const paceCfg = pace ? PACE_STATUS_CONFIG[pace.status] : null;
   return (
     <Link
       href={`/mama/team/${cast.id}`}
       className="block active:scale-[0.99] transition-transform"
     >
-      <Card className="p-3">
+      <Card
+        className={cn(
+          "p-3",
+          pace?.status === "meeting_risk" && "!border-rose/30 !bg-rose/5",
+          pace?.status === "behind" && "!border-amber/30 !bg-amber/5",
+        )}
+      >
         <div className="flex items-start justify-between mb-2">
-          <div>
-            <div className="flex items-baseline gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
               <h3 className="text-body-md font-semibold text-ink">
                 {cast.name}
               </h3>
@@ -185,13 +210,24 @@ function CastCard({
                   / {assignedOneesanName}姉さん付き
                 </span>
               )}
+              {paceCfg && (
+                <span
+                  className={cn(
+                    "px-1.5 py-0.5 rounded-badge text-[9px] font-semibold border",
+                    paceCfg.bg,
+                    paceCfg.color,
+                  )}
+                >
+                  {paceCfg.emoji} 同伴{pace?.thisMonthCount}/{pace?.monthTarget}
+                </span>
+              )}
             </div>
             <div className="text-[10px] text-ink-muted mt-0.5">
               {customerCount}人担当
               {helpCount !== undefined && ` · キャスト${helpCount}人`}
             </div>
           </div>
-          <ChevronRight size={14} className="text-ink-muted" />
+          <ChevronRight size={14} className="text-ink-muted shrink-0" />
         </div>
 
         <div className="grid grid-cols-3 gap-2">

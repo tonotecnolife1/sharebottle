@@ -5,6 +5,8 @@ import { MorningBriefing } from "@/features/cast-home/components/morning-briefin
 import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { TeamOverviewBanner } from "@/features/mama-home/components/team-overview-banner";
+import { TeamPaceAlert } from "@/features/mama-home/components/team-pace-alert";
+import { MapEntryCard } from "@/features/mama-home/components/map-entry-card";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import {
@@ -12,6 +14,8 @@ import {
   getSubordinateCasts,
   getTeamCustomers,
 } from "@/lib/nightos/supabase-queries";
+import { calculateDouhanPaceForAll } from "@/lib/nightos/douhan-pace";
+import { mockDouhans, MOCK_TODAY } from "@/lib/nightos/mock-data";
 
 export default async function MamaHomePage() {
   const [data, customers, teamCasts, teamCustomers] = await Promise.all([
@@ -20,6 +24,13 @@ export default async function MamaHomePage() {
     getSubordinateCasts(CURRENT_MAMA_ID),
     getTeamCustomers(CURRENT_MAMA_ID),
   ]);
+
+  // Pace for mama's own team (subordinates)
+  const paceList = calculateDouhanPaceForAll({
+    casts: teamCasts,
+    douhans: mockDouhans,
+    today: MOCK_TODAY,
+  });
 
   return (
     <div className="animate-fade-in">
@@ -35,13 +46,19 @@ export default async function MamaHomePage() {
       </div>
 
       <div className="px-5 pt-3 pb-6 space-y-5">
-        {/* Team overview banner — mama-specific */}
+        {/* Team pace alert (urgent first) */}
+        <TeamPaceAlert paceList={paceList} />
+
+        {/* Team overview banner */}
         <TeamOverviewBanner
           teamCasts={teamCasts}
           teamCustomerCount={teamCustomers.length}
         />
 
-        {/* Own stats (reuse cast components) */}
+        {/* Map entry */}
+        <MapEntryCard />
+
+        {/* Own stats */}
         <SummaryCards summary={data.summary} />
 
         <MorningBriefing castId={data.cast.id} />
