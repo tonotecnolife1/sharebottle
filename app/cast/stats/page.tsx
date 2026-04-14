@@ -80,6 +80,24 @@ export default async function CastStatsPage() {
           className="!flex-row items-center justify-between"
         />
 
+        {/* Master / Help split */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <StatCard
+            label="マスター顧客"
+            value={data.monthly.masterCustomerCount}
+            unit="人"
+            tone="rose"
+            hint="自分が管理している顧客"
+          />
+          <StatCard
+            label="今月のヘルプ"
+            value={data.monthly.helpVisitCount}
+            unit="件"
+            tone="default"
+            hint="他姉さん顧客への接客"
+          />
+        </div>
+
         {/* Nomination trend */}
         <section>
           <div className="flex items-baseline justify-between mb-2">

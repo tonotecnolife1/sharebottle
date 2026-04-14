@@ -1,11 +1,24 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, ChevronRight, Heart, User } from "lucide-react";
+import { Calendar, ChevronRight, HandHelping, Heart, User } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
-import { getCastStatsData, getCustomersForCast } from "@/lib/nightos/supabase-queries";
-import { mockCasts } from "@/lib/nightos/mock-data";
+import {
+  getAllCasts,
+  getCastStatsData,
+} from "@/lib/nightos/supabase-queries";
+import {
+  MOCK_TODAY,
+  mockCasts,
+  mockCustomers,
+  mockVisits,
+} from "@/lib/nightos/mock-data";
+import {
+  aggregateHelpVisitsByCustomer,
+  filterHelpVisitsByPeriod,
+  splitMasterAndHelp,
+} from "@/lib/nightos/master-help-split";
 import { formatCurrency, formatCustomerName } from "@/lib/utils";
 
 export default async function MamaTeamCastDetailPage({
@@ -16,19 +29,30 @@ export default async function MamaTeamCastDetailPage({
   const cast = mockCasts.find((c) => c.id === params.castId);
   if (!cast) notFound();
 
-  const [stats, customers] = await Promise.all([
+  const [stats, allCasts] = await Promise.all([
     getCastStatsData(params.castId),
-    getCustomersForCast(params.castId),
+    getAllCasts(),
   ]);
+
+  // Master + help split for this cast
+  const { masterCustomers, helpVisits } = splitMasterAndHelp({
+    castId: params.castId,
+    customers: mockCustomers,
+    visits: mockVisits,
+    allCasts,
+  });
+  const helpThisMonth = filterHelpVisitsByPeriod(helpVisits, {
+    thisMonth: true,
+    today: MOCK_TODAY,
+  });
+  const helpEntries = aggregateHelpVisitsByCustomer(helpThisMonth);
 
   const roleLabel =
     cast.club_role === "mama"
       ? "ママ"
       : cast.club_role === "oneesan"
         ? "お姉さん"
-        : cast.club_role === "help"
-          ? "キャスト"
-          : "キャスト";
+        : "キャスト";
 
   return (
     <div className="animate-fade-in">
@@ -72,20 +96,22 @@ export default async function MamaTeamCastDetailPage({
           </span>
         </Card>
 
-        {/* Assigned customers */}
+        {/* Master customers */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-display-sm text-ink">担当のお客様</h2>
+            <h2 className="text-display-sm text-ink">
+              マスター管理のお客様
+            </h2>
             <span className="text-label-sm text-ink-muted">
-              {customers.length}人
+              {masterCustomers.length}人
             </span>
           </div>
-          {customers.length === 0 ? (
+          {masterCustomers.length === 0 ? (
             <Card className="p-4 text-center text-body-sm text-ink-muted">
-              担当のお客様はまだいません
+              マスター管理のお客様はいません
             </Card>
           ) : (
-            customers.map((c) => (
+            masterCustomers.map((c) => (
               <Link
                 key={c.id}
                 href={`/mama/customers/${c.id}`}
@@ -121,7 +147,54 @@ export default async function MamaTeamCastDetailPage({
           )}
         </section>
 
-        {/* Link to cast card for deeper view (re-use of customer-card page) */}
+        {/* Help visits (other masters' customers) */}
+        <section className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+              <HandHelping size={15} className="text-champagne-dark" />
+              今月ヘルプに入ったお客様
+            </h2>
+            <span className="text-label-sm text-ink-muted">
+              {helpEntries.length}件
+            </span>
+          </div>
+          {helpEntries.length === 0 ? (
+            <Card className="p-4 text-center text-body-sm text-ink-muted">
+              今月はヘルプ実績がありません
+            </Card>
+          ) : (
+            helpEntries.map((e) => (
+              <Link
+                key={e.customer.id}
+                href={`/mama/customers/${e.customer.id}`}
+                className="block active:scale-[0.99] transition-transform"
+              >
+                <Card className="p-2.5 flex items-center gap-2.5 !bg-champagne/30">
+                  <div className="w-8 h-8 rounded-full bg-champagne-dark/30 flex items-center justify-center shrink-0">
+                    <User size={12} className="text-ink-secondary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                      <span className="text-body-sm font-medium text-ink truncate">
+                        {formatCustomerName(e.customer.name)}
+                      </span>
+                      {e.masterName && (
+                        <span className="text-[10px] text-ink-muted shrink-0">
+                          （{e.masterName}管理）
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-ink-muted">
+                      {e.visitCount}回接客
+                    </div>
+                  </div>
+                  <ChevronRight size={13} className="text-ink-muted shrink-0" />
+                </Card>
+              </Link>
+            ))
+          )}
+        </section>
+
         <div className="text-center pt-2">
           <Link
             href={`/cast/customers`}

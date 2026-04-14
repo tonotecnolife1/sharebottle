@@ -729,6 +729,10 @@ export interface CastStatsData {
     repeatRate: number;
     followRate: number;
     newCustomerCount: number;
+    /** マスター管理顧客の人数 */
+    masterCustomerCount: number;
+    /** 今月のヘルプ実績件数（他姉さん管理顧客への接客） */
+    helpVisitCount: number;
   };
   yearly: {
     nominationCount: number;
@@ -802,6 +806,19 @@ function getCastStatsDataMock(castId: string): CastStatsData {
     (d) => d.cast_id === castId && new Date(d.date) >= yearStart && d.status === "completed",
   ).length;
 
+  // Master vs help split
+  const { splitMasterAndHelp, filterHelpVisitsByPeriod } = require("./master-help-split") as typeof import("./master-help-split");
+  const split = splitMasterAndHelp({
+    castId,
+    customers: mockCustomers,
+    visits: mockVisits,
+    allCasts: mockCasts,
+  });
+  const helpThisMonth = filterHelpVisitsByPeriod(split.helpVisits, {
+    thisMonth: true,
+    today: MOCK_TODAY,
+  });
+
   return {
     cast,
     monthly: {
@@ -810,6 +827,8 @@ function getCastStatsDataMock(castId: string): CastStatsData {
       repeatRate: cast.repeat_rate,
       followRate,
       newCustomerCount: monthNewCount,
+      masterCustomerCount: split.masterCustomers.length,
+      helpVisitCount: helpThisMonth.length,
     },
     yearly: {
       nominationCount: yearNominations,
