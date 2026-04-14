@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
-import { cn } from "@/lib/utils";
+import { cn, formatCustomerName } from "@/lib/utils";
 import type { Customer } from "@/types/nightos";
 
 // ── localStorage persistence ──
@@ -306,7 +306,7 @@ function EntryCard({
             )}
           </div>
           <span className="text-body-sm font-medium text-ink truncate">
-            {entry.customerName}
+            {formatCustomerName(entry.customerName)}
           </span>
         </div>
         <span className="text-[10px] text-ink-muted shrink-0 ml-2">

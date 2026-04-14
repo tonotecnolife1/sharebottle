@@ -1,4 +1,5 @@
 import { Badge } from "@/components/nightos/badge";
+import { formatCustomerName } from "@/lib/utils";
 import type { Customer } from "@/types/nightos";
 
 const categoryLabel: Record<Customer["category"], string> = {
@@ -18,7 +19,7 @@ export function CustomerHeader({ customer }: { customer: Customer }) {
     <div className="space-y-2">
       <div className="flex items-baseline gap-3">
         <h1 className="text-display-lg font-display font-semibold text-ink">
-          {customer.name}
+          {formatCustomerName(customer.name)}
         </h1>
         <Badge tone={categoryTone[customer.category]}>
           {categoryLabel[customer.category]}

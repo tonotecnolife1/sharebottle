@@ -6,6 +6,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * 顧客名に「さま」を付けて表示する。
+ * キャスト向けUI全般で使う（テンプレート用の挿入などは別関数）。
+ */
+export function formatCustomerName(name: string | null | undefined): string {
+  if (!name) return "";
+  return `${name}さま`;
+}
+
 /** 円表示フォーマット（¥1,234） */
 export function formatCurrency(amount: number): string {
   return `¥${amount.toLocaleString("ja-JP")}`;

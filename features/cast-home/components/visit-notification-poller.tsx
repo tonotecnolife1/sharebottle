@@ -108,7 +108,7 @@ export function VisitNotificationPoller({ castId }: Props) {
                   新しい来店
                 </div>
                 <div className="text-body-md font-semibold flex items-center gap-1.5 truncate">
-                  {v.customerName}さん
+                  {v.customerName}さま
                   {v.isNominated && (
                     <Sparkles size={12} className="text-pearl shrink-0" />
                   )}

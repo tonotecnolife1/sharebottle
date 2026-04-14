@@ -6,6 +6,7 @@ import { MorningBriefing } from "@/features/cast-home/components/morning-briefin
 import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
 import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
 import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
+import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import {
@@ -63,6 +64,8 @@ export default async function CastHomePage() {
           </header>
           <FollowTargetList targets={data.targets} />
         </section>
+
+        <RoleSwitchLink />
       </div>
     </div>
   );

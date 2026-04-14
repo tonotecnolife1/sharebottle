@@ -461,7 +461,7 @@ function synthesizeIntentText(
   answers: Record<string, string>,
   customerName: string | null,
 ): string {
-  const subject = customerName ? `${customerName}さん` : "お客様";
+  const subject = customerName ? `${customerName}さま` : "お客様";
 
   if (intent === "follow") {
     const purpose = answers.purpose ?? "メッセージ";

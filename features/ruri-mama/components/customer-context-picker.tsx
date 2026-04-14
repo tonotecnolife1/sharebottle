@@ -2,7 +2,7 @@
 
 import { ChevronDown, UserCircle2, X } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatCustomerName } from "@/lib/utils";
 import type { Customer } from "@/types/nightos";
 
 interface Props {
@@ -30,7 +30,7 @@ export function CustomerContextPicker({
         <div className="flex-1 min-w-0">
           <div className="text-label-sm text-ink-muted">顧客コンテキスト</div>
           <div className="text-body-md text-ink truncate">
-            {selected ? selected.name : "指定なしで相談"}
+            {selected ? formatCustomerName(selected.name) : "指定なしで相談"}
           </div>
         </div>
         {selected && (
@@ -92,7 +92,7 @@ export function CustomerContextPicker({
                 selectedId === c.id && "bg-amethyst-muted",
               )}
             >
-              <div className="text-body-md text-ink">{c.name}</div>
+              <div className="text-body-md text-ink">{formatCustomerName(c.name)}</div>
               <div className="text-label-sm text-ink-muted">
                 {c.job ?? "—"} ·{" "}
                 {c.category === "vip"

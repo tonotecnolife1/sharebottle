@@ -145,7 +145,7 @@ function buildStubBriefing(data: CastHomeData): string {
       : top.reason === "interval"
         ? "ちょっと来店間隔が空いてるから、軽く近況を聞いてみて"
         : "新規で温度が高いから、次回の指名につなげるチャンスね";
-  return `${castName}さん、おはよう🌸 今日は${customer.name}さんを最優先で。${reasonText}。連絡が必要なお客様は${data.targets.length}人いるけど、まずこの一人に集中して動きましょ。`;
+  return `${castName}さん、おはよう🌸 今日は${customer.name}さまを最優先で。${reasonText}。連絡が必要なお客様は${data.targets.length}人いるけど、まずこの一人に集中して動きましょ。`;
 }
 
 function extractText(content: Anthropic.Messages.ContentBlock[]): string {

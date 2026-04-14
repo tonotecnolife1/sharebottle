@@ -95,7 +95,7 @@ export default function ChatHistoryPage() {
                     <User size={13} className="text-amethyst-dark" />
                   </div>
                   <span className="text-[12px] font-semibold text-ink flex-1">
-                    {group.customerName ?? "顧客指定なし"}
+                    {group.customerName ? `${group.customerName}さま` : "顧客指定なし"}
                   </span>
                   <span className="text-[10px] text-ink-muted">
                     {group.sessions.length}件

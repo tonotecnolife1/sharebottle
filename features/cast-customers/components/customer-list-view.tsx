@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
-import { cn } from "@/lib/utils";
+import { cn, formatCustomerName } from "@/lib/utils";
 import type { CustomerContext } from "@/types/nightos";
 import {
   loadActions,
@@ -306,7 +306,7 @@ export function CustomerListView({ contexts, today }: Props) {
                 {/* Row 1: name + badges */}
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-body-md font-semibold text-ink truncate">
-                    {e.customer.name}
+                    {formatCustomerName(e.customer.name)}
                   </span>
                   <Badge
                     tone={

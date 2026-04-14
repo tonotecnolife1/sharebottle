@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Card, GemCard } from "@/components/nightos/card";
 import { Badge } from "@/components/nightos/badge";
+import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
 import {
@@ -216,6 +217,8 @@ export default async function CustomerHomePage() {
             </div>
           </section>
         )}
+
+        <RoleSwitchLink />
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import {
   Wine,
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
-import { cn } from "@/lib/utils";
+import { cn, formatCustomerName } from "@/lib/utils";
 import type { FollowReason, FollowTarget } from "@/types/nightos";
 
 const BOTTLE_LOW_THRESHOLD = 5;
@@ -107,7 +107,7 @@ export function FollowTargetCard({
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-baseline gap-1.5 min-w-0">
             <h3 className="text-body-sm font-semibold text-ink truncate">
-              {customer.name}
+              {formatCustomerName(customer.name)}
             </h3>
             {customer.job && (
               <span className="text-[10px] text-ink-muted shrink-0">

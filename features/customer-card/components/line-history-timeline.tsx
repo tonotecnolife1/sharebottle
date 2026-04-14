@@ -101,7 +101,7 @@ function ScreenshotEntry({
           <div className="rounded-card overflow-hidden border border-pearl-soft">
             <Image
               src={screenshot.image_data}
-              alt={`${customerName}とのLINE会話`}
+              alt={`${customerName}さまとのLINE会話`}
               width={400}
               height={600}
               className="w-full h-auto"

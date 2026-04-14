@@ -15,6 +15,7 @@ import { StoreBriefing } from "@/features/store-hub/components/store-briefing";
 import { SendCastMessage } from "@/features/store-hub/components/send-cast-message";
 import { IssueCoupon } from "@/features/store-hub/components/issue-coupon";
 import { CastRequestBanner } from "@/features/store-hub/components/cast-request-banner";
+import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests } from "@/lib/nightos/supabase-queries";
 
 export default async function StoreHubPage() {
@@ -135,6 +136,8 @@ export default async function StoreHubPage() {
             />
           </div>
         </section>
+
+        <RoleSwitchLink />
       </div>
     </div>
   );
