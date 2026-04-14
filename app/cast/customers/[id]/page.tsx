@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/nightos/page-header";
 import { ActionButtons } from "@/features/customer-card/components/action-buttons";
+import { ChangeManagerButton } from "@/features/customer-management/components/change-manager-button";
 import { CustomerHeader } from "@/features/customer-card/components/customer-header";
 import { CustomerStats } from "@/features/customer-card/components/customer-stats";
 import { FunnelBadge } from "@/features/customer-card/components/funnel-badge";
@@ -15,6 +16,7 @@ import { CustomerPhotoUpload } from "@/features/customer-card/components/custome
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { mockCustomers } from "@/lib/nightos/mock-data";
 import {
+  getAllCasts,
   getCustomerContext,
   getScreenshotsForCustomer,
 } from "@/lib/nightos/supabase-queries";
@@ -24,9 +26,10 @@ export default async function CustomerCardPage({
 }: {
   params: { id: string };
 }) {
-  const [context, screenshots] = await Promise.all([
+  const [context, screenshots, allCasts] = await Promise.all([
     getCustomerContext(CURRENT_CAST_ID, params.id),
     getScreenshotsForCustomer(CURRENT_CAST_ID, params.id),
+    getAllCasts(),
   ]);
   if (!context) notFound();
 
@@ -59,6 +62,29 @@ export default async function CustomerCardPage({
         </div>
 
         <CustomerPhotoUpload customerId={customer.id} customerName={customer.name} />
+
+        {/* Manager + change button */}
+        <div className="flex items-center gap-2 flex-wrap text-[11px] text-ink-secondary">
+          <span>
+            管理:{" "}
+            <span className="text-ink font-medium">
+              {allCasts.find((c) => c.id === customer.manager_cast_id)?.name ?? "—"}
+            </span>
+            {" / 担当: "}
+            <span className="text-ink font-medium">
+              {allCasts.find((c) => c.id === customer.cast_id)?.name ?? "—"}
+            </span>
+          </span>
+          <ChangeManagerButton
+            customerId={customer.id}
+            customerName={customer.name}
+            currentManagerId={customer.manager_cast_id ?? null}
+            allCasts={allCasts}
+            requesterCastId={CURRENT_CAST_ID}
+            requesterName={allCasts.find((c) => c.id === CURRENT_CAST_ID)?.name ?? "キャスト"}
+          />
+        </div>
+
         <CustomerStats context={context} />
 
         {/* LINE exchange action */}

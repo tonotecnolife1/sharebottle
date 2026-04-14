@@ -18,6 +18,7 @@ import { SendCastMessage } from "@/features/store-hub/components/send-cast-messa
 import { IssueCoupon } from "@/features/store-hub/components/issue-coupon";
 import { CastRequestBanner } from "@/features/store-hub/components/cast-request-banner";
 import { OwnerOnly } from "@/features/store-hub/components/owner-only";
+import { ApprovalLink } from "@/features/store-hub/components/approval-link";
 import { StorePermissionBadge } from "@/features/store-hub/components/store-permission-badge";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests } from "@/lib/nightos/supabase-queries";
@@ -92,6 +93,11 @@ export default async function StoreHubPage() {
         {/* Issue coupon — owner only */}
         <OwnerOnly>
           <IssueCoupon customers={customers.map((c) => ({ id: c.id, name: c.name }))} />
+        </OwnerOnly>
+
+        {/* Approval queue — owner only */}
+        <OwnerOnly>
+          <ApprovalLink />
         </OwnerOnly>
 
         {/* Registration shortcuts */}
