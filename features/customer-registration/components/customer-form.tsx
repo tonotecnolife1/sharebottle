@@ -1,11 +1,12 @@
 "use client";
 
-import { Check, MessageCircle, UserPlus, Users } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Check, Crown, MessageCircle, UserPlus, Users } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
+import { inferManagerCastId } from "@/lib/nightos/manager-assignment";
 import type { Cast, Customer, CustomerCategory } from "@/types/nightos";
 import { createCustomerAction } from "../actions";
 
@@ -56,6 +57,24 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
   const [referrerId, setReferrerId] = useState<string>(initialReferrerId ?? "");
   const [funnelStage, setFunnelStage] = useState<FunnelStage>("store_only");
 
+  // Manager: auto-inferred from cast selection, but user can override
+  const [managerId, setManagerId] = useState<string>(() =>
+    inferManagerCastId(casts[0]?.id ?? "", casts) ?? "",
+  );
+  const [managerOverridden, setManagerOverridden] = useState(false);
+
+  // Re-infer manager when cast changes (unless user has overridden)
+  useEffect(() => {
+    if (managerOverridden) return;
+    const inferred = inferManagerCastId(castId, casts);
+    if (inferred !== null) setManagerId(inferred);
+  }, [castId, casts, managerOverridden]);
+
+  // Manager option list = only ママ/姉さん
+  const managerOptions = casts.filter(
+    (c) => c.club_role === "mama" || c.club_role === "oneesan",
+  );
+
   const reset = () => {
     setName("");
     setBirthday("");
@@ -66,6 +85,8 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
     setStoreMemo("");
     setReferrerId("");
     setFunnelStage("store_only");
+    setManagerId(inferManagerCastId(casts[0]?.id ?? "", casts) ?? "");
+    setManagerOverridden(false);
   };
 
   const submit = () => {
@@ -82,6 +103,7 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         cast_id: castId,
         referred_by_customer_id: referrerId || null,
         funnel_stage: funnelStage,
+        manager_cast_id: managerId || null,
       });
       if (!res.ok) {
         setError(res.error);
@@ -155,6 +177,41 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         options={casts.map((c) => ({ value: c.id, label: c.name }))}
         hint="この顧客はタップ1回でキャストに紐づきます"
       />
+
+      {/* ── 管理者（ママ/姉さん） ── */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <Crown size={13} className="text-roseGold-dark" />
+          <label className="text-label-md text-ink font-medium">
+            管理者（ママ/姉さん）
+          </label>
+          {!managerOverridden && managerId && (
+            <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-badge">
+              自動選択
+            </span>
+          )}
+        </div>
+        <select
+          value={managerId}
+          onChange={(e) => {
+            setManagerId(e.target.value);
+            setManagerOverridden(true);
+          }}
+          className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
+          style={{ fontSize: "16px" }}
+        >
+          <option value="">管理者なし</option>
+          {managerOptions.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+              {m.club_role === "mama" ? "ママ" : "姉さん"}
+            </option>
+          ))}
+        </select>
+        <p className="text-label-sm text-ink-muted">
+          担当者から自動で選ばれます。変更する場合はここから上書きできます。
+        </p>
+      </div>
 
       {/* ── 紹介元 ── */}
       <div className="space-y-1.5">
