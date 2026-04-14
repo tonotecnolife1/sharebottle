@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { Cast, CustomerContext } from "@/types/nightos";
+import type { HelpSummaryEntry } from "@/lib/nightos/master-help-split";
 import { CustomerListView } from "./customer-list-view";
+import { HelpVisitsSection } from "./help-visits-section";
 import {
   MapModeToggle,
   ViewModeToggle,
@@ -18,13 +20,15 @@ interface Props {
   contexts: CustomerContext[];
   today: string;
   allCasts: Cast[];
+  helpEntries: HelpSummaryEntry[];
 }
 
-/**
- * 顧客一覧ページの表示モード切替シェル。
- * リスト表示とマップ表示（顧客ベース / キャストベース）を切り替える。
- */
-export function CustomerPageShell({ contexts, today, allCasts }: Props) {
+export function CustomerPageShell({
+  contexts,
+  today,
+  allCasts,
+  helpEntries,
+}: Props) {
   const [viewMode, setViewMode] = useState<CustomerViewMode>("list");
   const [mapMode, setMapMode] = useState<MapMode>("customer");
   const [loaded, setLoaded] = useState(false);
@@ -35,9 +39,7 @@ export function CustomerPageShell({ contexts, today, allCasts }: Props) {
       if (v === "list" || v === "map") setViewMode(v);
       const m = localStorage.getItem(LS_MAP);
       if (m === "customer" || m === "cast") setMapMode(m);
-    } catch {
-      // ignore
-    }
+    } catch {}
     setLoaded(true);
   }, []);
 
@@ -57,7 +59,7 @@ export function CustomerPageShell({ contexts, today, allCasts }: Props) {
   if (!loaded) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <ViewModeToggle value={viewMode} onChange={updateView} />
         {viewMode === "map" && (
@@ -65,8 +67,26 @@ export function CustomerPageShell({ contexts, today, allCasts }: Props) {
         )}
       </div>
 
+      {/* Master customers: primary section */}
       {viewMode === "list" ? (
-        <CustomerListView contexts={contexts} today={today} allCasts={allCasts} />
+        <>
+          <section className="space-y-2">
+            <h2 className="text-[11px] text-ink-muted px-1 uppercase tracking-wider font-medium">
+              自分のお客様（マスター管理）
+            </h2>
+            <CustomerListView
+              contexts={contexts}
+              today={today}
+              allCasts={allCasts}
+            />
+          </section>
+
+          {/* Help visits: secondary section (only in list view) */}
+          <HelpVisitsSection
+            entries={helpEntries}
+            description="他の姉さん管理のお客様に接客した実績。マスター関係は変わりません。"
+          />
+        </>
       ) : (
         <CustomerMapView
           customers={contexts.map((c) => c.customer)}
