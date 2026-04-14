@@ -4,6 +4,10 @@ import {
   SAKURA_MAMA_MODEL,
   SAKURA_MAMA_SYSTEM_PROMPT,
 } from "@/features/ruri-mama/data/system-prompt";
+import {
+  formatExamplesForPrompt,
+  retrieveRelevantExamples,
+} from "@/features/ruri-mama/data/training-examples";
 import { generateStubReply } from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
@@ -87,11 +91,23 @@ export async function POST(req: Request) {
       return { role: m.role, content: m.content };
     });
 
+    // ── RAG: retrieve relevant training examples ──
+    const relevantExamples = retrieveRelevantExamples({
+      userText,
+      intent: body.intent,
+      customerCategory: customerContext?.customer.category,
+      limit: 3,
+    });
+    const examplesBlock = formatExamplesForPrompt(relevantExamples);
+    const enrichedSystem = examplesBlock
+      ? `${SAKURA_MAMA_SYSTEM_PROMPT}\n\n${examplesBlock}`
+      : SAKURA_MAMA_SYSTEM_PROMPT;
+
     const response = await client.messages.create({
       model: SAKURA_MAMA_MODEL,
       max_tokens: 800,
       temperature: 0.7,
-      system: SAKURA_MAMA_SYSTEM_PROMPT,
+      system: enrichedSystem,
       messages: apiMessages,
     });
 
