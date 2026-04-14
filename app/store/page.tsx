@@ -17,6 +17,8 @@ import { StoreBriefing } from "@/features/store-hub/components/store-briefing";
 import { SendCastMessage } from "@/features/store-hub/components/send-cast-message";
 import { IssueCoupon } from "@/features/store-hub/components/issue-coupon";
 import { CastRequestBanner } from "@/features/store-hub/components/cast-request-banner";
+import { OwnerOnly } from "@/features/store-hub/components/owner-only";
+import { StorePermissionBadge } from "@/features/store-hub/components/store-permission-badge";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests } from "@/lib/nightos/supabase-queries";
 
@@ -32,8 +34,11 @@ export default async function StoreHubPage() {
     <div className="animate-fade-in">
       {/* Header */}
       <header className="px-5 pt-8 pb-4">
-        <div className="text-label-sm text-ink-muted tracking-wider uppercase mb-1">
-          Store Console
+        <div className="flex items-center gap-2 mb-1">
+          <div className="text-label-sm text-ink-muted tracking-wider uppercase">
+            Store Console
+          </div>
+          <StorePermissionBadge />
         </div>
         <h1 className="text-display-lg font-display font-semibold text-ink">
           NIGHTOS
@@ -44,40 +49,50 @@ export default async function StoreHubPage() {
       </header>
 
       <div className="px-5 pb-6 space-y-5">
-        {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-2.5">
-          <StatCard
-            label="月間指名"
-            value={data.totalNominations}
-            unit="本"
-            tone="rose"
-          />
-          <StatCard
-            label="月間売上"
-            value={`${Math.round(data.totalSales / 10_000)}`}
-            unit="万円"
-          />
-          <StatCard
-            label="連絡達成率"
-            value={Math.round(data.averageFollowRate * 100)}
-            unit="%"
-            tone="amethyst"
-          />
-        </div>
+        {/* Quick stats — owner only */}
+        <OwnerOnly>
+          <div className="grid grid-cols-3 gap-2.5">
+            <StatCard
+              label="月間指名"
+              value={data.totalNominations}
+              unit="本"
+              tone="rose"
+            />
+            <StatCard
+              label="月間売上"
+              value={`${Math.round(data.totalSales / 10_000)}`}
+              unit="万円"
+            />
+            <StatCard
+              label="連絡達成率"
+              value={Math.round(data.averageFollowRate * 100)}
+              unit="%"
+              tone="amethyst"
+            />
+          </div>
+        </OwnerOnly>
 
-        {/* Cast requests (reverse messaging) */}
-        {castRequests.length > 0 && (
-          <CastRequestBanner requests={castRequests} />
-        )}
+        {/* Cast requests — owner only (manages cast communication) */}
+        <OwnerOnly>
+          {castRequests.length > 0 && (
+            <CastRequestBanner requests={castRequests} />
+          )}
+        </OwnerOnly>
 
-        {/* Store AI Briefing */}
-        <StoreBriefing />
+        {/* Store AI Briefing — owner only */}
+        <OwnerOnly>
+          <StoreBriefing />
+        </OwnerOnly>
 
-        {/* Send message to cast */}
-        <SendCastMessage casts={casts.map((c) => ({ id: c.id, name: c.name }))} />
+        {/* Send message to cast — owner only */}
+        <OwnerOnly>
+          <SendCastMessage casts={casts.map((c) => ({ id: c.id, name: c.name }))} />
+        </OwnerOnly>
 
-        {/* Issue coupon to customer */}
-        <IssueCoupon customers={customers.map((c) => ({ id: c.id, name: c.name }))} />
+        {/* Issue coupon — owner only */}
+        <OwnerOnly>
+          <IssueCoupon customers={customers.map((c) => ({ id: c.id, name: c.name }))} />
+        </OwnerOnly>
 
         {/* Registration shortcuts */}
         <section className="space-y-2">
@@ -106,10 +121,10 @@ export default async function StoreHubPage() {
           </div>
         </section>
 
-        {/* Management shortcuts */}
+        {/* Data management (both staff and owner) */}
         <section className="space-y-2">
           <h2 className="text-label-md text-ink-secondary font-medium">
-            管理
+            データ確認・編集
           </h2>
           <div className="space-y-2">
             <ListLink
@@ -130,26 +145,38 @@ export default async function StoreHubPage() {
               label="ボトル管理"
               description="残量管理・消費記録"
             />
-            <ListLink
-              href="/store/dashboard"
-              icon={<BarChart3 size={18} />}
-              label="効果ダッシュボード"
-              description="売上推移・キャスト成績・ROI"
-            />
-            <ListLink
-              href="/store/funnel"
-              icon={<Filter size={18} />}
-              label="顧客ファネル"
-              description="店舗登録 → 担当 → LINE交換"
-            />
-            <ListLink
-              href="/store/douhan-pace"
-              icon={<Clock size={18} />}
-              label="同伴ペース"
-              description="週2/月7 ノルマ達成状況"
-            />
           </div>
         </section>
+
+        {/* Owner-only management section */}
+        <OwnerOnly>
+          <section className="space-y-2">
+            <h2 className="text-label-md text-ink-secondary font-medium flex items-center gap-1.5">
+              オーナー管理
+              <StorePermissionBadge />
+            </h2>
+            <div className="space-y-2">
+              <ListLink
+                href="/store/dashboard"
+                icon={<BarChart3 size={18} />}
+                label="効果ダッシュボード"
+                description="売上推移・キャスト成績・ROI"
+              />
+              <ListLink
+                href="/store/funnel"
+                icon={<Filter size={18} />}
+                label="顧客ファネル"
+                description="店舗登録 → 担当 → LINE交換"
+              />
+              <ListLink
+                href="/store/douhan-pace"
+                icon={<Clock size={18} />}
+                label="同伴ペース"
+                description="週2/月7 ノルマ達成状況"
+              />
+            </div>
+          </section>
+        </OwnerOnly>
 
         <RoleSwitchLink />
       </div>

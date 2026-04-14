@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, Calendar, Clock, Filter } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
+import { OwnerGuard } from "@/features/store-hub/components/owner-guard";
 import {
   PACE_STATUS_CONFIG,
   calculateDouhanPaceForAll,
@@ -57,6 +58,7 @@ export default function StoreDouhanPacePage() {
   const behindCount = paceList.filter((p) => p.status === "behind").length;
 
   return (
+    <OwnerGuard>
     <div className="animate-fade-in">
       <PageHeader title="同伴ペース" subtitle="週2回・月7回の達成状況" showBack />
 
@@ -212,5 +214,6 @@ export default function StoreDouhanPacePage() {
         </section>
       </div>
     </div>
+    </OwnerGuard>
   );
 }

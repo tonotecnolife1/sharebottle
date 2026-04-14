@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/nightos/page-header";
 import { Card } from "@/components/nightos/card";
 import { StatCard } from "@/components/nightos/stat-card";
+import { OwnerGuard } from "@/features/store-hub/components/owner-guard";
 import { AtRiskCustomers } from "@/features/store-dashboard/components/at-risk-customers";
 import { CastTable } from "@/features/store-dashboard/components/cast-table";
 import { CategoryBreakdown } from "@/features/store-dashboard/components/category-breakdown";
@@ -36,6 +37,7 @@ export default async function StoreDashboardPage() {
   });
 
   return (
+    <OwnerGuard>
     <div className="animate-fade-in">
       <PageHeader
         title="効果ダッシュボード"
@@ -110,5 +112,6 @@ export default async function StoreDashboardPage() {
         </section>
       </div>
     </div>
+    </OwnerGuard>
   );
 }

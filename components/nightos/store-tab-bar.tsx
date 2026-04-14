@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BarChart3, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getStorePermission } from "@/lib/nightos/store-permission-store";
 
 interface Tab {
   key: string;
@@ -11,6 +13,7 @@ interface Tab {
   icon: typeof Home;
   href: string;
   match: (p: string) => boolean;
+  ownerOnly?: boolean;
 }
 
 const TABS: Tab[] = [
@@ -31,17 +34,29 @@ const TABS: Tab[] = [
     icon: BarChart3,
     href: "/store/dashboard",
     match: (p) => p.startsWith("/store/dashboard"),
+    ownerOnly: true,
   },
 ];
 
 export function StoreTabBar() {
   const pathname = usePathname() ?? "";
+  const [isOwner, setIsOwner] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsOwner(getStorePermission() === "owner");
+    setLoaded(true);
+  }, []);
+
+  if (!loaded) return null;
+
+  const visibleTabs = TABS.filter((t) => !t.ownerOnly || isOwner);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
       <div className="mx-auto max-w-[520px] px-4 pb-safe pointer-events-auto">
         <div className="rounded-full bg-pearl-warm/95 backdrop-blur-md border border-pearl-soft shadow-elevated-light flex items-center justify-around px-2 py-2">
-          {TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const active = tab.match(pathname);
             const Icon = tab.icon;
             return (

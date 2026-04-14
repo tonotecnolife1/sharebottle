@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  ClipboardList,
   Crown,
+  KeyRound,
   Sparkles,
   Store as StoreIcon,
   Ticket,
@@ -17,6 +19,7 @@ import {
   setVenueType,
   type NightosRole,
 } from "@/lib/nightos/role-store";
+import { setStorePermission, type StorePermission } from "@/lib/nightos/store-permission-store";
 import type { VenueType } from "@/lib/nightos/constants";
 import { Card } from "@/components/nightos/card";
 
@@ -52,6 +55,12 @@ export default function RoleSelectorPage() {
             ? "/store"
             : "/customer/home";
     router.push(dest);
+  };
+
+  const pickStorePermission = (permission: StorePermission) => {
+    setRole("store");
+    setStorePermission(permission);
+    router.push("/store");
   };
 
   return (
@@ -201,24 +210,48 @@ export default function RoleSelectorPage() {
               </button>
             )}
 
-            {/* Store staff */}
+            {/* Store staff — input only */}
             <button
               type="button"
-              onClick={() => pickRole("store")}
+              onClick={() => pickStorePermission("staff")}
               className="text-left transition-transform active:scale-[0.98]"
             >
               <Card className="p-5">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-champagne-dark flex items-center justify-center shadow-soft-card">
-                    <StoreIcon size={26} className="text-ink" />
+                  <div className="w-14 h-14 rounded-full bg-champagne flex items-center justify-center shadow-soft-card">
+                    <ClipboardList size={26} className="text-ink-secondary" />
                   </div>
                   <div className="flex-1">
                     <div className="text-label-sm text-ink-secondary tracking-wider uppercase mb-0.5">
-                      For Store Staff
+                      For Staff
                     </div>
-                    <div className="text-display-sm text-ink">店舗スタッフ</div>
+                    <div className="text-display-sm text-ink">店舗スタッフ（入力担当）</div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
-                      顧客・来店・ボトル管理・ダッシュボード
+                      顧客・来店・ボトルの入力業務
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </button>
+
+            {/* Store owner — full management */}
+            <button
+              type="button"
+              onClick={() => pickStorePermission("owner")}
+              className="text-left transition-transform active:scale-[0.98]"
+            >
+              <Card className="p-5 !border-champagne-dark">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-champagne-dark flex items-center justify-center shadow-soft-card">
+                    <KeyRound size={26} className="text-ink" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-label-sm text-ink-secondary tracking-wider uppercase mb-0.5">
+                      For Owner
+                    </div>
+                    <div className="text-display-sm text-ink">店舗オーナー</div>
+                    <div className="text-body-sm text-ink-secondary mt-0.5">
+                      全機能＋ダッシュボード・ファネル・ペース管理
                     </div>
                   </div>
                 </div>

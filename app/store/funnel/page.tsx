@@ -1,6 +1,7 @@
 import { Store, UserCheck, MessageCircle, TrendingUp } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
+import { OwnerGuard } from "@/features/store-hub/components/owner-guard";
 import {
   calculateFunnelByCast,
   calculateFunnelStats,
@@ -32,6 +33,7 @@ export default function StoreFunnelPage() {
     .slice(0, 10);
 
   return (
+    <OwnerGuard>
     <div className="animate-fade-in">
       <PageHeader
         title="顧客ファネル"
@@ -181,6 +183,7 @@ export default function StoreFunnelPage() {
         )}
       </div>
     </div>
+    </OwnerGuard>
   );
 }
 
