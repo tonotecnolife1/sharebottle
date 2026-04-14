@@ -184,6 +184,25 @@ export const mockCasts: Cast[] = [
     repeat_rate: 0.85,
     club_role: "mama",
   },
+  {
+    id: "cast_oneesan2",
+    store_id: CURRENT_STORE_ID,
+    name: "ゆき",
+    nomination_count: 21,
+    monthly_sales: 2_100_000,
+    repeat_rate: 0.76,
+    club_role: "oneesan",
+  },
+  {
+    id: "cast_help2",
+    store_id: CURRENT_STORE_ID,
+    name: "あやな",
+    nomination_count: 6,
+    monthly_sales: 580_000,
+    repeat_rate: 0.54,
+    club_role: "help",
+    assigned_oneesan_id: "cast_oneesan2",
+  },
   // ── Lounge ÉTOILE 六本木 ──
   {
     id: "cast3",

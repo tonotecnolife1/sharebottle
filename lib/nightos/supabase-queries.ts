@@ -135,6 +135,47 @@ export async function getAllCasts(): Promise<Cast[]> {
 }
 
 /**
+ * mama/姉さん配下のキャスト一覧を取得。
+ * - ママ: 同じ店舗の全キャスト（自分除く）
+ * - お姉さん: 自分のヘルプ + 自分
+ */
+export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]> {
+  const leader = mockCasts.find((c) => c.id === leaderCastId);
+  if (!leader) return [];
+  if (leader.club_role === "mama") {
+    // All casts in the same store except the mama herself
+    return mockCasts.filter(
+      (c) => c.store_id === leader.store_id && c.id !== leader.id,
+    );
+  }
+  if (leader.club_role === "oneesan") {
+    // Own helps + self
+    return mockCasts.filter(
+      (c) =>
+        c.store_id === leader.store_id &&
+        (c.id === leader.id || c.assigned_oneesan_id === leader.id),
+    );
+  }
+  return [];
+}
+
+/**
+ * チーム全体の顧客一覧（mama/姉さん用）。
+ * 自分 + 配下のキャストが担当する顧客すべてを返す。
+ */
+export async function getTeamCustomers(
+  leaderCastId: string,
+): Promise<Array<Customer & { cast_name: string }>> {
+  const team = await getSubordinateCasts(leaderCastId);
+  const teamIds = new Set([leaderCastId, ...team.map((c) => c.id)]);
+  const customers = mockCustomers.filter((c) => teamIds.has(c.cast_id));
+  return customers.map((c) => {
+    const cast = mockCasts.find((x) => x.id === c.cast_id);
+    return { ...c, cast_name: cast?.name ?? "不明" };
+  });
+}
+
+/**
  * All customers in the store, sorted so recently-visited ones are on top
  * (matches spec: "最近の来店客が上位表示").
  */
