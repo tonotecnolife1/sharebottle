@@ -8,7 +8,10 @@ import {
   formatExamplesForPrompt,
   retrieveRelevantExamples,
 } from "@/features/ruri-mama/data/training-examples";
-import { generateStubOptions } from "@/features/ruri-mama/data/stub-responses";
+import {
+  generateStubOptions,
+  generateStubRefinedOptions,
+} from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import type {
@@ -37,6 +40,11 @@ export async function POST(req: Request) {
 
   if (!body.messages?.length || !body.castId) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // ── Refine mode: take previous reply + direction, return 3 refined options ──
+  if (body.refineStep === "apply" && body.previousReply && body.refinementDirection) {
+    return handleRefineApply(body);
   }
 
   // Load customer context (mock or DB depending on env)
@@ -235,6 +243,84 @@ function parseOptionsFromText(text: string): ReplyOption[] {
   } catch (err) {
     console.warn("[sakura-mama] JSON parse error:", err);
     return [];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Refine: take previous reply + direction → 3 refined options
+// ═══════════════════════════════════════════════════════════
+
+async function handleRefineApply(
+  body: RuriMamaRequest,
+): Promise<Response> {
+  const previousReply = body.previousReply ?? "";
+  const direction = body.refinementDirection ?? "";
+
+  // Stub mode
+  if (!process.env.ANTHROPIC_API_KEY) {
+    const options = generateStubRefinedOptions({ previousReply, direction });
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: true,
+    });
+  }
+
+  try {
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const userMsg = `【前回の回答】
+${previousReply}
+
+【ブラッシュアップの方向性】
+${direction}
+
+上の回答を、指定の方向性に沿って3パターンで書き直してください。
+元の構造（【文面例】【なぜ効くか】などのセクション）は維持。
+各パターンは style (safe/practical/warm) で明確に差別化して。
+
+出力は JSON のみ、前後の説明文なし。
+
+{
+  "options": [
+    {"id": "A", "style": "safe", "label": "ラベル", "content": "..."},
+    {"id": "B", "style": "practical", "label": "ラベル", "content": "..."},
+    {"id": "C", "style": "warm", "label": "ラベル", "content": "..."}
+  ]
+}`;
+
+    const response = await client.messages.create({
+      model: SAKURA_MAMA_MODEL,
+      max_tokens: 1500,
+      temperature: 0.8,
+      system: SAKURA_MAMA_SYSTEM_PROMPT,
+      messages: [{ role: "user" as const, content: userMsg }],
+    });
+
+    const rawText = extractText(response.content);
+    const options = parseOptionsFromText(rawText);
+
+    if (options.length < 3) {
+      const stub = generateStubRefinedOptions({ previousReply, direction });
+      return NextResponse.json<RuriMamaResponse>({
+        options: stub,
+        reply: stub[0].content,
+        isStub: true,
+      });
+    }
+
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: false,
+    });
+  } catch (err) {
+    console.error("[sakura-mama refine] Claude call failed:", err);
+    const options = generateStubRefinedOptions({ previousReply, direction });
+    return NextResponse.json<RuriMamaResponse>({
+      options,
+      reply: options[0].content,
+      isStub: true,
+    });
   }
 }
 

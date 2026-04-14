@@ -120,6 +120,37 @@ export function generateStubOptions(opts: {
 }
 
 /**
+ * ブラッシュアップ用のスタブ。前回回答と方向性から3バリエーションを返す。
+ */
+export function generateStubRefinedOptions(opts: {
+  previousReply: string;
+  direction: string;
+}): ReplyOption[] {
+  const { direction, previousReply } = opts;
+  const snippet = previousReply.slice(0, 80).replace(/\n/g, " ");
+  return [
+    {
+      id: "A",
+      style: "safe",
+      label: `${direction}（安全策）`,
+      content: `【文面例】\n「（${direction}を意識した丁寧な書き直し）」\n\n【なぜ効く】\n前回の「${snippet}…」をベースに、${direction}の方向でトーンを整えた版。無難な仕上がりで失敗しない型。\n\n（本番ではClaudeが具体的な文面を生成します）`,
+    },
+    {
+      id: "B",
+      style: "practical",
+      label: `${direction}（実用版）`,
+      content: `【文面例】\n「（${direction}を実用寄りで適用した短めの書き直し）」\n\n【なぜ効く】\n${direction}の方向性を実用度優先で反映。すぐ使える短さを重視。\n\n（本番ではClaudeが具体的な文面を生成します）`,
+    },
+    {
+      id: "C",
+      style: "warm",
+      label: `${direction}（情緒版）`,
+      content: `【文面例】\n「（${direction}を温度感強めで適用）」\n\n【なぜ効く】\n${direction}を最大限活かし、感情の機微を前面に出した書き直し。\n\n（本番ではClaudeが具体的な文面を生成します）`,
+    },
+  ];
+}
+
+/**
  * @deprecated Use generateStubOptions instead. Keeps backward compat until old call sites migrate.
  */
 export function generateStubReply(opts: {

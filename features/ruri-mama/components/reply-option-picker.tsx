@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Heart, Sparkles, Zap } from "lucide-react";
+import { Check, Heart, Sparkles, Wand2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReplyOption, ReplyOptionStyle } from "@/types/nightos";
 
@@ -109,5 +109,33 @@ export function PickedOptionBadge({ option }: { option: ReplyOption }) {
       <Icon size={9} />
       パターン{option.id} · {option.label}
     </div>
+  );
+}
+
+/**
+ * ブラッシュアップ起動ボタン。選んだ回答の下に表示。
+ */
+export function RefineTriggerButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-medium border border-amethyst-border transition-all active:scale-[0.97]",
+        disabled
+          ? "bg-pearl-soft text-ink-muted cursor-not-allowed"
+          : "bg-amethyst-muted text-amethyst-dark hover:bg-amethyst-muted/80",
+      )}
+    >
+      <Wand2 size={11} />
+      この文面をブラッシュアップする
+    </button>
   );
 }

@@ -284,6 +284,16 @@ export interface RuriMamaRequest {
     helpful: string[];
     notHelpful: string[];
   };
+  /**
+   * ブラッシュアップフロー制御
+   * - undefined: 通常（最初のアドバイス）
+   * - "apply": 既存回答を指定方向でブラッシュアップ
+   */
+  refineStep?: "apply";
+  /** ブラッシュアップ元の回答（user pickedOption の content） */
+  previousReply?: string;
+  /** ブラッシュアップの方向性（例: "もっと温かく"） */
+  refinementDirection?: string;
 }
 
 export interface RuriMamaResponse {

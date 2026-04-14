@@ -17,8 +17,14 @@ import { CustomerContextPicker } from "./customer-context-picker";
 import { FeedbackButtons } from "./feedback-buttons";
 import { IntentPicker } from "./intent-picker";
 import { MessageBubble } from "./message-bubble";
-import { PickedOptionBadge, ReplyOptionPicker } from "./reply-option-picker";
+import {
+  PickedOptionBadge,
+  RefineTriggerButton,
+  ReplyOptionPicker,
+} from "./reply-option-picker";
+import { RefineDirectionPicker } from "./refine-direction-picker";
 import { recordChoice } from "../lib/option-choice-store";
+import type { RefineDirection } from "../data/refine-directions";
 import type {
   ChatMessage,
   Customer,
@@ -119,6 +125,10 @@ export function ChatWindow({
   const [stubMode, setStubMode] = useState(initialIsStubMode);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentSessionId] = useState(() => newSessionId());
+  /** ブラッシュアップ方向選択中のメッセージ index。null = 起動されてない */
+  const [refiningMessageIdx, setRefiningMessageIdx] = useState<number | null>(
+    null,
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Save session to history whenever phase becomes "responded"
@@ -254,6 +264,67 @@ export function ChatWindow({
       pickedAt: new Date().toISOString(),
       castId: CURRENT_CAST_ID,
     });
+  };
+
+  /** ブラッシュアップボタン押下 → 方向選択を起動 */
+  const handleRefineTrigger = (messageIndex: number) => {
+    setRefiningMessageIdx(messageIndex);
+  };
+
+  /** ブラッシュアップ方向選択 → APIに投げて新しい3つのオプションを取得 */
+  const handleRefineDirectionPick = async (
+    messageIndex: number,
+    direction: RefineDirection,
+  ) => {
+    const srcMessage = messages[messageIndex];
+    if (!srcMessage?.content) return;
+
+    setRefiningMessageIdx(null);
+    setPhase({ name: "loading" });
+
+    try {
+      const res = await fetch("/api/ruri-mama", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            { role: "user", content: `ブラッシュアップ: ${direction.label}` },
+          ],
+          castId: CURRENT_CAST_ID,
+          intent: "freeform",
+          refineStep: "apply",
+          previousReply: srcMessage.content,
+          refinementDirection: direction.prompt,
+        }),
+      });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data: import("@/types/nightos").RuriMamaResponse = await res.json();
+      setStubMode(data.isStub);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: `「${direction.emoji} ${direction.label}」で書き直して`,
+        },
+        {
+          role: "assistant",
+          content: data.reply,
+          isStub: data.isStub,
+          options: data.options && data.options.length >= 2 ? data.options : undefined,
+        },
+      ]);
+      setPhase({ name: "responded" });
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "ごめんなさい、ブラッシュアップに失敗しました。もう一度試してみて。",
+        },
+      ]);
+      setPhase({ name: "responded" });
+    }
   };
 
   /** Adds a NEW user message, then fires the API call with the updated history. */
@@ -427,6 +498,18 @@ export function ChatWindow({
               ? m.options.find((o) => o.id === m.pickedOptionId)
               : undefined;
 
+          // Show refine button when: assistant message has picked option,
+          // is the latest assistant message, and isn't currently being refined
+          const isLastAssistant =
+            m.role === "assistant" &&
+            i === messages.findLastIndex((x) => x.role === "assistant");
+          const canRefine =
+            m.role === "assistant" &&
+            pickedOpt !== undefined &&
+            isLastAssistant &&
+            phase.name !== "loading";
+          const isRefiningThis = refiningMessageIdx === i;
+
           return (
             <div key={i} className="space-y-2">
               {showPicker ? (
@@ -440,11 +523,27 @@ export function ChatWindow({
                   <MessageBubble message={m} />
                 </>
               )}
+
+              {/* Refine direction picker (when user taps "ブラッシュアップ") */}
+              {isRefiningThis && (
+                <RefineDirectionPicker
+                  onPick={(dir) => handleRefineDirectionPick(i, dir)}
+                  onCancel={() => setRefiningMessageIdx(null)}
+                />
+              )}
+
               {!showPicker &&
                 m.role === "assistant" &&
                 i > 0 &&
                 m !== FREEFORM_PROMPT && (
-                  <FeedbackButtons assistantContent={m.content} />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <FeedbackButtons assistantContent={m.content} />
+                    {canRefine && !isRefiningThis && (
+                      <RefineTriggerButton
+                        onClick={() => handleRefineTrigger(i)}
+                      />
+                    )}
+                  </div>
                 )}
             </div>
           );
