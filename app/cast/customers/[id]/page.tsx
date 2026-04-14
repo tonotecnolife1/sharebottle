@@ -50,6 +50,12 @@ export default async function CustomerCardPage({
               紹介元: {referrer.name}さま
             </span>
           )}
+          <a
+            href={`/store/customers/new?referrer=${customer.id}`}
+            className="ml-auto text-[10px] text-amethyst-dark underline underline-offset-2"
+          >
+            + この方の紹介で登録
+          </a>
         </div>
 
         <CustomerPhotoUpload customerId={customer.id} customerName={customer.name} />

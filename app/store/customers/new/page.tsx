@@ -1,15 +1,29 @@
 import { PageHeader } from "@/components/nightos/page-header";
 import { CustomerForm } from "@/features/customer-registration/components/customer-form";
-import { getAllCasts } from "@/lib/nightos/supabase-queries";
+import {
+  getAllCasts,
+  getAllCustomers,
+} from "@/lib/nightos/supabase-queries";
 
-export default async function NewCustomerPage() {
-  const casts = await getAllCasts();
+interface Props {
+  searchParams: { referrer?: string };
+}
+
+export default async function NewCustomerPage({ searchParams }: Props) {
+  const [casts, customers] = await Promise.all([
+    getAllCasts(),
+    getAllCustomers(),
+  ]);
 
   return (
     <div className="animate-fade-in">
       <PageHeader title="顧客登録" subtitle="約2分で完了" showBack />
       <div className="px-5 pt-4 pb-6">
-        <CustomerForm casts={casts} />
+        <CustomerForm
+          casts={casts}
+          existingCustomers={customers}
+          initialReferrerId={searchParams.referrer}
+        />
       </div>
     </div>
   );

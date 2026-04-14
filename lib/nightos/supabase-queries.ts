@@ -539,6 +539,12 @@ export interface CreateCustomerInput {
   category: CustomerCategory;
   store_memo: string | null;
   cast_id: string;
+  /** 紹介元顧客 id（紹介で来た時） */
+  referred_by_customer_id?: string | null;
+  /** 初期ファネルステージ。未指定 = "store_only" */
+  funnel_stage?: "store_only" | "assigned" | "line_exchanged";
+  /** LINE交換済みで登録時、交換日時（ISO） */
+  line_exchanged_at?: string | null;
 }
 
 export async function createCustomer(
@@ -552,6 +558,7 @@ export async function createCustomer(
 }
 
 function createCustomerMock(input: CreateCustomerInput): Customer {
+  const stage = input.funnel_stage ?? "store_only";
   const customer: Customer = {
     id: `cust_${Date.now()}`,
     store_id: CURRENT_STORE_ID,
@@ -563,6 +570,14 @@ function createCustomerMock(input: CreateCustomerInput): Customer {
     category: input.category,
     store_memo: input.store_memo,
     created_at: new Date().toISOString(),
+    referred_by_customer_id: input.referred_by_customer_id ?? null,
+    funnel_stage: stage,
+    line_exchanged_cast_id:
+      stage === "line_exchanged" ? input.cast_id : null,
+    line_exchanged_at:
+      stage === "line_exchanged"
+        ? input.line_exchanged_at ?? new Date().toISOString()
+        : null,
   };
   mockCustomers.push(customer);
   return customer;
