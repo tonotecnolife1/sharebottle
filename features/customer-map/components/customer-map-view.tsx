@@ -145,14 +145,16 @@ function ReferralNodeCard({
         isRoot ? "border-amethyst-border" : "border-pearl-soft",
       )}
     >
-      {/* 1行目: 名前 + ファネル状態バッジ（文言付き） [余白] 紹介元ラベル */}
+      {/* 1行目: 名前 + ファネル状態バッジ（担当ありは表示しない） [余白] 紹介元ラベル */}
       <div className="flex items-center gap-2 min-w-0">
         <span className="text-body-sm font-semibold text-ink truncate">
           {formatCustomerName(node.customer.name)}
         </span>
-        <FunnelBadge
-          stage={node.customer.funnel_stage ?? "store_only"}
-        />
+        {(node.customer.funnel_stage ?? "store_only") !== "assigned" && (
+          <FunnelBadge
+            stage={node.customer.funnel_stage ?? "store_only"}
+          />
+        )}
         {isRoot && (
           <span className="ml-auto flex items-center gap-1 text-[10px] text-amethyst-dark font-medium shrink-0 bg-amethyst-muted/40 border border-amethyst-border rounded-badge px-1.5 py-0.5">
             <Crown size={10} />
