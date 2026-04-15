@@ -88,7 +88,7 @@ export function AiAnalyticsView() {
       <EmptyState
         icon={<BarChart3 size={22} />}
         title="データがまだありません"
-        description="さくらママに相談して3つの選択肢から回答を選ぶたびにデータが集まります。各キャストの好みの傾向が分析できます。"
+        description="さくらママ(AI)に相談して3つの選択肢から回答を選ぶたびにデータが集まります。各キャストの好みの傾向が分析できます。"
         tone="amethyst"
       />
     );
@@ -197,7 +197,7 @@ export function AiAnalyticsView() {
             </Card>
           </div>
           <p className="text-[11px] text-ink-muted px-1">
-            ※ さくらママは「参考になった」パターンを学習材料にして次回以降の回答に反映します。
+            ※ さくらママ(AI)は「参考になった」パターンを学習材料にして次回以降の回答に反映します。
           </p>
         </section>
       )}

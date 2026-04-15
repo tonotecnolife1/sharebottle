@@ -43,7 +43,7 @@ export default function ChatHistoryPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="相談履歴" subtitle="過去のさくらママとのやりとり" showBack />
+      <PageHeader title="相談履歴" subtitle="過去のさくらママ(AI)とのやりとり" showBack />
       <div className="px-5 pt-3 pb-6 space-y-3">
         {/* Search */}
         <div className="relative">
@@ -71,7 +71,7 @@ export default function ChatHistoryPage() {
             description={
               query
                 ? "別のキーワードで試してみてくださいね"
-                : "さくらママに一度相談するとここに記録されます。いつでも振り返れます。"
+                : "さくらママ(AI)に一度相談するとここに記録されます。いつでも振り返れます。"
             }
             tone="amethyst"
             action={
@@ -80,7 +80,7 @@ export default function ChatHistoryPage() {
                   href="/cast/ruri-mama"
                   className="inline-block h-10 px-5 rounded-btn bg-amethyst text-pearl text-label-md font-medium active:scale-[0.98]"
                 >
-                  さくらママに相談する
+                  さくらママ(AI)に相談する
                 </Link>
               )
             }

@@ -110,14 +110,14 @@ export function MorningBriefing({ castId }: Props) {
           <RuriMamaAvatar size={28} />
           <span className="text-label-sm text-pearl/90 uppercase tracking-wider">
             <Sparkles size={11} className="inline mr-1" />
-            今朝のさくらママから
+            今朝のさくらママ(AI)から
           </span>
         </div>
 
         {loading ? (
           <div className="flex items-center gap-2 text-pearl/90 text-body-sm py-1">
             <Loader2 size={14} className="animate-spin" />
-            <span>さくらママが今日のメモを書いてます…</span>
+            <span>さくらママ(AI)が今日のメモを書いてます…</span>
           </div>
         ) : error ? (
           <div className="text-body-sm text-pearl/90">{error}</div>

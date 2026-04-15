@@ -152,7 +152,7 @@ export function RefreshMemoButton({ customerId, castId, current }: Props) {
       {loading ? (
         <>
           <Loader2 size={13} className="animate-spin" />
-          さくらママがメモを合成中…
+          さくらママ(AI)がメモを合成中…
         </>
       ) : (
         <>

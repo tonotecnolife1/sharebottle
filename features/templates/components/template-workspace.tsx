@@ -139,7 +139,7 @@ export function TemplateWorkspace({
             <RuriMamaAvatar size={36} />
             <div className="flex-1">
               <div className="text-label-md text-amethyst-dark font-semibold">
-                さくらママに専用文面を作ってもらう
+                さくらママ(AI)に専用文面を作ってもらう
               </div>
               <div className="text-label-sm text-ink-secondary">
                 この顧客のカルテを見て、ピッタリの一通を提案します
@@ -163,7 +163,7 @@ export function TemplateWorkspace({
           {loading && (
             <div className="flex items-center justify-center gap-2 h-11 text-amethyst-dark">
               <Loader2 size={16} className="animate-spin" />
-              <span className="text-body-sm">さくらママが考え中…</span>
+              <span className="text-body-sm">さくらママ(AI)が考え中…</span>
             </div>
           )}
 
@@ -253,7 +253,7 @@ function AiTemplateResult({
   const aiAsTemplate: Template = {
     id: `ai-${customerId}-${category}`,
     category,
-    label: "さくらママ提案",
+    label: "さくらママ(AI)提案",
     description: template.isStub
       ? "デモ応答（API キー未設定）"
       : "この顧客向けに生成",

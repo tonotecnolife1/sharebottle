@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SAKURA_MAMA_DISPLAY_NAME } from "@/lib/nightos/constants";
 
 interface Tab {
   key: string;
@@ -45,7 +46,7 @@ const TABS: Tab[] = [
   },
   {
     key: "ruri-mama",
-    label: "さくらママ",
+    label: SAKURA_MAMA_DISPLAY_NAME,
     href: "/mama/ruri-mama",
     icon: Sparkles,
     match: (p) => p.startsWith("/mama/ruri-mama"),

@@ -59,7 +59,7 @@ export function BottleSuggestion({ customerId }: Props) {
         className="w-full mt-2 inline-flex items-center justify-center gap-1.5 px-3 h-9 rounded-btn bg-amethyst-muted border border-amethyst-border text-amethyst-dark text-label-sm font-medium active:scale-95 hover:bg-amethyst hover:text-pearl transition-colors"
       >
         <Sparkles size={12} />
-        さくらママに次のボトル候補を聞く
+        さくらママ(AI)に次のボトル候補を聞く
       </button>
     );
   }
@@ -68,7 +68,7 @@ export function BottleSuggestion({ customerId }: Props) {
     return (
       <div className="mt-2 flex items-center justify-center gap-2 h-9 text-amethyst-dark text-label-sm">
         <Loader2 size={12} className="animate-spin" />
-        さくらママが選んでます…
+        さくらママ(AI)が選んでます…
       </div>
     );
   }
@@ -91,7 +91,7 @@ export function BottleSuggestion({ customerId }: Props) {
       <div className="flex items-center gap-1.5">
         <Sparkles size={12} className="text-amethyst-dark" />
         <span className="text-label-sm text-amethyst-dark font-medium">
-          さくらママのおすすめ {isStub && "(デモ)"}
+          さくらママ(AI)のおすすめ {isStub && "(デモ)"}
         </span>
       </div>
       <div className="space-y-1.5">

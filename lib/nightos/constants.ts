@@ -27,3 +27,11 @@ export const SAKURA_MAMA_MODEL = "claude-haiku-4-5-20251001";
 
 /** @deprecated Use SAKURA_MAMA_MODEL instead */
 export const RURI_MAMA_MODEL = SAKURA_MAMA_MODEL;
+
+/**
+ * UI に表示するさくらママの名前。
+ * 「(AI)」と明示することで AI であることをユーザーに伝える。
+ * 内部データ（mock-data のキャストレコード、システムプロンプトなど）では
+ * 従来通り「さくらママ」のまま保持する。
+ */
+export const SAKURA_MAMA_DISPLAY_NAME = "さくらママ(AI)";

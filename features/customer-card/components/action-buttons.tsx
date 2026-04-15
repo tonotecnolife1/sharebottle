@@ -9,7 +9,7 @@ export function ActionButtons({ customerId }: { customerId: string }) {
         className="flex items-center justify-center gap-2 h-12 rounded-btn ruri-gradient text-pearl shadow-glow-amethyst active:scale-[0.98] transition-transform"
       >
         <Sparkles size={16} />
-        <span className="text-label-md font-medium">さくらママに相談</span>
+        <span className="text-label-md font-medium">さくらママ(AI)に相談</span>
       </Link>
       <Link
         href={`/cast/templates?customerId=${customerId}`}
