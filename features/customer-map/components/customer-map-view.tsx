@@ -82,8 +82,12 @@ function ReferralTree({
 
   return (
     <div className="flex flex-col gap-2">
-      <RootBadge count={refCount} />
-      <ReferralNodeCard node={node} castById={castById} isRoot />
+      <ReferralNodeCard
+        node={node}
+        castById={castById}
+        isRoot
+        rootRefCount={refCount}
+      />
       {node.children.length > 0 && (
         <div className="pl-3 ml-2 border-l-2 border-amethyst-border/40 space-y-2">
           {node.children.map((child) => (
@@ -116,24 +120,17 @@ function RecursiveChild({
   );
 }
 
-function RootBadge({ count }: { count: number }) {
-  return (
-    <div className="inline-flex items-center gap-1 text-[10px] text-amethyst-dark font-medium w-fit">
-      <Crown size={10} />
-      紹介元顧客
-      {count > 0 && <span className="text-roseGold-dark">→{count}人紹介</span>}
-    </div>
-  );
-}
-
 function ReferralNodeCard({
   node,
   castById,
   isRoot,
+  rootRefCount,
 }: {
   node: import("@/types/nightos").CustomerReferralNode;
   castById: Map<string, Cast>;
   isRoot?: boolean;
+  /** isRoot=true の時だけ使用: 紹介した人数 */
+  rootRefCount?: number;
 }) {
   const manager = node.customer.manager_cast_id
     ? castById.get(node.customer.manager_cast_id)
@@ -148,6 +145,15 @@ function ReferralNodeCard({
         isRoot ? "border-amethyst-border" : "border-pearl-soft",
       )}
     >
+      {isRoot && (
+        <div className="flex items-center gap-1 text-[10px] text-amethyst-dark font-medium mb-1">
+          <Crown size={10} />
+          紹介元顧客
+          {rootRefCount !== undefined && rootRefCount > 0 && (
+            <span className="text-roseGold-dark">→{rootRefCount}人紹介</span>
+          )}
+        </div>
+      )}
       <div className="flex items-center gap-1.5 flex-wrap mb-1">
         <span className="text-body-sm font-semibold text-ink truncate">
           {formatCustomerName(node.customer.name)}
