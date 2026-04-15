@@ -17,7 +17,7 @@ export default async function RuriMamaPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col h-dvh animate-fade-in">
       <PageHeader
-        title="さくらママ(AI)"
+        title="さくらママ"
         subtitle="銀座30年の経験者"
         showBack
         tone="ruri"

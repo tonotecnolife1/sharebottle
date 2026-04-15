@@ -19,7 +19,7 @@ export function AiAnalyticsLink() {
           </div>
           <div className="flex-1">
             <div className="text-body-sm font-semibold text-ink">
-              さくらママ(AI)分析
+              さくらママ分析
             </div>
             <div className="text-[10px] text-ink-secondary mt-0.5">
               どのアドバイススタイルが使われてるか

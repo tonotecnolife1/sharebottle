@@ -132,7 +132,7 @@ export default function RoleSelectorPage() {
                       キャバクラ
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
-                      さくらママ(AI)チャットで接客力UP
+                      さくらママチャットで接客力UP
                     </div>
                   </div>
                 </div>
@@ -174,8 +174,8 @@ export default function RoleSelectorPage() {
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
                       {venue === "club"
-                        ? "お客様担当・同伴・さくらママ(AI)・成績"
-                        : "お客様管理・さくらママ(AI)・成績"}
+                        ? "お客様担当・同伴・さくらママ・成績"
+                        : "お客様管理・さくらママ・成績"}
                     </div>
                   </div>
                 </div>

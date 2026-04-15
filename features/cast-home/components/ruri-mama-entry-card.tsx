@@ -21,7 +21,7 @@ export function RuriMamaEntryCard() {
               Sakura Mama AI
             </div>
             <div className="text-display-sm font-display text-pearl">
-              さくらママ(AI)に相談する
+              さくらママに相談する
             </div>
             <div className="text-body-sm text-pearl/80 mt-0.5">
               LINE文面・接客・ボトル提案、何でも聞いてね

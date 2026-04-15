@@ -48,7 +48,7 @@ export function ReplyOptionPicker({ options, onPick }: Props) {
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 text-[11px] text-ink-muted px-1">
         <Sparkles size={11} className="text-amethyst-dark" />
-        さくらママ(AI)から3つの回答。使いたいものを選んでください
+        さくらママから3つの回答。使いたいものを選んでください
       </div>
       {options.map((opt) => {
         const Icon = STYLE_ICON[opt.style];

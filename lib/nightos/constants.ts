@@ -30,8 +30,14 @@ export const RURI_MAMA_MODEL = SAKURA_MAMA_MODEL;
 
 /**
  * UI に表示するさくらママの名前。
- * 「(AI)」と明示することで AI であることをユーザーに伝える。
- * 内部データ（mock-data のキャストレコード、システムプロンプトなど）では
- * 従来通り「さくらママ」のまま保持する。
+ * 通常の UI では「さくらママ」のみを表示する。
+ * チームチャットなど、人間のキャストと AI が混在する場面では
+ * SAKURA_MAMA_CHAT_NAME で「(AI)」付きを使って区別する。
  */
-export const SAKURA_MAMA_DISPLAY_NAME = "さくらママ(AI)";
+export const SAKURA_MAMA_DISPLAY_NAME = "さくらママ";
+
+/**
+ * チーム内チャットで人間と区別するための表示名。
+ * 他のキャストのメッセージと並んだ時に AI と一目で分かるように「(AI)」を付与。
+ */
+export const SAKURA_MAMA_CHAT_NAME = "さくらママ(AI)";

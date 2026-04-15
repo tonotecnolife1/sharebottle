@@ -5,7 +5,7 @@ export default function MamaAiAnalyticsPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="さくらママ(AI)分析"
+        title="さくらママ分析"
         subtitle="どのスタイルが選ばれているか"
         showBack
       />

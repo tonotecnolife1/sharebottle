@@ -18,7 +18,7 @@ export function LineHistoryTimeline({ screenshots, customerName }: Props) {
       <EmptyState
         icon={<MessageCircle size={22} />}
         title="LINE会話履歴がまだありません"
-        description="お客様とのLINEスクショをアップロードすると、さくらママ(AI)が内容を自動で解析してここに蓄積されます。"
+        description="お客様とのLINEスクショをアップロードすると、さくらママが内容を自動で解析してここに蓄積されます。"
         tone="amethyst"
       />
     );

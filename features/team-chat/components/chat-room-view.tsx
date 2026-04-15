@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { RuriMamaAvatar } from "@/components/nightos/ruri-mama-avatar";
+import { SAKURA_MAMA_CHAT_NAME } from "@/lib/nightos/constants";
 import type { ChatMessage, ChatRoom } from "../types";
 
 interface Props {
@@ -104,7 +105,7 @@ export function ChatRoomView({
             id: `msg_ai_${Date.now()}`,
             room_id: room.id,
             sender_id: "sakura_mama",
-            sender_name: "さくらママ",
+            sender_name: SAKURA_MAMA_CHAT_NAME,
             content: data.reply,
             thread_parent_id: targetId ?? newMsg.id,
             reply_count: 0,
