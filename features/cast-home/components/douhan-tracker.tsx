@@ -24,6 +24,10 @@ interface DouhanEntry {
   date: string; // YYYY-MM-DD
   note: string;
   status: "scheduled" | "completed" | "cancelled";
+  /** status === "cancelled" の時は必須 */
+  cancellationReason?: string;
+  /** キャンセル日時 ISO */
+  cancelledAt?: string;
   createdAt: string;
 }
 
@@ -132,6 +136,21 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
     persist(entries.map((e) => (e.id === id ? { ...e, status } : e)));
   };
 
+  const cancelEntry = (id: string, reason: string) => {
+    persist(
+      entries.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              status: "cancelled",
+              cancellationReason: reason,
+              cancelledAt: new Date().toISOString(),
+            }
+          : e,
+      ),
+    );
+  };
+
   const deleteEntry = (id: string) => {
     persist(entries.filter((e) => e.id !== id));
   };
@@ -209,7 +228,7 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
               key={e.id}
               entry={e}
               onComplete={() => updateStatus(e.id, "completed")}
-              onCancel={() => updateStatus(e.id, "cancelled")}
+              onCancel={(reason) => cancelEntry(e.id, reason)}
               onDelete={() => deleteEntry(e.id)}
             />
           ))}
@@ -247,6 +266,22 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
         </div>
       )}
 
+      {/* ── Cancelled ── */}
+      {cancelled.length > 0 && (
+        <div className="space-y-1.5">
+          <h3 className="text-[11px] text-ink-secondary font-medium px-0.5">
+            キャンセル（{cancelled.length}件）
+          </h3>
+          {cancelled.map((e) => (
+            <EntryCard
+              key={e.id}
+              entry={e}
+              onDelete={() => deleteEntry(e.id)}
+            />
+          ))}
+        </div>
+      )}
+
       {thisMonth.length === 0 && !showForm && (
         <div className="text-center py-4 text-body-sm text-ink-muted">
           今月の同伴はまだありません
@@ -258,6 +293,15 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
 
 // ═══════════════ Entry Card ═══════════════
 
+// よくあるキャンセル理由（ワンタップ入力用）
+const CANCEL_REASON_PRESETS = [
+  "お客様の都合（仕事）",
+  "お客様の都合（体調不良）",
+  "お客様の都合（その他）",
+  "日程変更",
+  "自分の都合",
+];
+
 function EntryCard({
   entry,
   onComplete,
@@ -267,21 +311,32 @@ function EntryCard({
 }: {
   entry: DouhanEntry;
   onComplete?: () => void;
-  onCancel?: () => void;
+  onCancel?: (reason: string) => void;
   onRevert?: () => void;
   onDelete: () => void;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const isScheduled = entry.status === "scheduled";
   const isCompleted = entry.status === "completed";
+  const isCancelled = entry.status === "cancelled";
   const dateStr = formatDate(entry.date);
+
+  const submitCancel = () => {
+    const trimmed = cancelReason.trim();
+    if (!trimmed || !onCancel) return;
+    onCancel(trimmed);
+    setShowCancelForm(false);
+    setCancelReason("");
+  };
 
   return (
     <Card
       className={cn(
         "p-2.5 space-y-1.5",
         isCompleted && "opacity-60",
-        entry.status === "cancelled" && "opacity-40",
+        isCancelled && "opacity-70",
       )}
     >
       {/* Top row */}
@@ -321,64 +376,133 @@ function EntryCard({
         </p>
       )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 pl-8">
-        {isScheduled && onComplete && (
-          <button
-            type="button"
-            onClick={onComplete}
-            className="flex items-center gap-0.5 h-6 px-2 rounded-full bg-emerald/10 text-emerald border border-emerald/20 text-[10px] font-medium active:scale-[0.97]"
-          >
-            <Check size={9} />
-            完了にする
-          </button>
-        )}
-        {isScheduled && onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex items-center gap-0.5 h-6 px-2 rounded-full bg-pearl-soft text-ink-muted text-[10px] font-medium active:scale-[0.97]"
-          >
-            キャンセル
-          </button>
-        )}
-        {isCompleted && onRevert && (
-          <button
-            type="button"
-            onClick={onRevert}
-            className="text-[10px] text-ink-muted underline underline-offset-2"
-          >
-            予定に戻す
-          </button>
-        )}
-        {confirmDelete ? (
-          <div className="flex items-center gap-1 ml-auto">
-            <span className="text-[10px] text-rose">削除する？</span>
+      {/* Cancellation reason */}
+      {isCancelled && entry.cancellationReason && (
+        <p className="text-[10px] text-ink-secondary pl-8">
+          <span className="text-rose font-medium">理由:</span>{" "}
+          {entry.cancellationReason}
+        </p>
+      )}
+
+      {/* Cancel form (inline) */}
+      {showCancelForm && (
+        <div className="pl-8 space-y-1.5 pt-1 border-t border-pearl-soft">
+          <div className="text-[10px] text-ink-secondary font-medium">
+            キャンセル理由（必須）
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {CANCEL_REASON_PRESETS.map((preset) => (
+              <button
+                type="button"
+                key={preset}
+                onClick={() => setCancelReason(preset)}
+                className={cn(
+                  "text-[10px] h-6 px-2 rounded-full border transition-all active:scale-95",
+                  cancelReason === preset
+                    ? "bg-rose text-pearl border-rose"
+                    : "bg-pearl text-ink-secondary border-pearl-soft hover:border-ink-muted",
+                )}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            placeholder="または自由入力"
+            style={{ fontSize: "14px" }}
+            className="w-full h-8 rounded-btn border border-pearl-soft bg-pearl-warm px-2 text-[12px] text-ink placeholder:text-ink-muted outline-none focus:border-rose"
+          />
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={onDelete}
-              className="text-[10px] text-rose font-medium underline"
+              onClick={submitCancel}
+              disabled={!cancelReason.trim()}
+              className={cn(
+                "h-7 px-3 rounded-full text-[10px] font-medium transition-all active:scale-95",
+                cancelReason.trim()
+                  ? "bg-rose text-pearl"
+                  : "bg-pearl-soft text-ink-muted cursor-not-allowed",
+              )}
             >
-              はい
+              キャンセル確定
             </button>
             <button
               type="button"
-              onClick={() => setConfirmDelete(false)}
+              onClick={() => {
+                setShowCancelForm(false);
+                setCancelReason("");
+              }}
               className="text-[10px] text-ink-muted"
             >
-              いいえ
+              戻る
             </button>
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="ml-auto text-ink-muted"
-          >
-            <Trash2 size={11} />
-          </button>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      {!showCancelForm && (
+        <div className="flex items-center gap-1 pl-8">
+          {isScheduled && onComplete && (
+            <button
+              type="button"
+              onClick={onComplete}
+              className="flex items-center gap-0.5 h-6 px-2 rounded-full bg-emerald/10 text-emerald border border-emerald/20 text-[10px] font-medium active:scale-[0.97]"
+            >
+              <Check size={9} />
+              完了にする
+            </button>
+          )}
+          {isScheduled && onCancel && (
+            <button
+              type="button"
+              onClick={() => setShowCancelForm(true)}
+              className="flex items-center gap-0.5 h-6 px-2 rounded-full bg-pearl-soft text-ink-muted text-[10px] font-medium active:scale-[0.97]"
+            >
+              キャンセル
+            </button>
+          )}
+          {isCompleted && onRevert && (
+            <button
+              type="button"
+              onClick={onRevert}
+              className="text-[10px] text-ink-muted underline underline-offset-2"
+            >
+              予定に戻す
+            </button>
+          )}
+          {confirmDelete ? (
+            <div className="flex items-center gap-1 ml-auto">
+              <span className="text-[10px] text-rose">削除する？</span>
+              <button
+                type="button"
+                onClick={onDelete}
+                className="text-[10px] text-rose font-medium underline"
+              >
+                はい
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="text-[10px] text-ink-muted"
+              >
+                いいえ
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="ml-auto text-ink-muted"
+            >
+              <Trash2 size={11} />
+            </button>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

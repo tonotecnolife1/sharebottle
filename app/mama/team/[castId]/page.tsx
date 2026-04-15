@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, ChevronRight, HandHelping, Heart, User } from "lucide-react";
+import { Calendar, ChevronRight, HandHelping, Heart, User, XCircle } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
@@ -12,6 +12,7 @@ import {
   MOCK_TODAY,
   mockCasts,
   mockCustomers,
+  mockDouhans,
   mockVisits,
 } from "@/lib/nightos/mock-data";
 import {
@@ -46,6 +47,14 @@ export default async function MamaTeamCastDetailPage({
     today: MOCK_TODAY,
   });
   const helpEntries = aggregateHelpVisitsByCustomer(helpThisMonth);
+
+  // このキャストの同伴キャンセル履歴
+  const cancelledDouhans = mockDouhans
+    .filter(
+      (d) => d.cast_id === params.castId && d.status === "cancelled",
+    )
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const customerById = new Map(mockCustomers.map((c) => [c.id, c]));
 
   const roleLabel =
     cast.club_role === "mama"
@@ -195,6 +204,54 @@ export default async function MamaTeamCastDetailPage({
           )}
         </section>
 
+        {/* Cancelled douhans */}
+        <section className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+              <XCircle size={15} className="text-rose" />
+              同伴キャンセル履歴
+            </h2>
+            <span className="text-label-sm text-ink-muted">
+              {cancelledDouhans.length}件
+            </span>
+          </div>
+          {cancelledDouhans.length === 0 ? (
+            <Card className="p-4 text-center text-body-sm text-ink-muted">
+              キャンセル履歴はありません
+            </Card>
+          ) : (
+            cancelledDouhans.map((d) => {
+              const customer = customerById.get(d.customer_id);
+              return (
+                <Card
+                  key={d.id}
+                  className="p-3 !bg-rose/5 !border-rose/20 space-y-1"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-body-sm font-medium text-ink truncate">
+                      {customer
+                        ? formatCustomerName(customer.name)
+                        : "（顧客不明）"}
+                    </span>
+                    <span className="text-[10px] text-ink-muted shrink-0">
+                      {formatDouhanDate(d.date)}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-ink-secondary">
+                    <span className="text-rose font-medium">理由:</span>{" "}
+                    {d.cancellation_reason ?? "（理由未入力）"}
+                  </div>
+                  {d.note && (
+                    <div className="text-[10px] text-ink-muted truncate">
+                      予定: {d.note}
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
+        </section>
+
         <div className="text-center pt-2">
           <Link
             href={`/cast/customers`}
@@ -207,4 +264,12 @@ export default async function MamaTeamCastDetailPage({
       </div>
     </div>
   );
+}
+
+function formatDouhanDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00+09:00");
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  return `${month}/${day}（${weekdays[d.getDay()]}）`;
 }

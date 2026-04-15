@@ -33,6 +33,13 @@ export interface Douhan {
   date: string; // YYYY-MM-DD
   status: "scheduled" | "completed" | "cancelled";
   note: string | null;
+  /**
+   * キャンセル理由。status === "cancelled" の時は必須。
+   * ママ・姉さんがキャンセル傾向を把握するための情報。
+   */
+  cancellation_reason?: string | null;
+  /** キャンセル日時 ISO */
+  cancelled_at?: string | null;
   created_at: string;
 }
 
