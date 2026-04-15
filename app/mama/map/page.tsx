@@ -82,7 +82,7 @@ export default async function MamaMapPage() {
         <section className="space-y-2">
           <h2 className="text-display-sm text-ink">紹介ツリー</h2>
           <p className="text-[10px] text-ink-muted">
-            ルート顧客から下に紹介で来たお客様を表示。色つき枠はルート、細枠は紹介経由。
+            紹介元顧客から下に紹介で来たお客様を表示。色つき枠は紹介元、細枠は紹介経由。
           </p>
           <ReferralTreeView nodes={tree} />
         </section>

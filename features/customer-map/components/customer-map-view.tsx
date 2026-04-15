@@ -38,9 +38,8 @@ export function CustomerMapView({ customers, casts, mode }: Props) {
 }
 
 // ═══════════════ Customer-based (referral tree) ═══════════════
-// Layout: each root customer = one vertical column
-//         descendants stacked below within the column
-//         columns arranged horizontally with horizontal scroll
+// Layout: 紹介元顧客ごとに上から縦に階層で並べる。
+//         各ツリー内では親の下に子が字下げされて続く。
 
 function CustomerBasedMap({
   customers,
@@ -56,25 +55,23 @@ function CustomerBasedMap({
   return (
     <div className="space-y-3">
       <div className="text-[10px] text-ink-muted px-1">
-        紹介チェーン {chainCount}本 · ルート顧客 {tree.length}人 · 横にスクロール →
+        紹介チェーン {chainCount}本 · 紹介元顧客 {tree.length}人
       </div>
 
-      <div className="overflow-x-auto pb-3 -mx-5 px-5">
-        <div className="flex gap-3" style={{ minWidth: "max-content" }}>
-          {tree.map((node) => (
-            <ReferralColumn
-              key={node.customer.id}
-              node={node}
-              castById={castById}
-            />
-          ))}
-        </div>
+      <div className="space-y-4">
+        {tree.map((node) => (
+          <ReferralTree
+            key={node.customer.id}
+            node={node}
+            castById={castById}
+          />
+        ))}
       </div>
     </div>
   );
 }
 
-function ReferralColumn({
+function ReferralTree({
   node,
   castById,
 }: {
@@ -84,7 +81,7 @@ function ReferralColumn({
   const refCount = countReferrals(node);
 
   return (
-    <div className="flex flex-col gap-2 w-[260px] shrink-0">
+    <div className="flex flex-col gap-2">
       <RootBadge count={refCount} />
       <ReferralNodeCard node={node} castById={castById} isRoot />
       {node.children.length > 0 && (
@@ -123,7 +120,7 @@ function RootBadge({ count }: { count: number }) {
   return (
     <div className="inline-flex items-center gap-1 text-[10px] text-amethyst-dark font-medium w-fit">
       <Crown size={10} />
-      ルート顧客
+      紹介元顧客
       {count > 0 && <span className="text-roseGold-dark">→{count}人紹介</span>}
     </div>
   );
@@ -178,9 +175,8 @@ function ReferralNodeCard({
 }
 
 // ═══════════════ Cast-based (manager → cast → customers) ═══════════════
-// Layout: each manager = one vertical column
-//         within column: sub-groups by 担当キャスト
-//         columns arranged horizontally with horizontal scroll
+// Layout: 管理者ごとに上から縦に階層で並べる。
+//         管理者ブロック内で 担当キャスト → 顧客 と更に字下げ。
 
 function CastBasedMap({
   customers,
@@ -195,24 +191,22 @@ function CastBasedMap({
   return (
     <div className="space-y-3">
       <div className="text-[10px] text-ink-muted px-1">
-        管理者 {managerCount}人 · 顧客 {customers.length}人 · 横にスクロール →
+        管理者 {managerCount}人 · 顧客 {customers.length}人
       </div>
 
-      <div className="overflow-x-auto pb-3 -mx-5 px-5">
-        <div className="flex gap-3" style={{ minWidth: "max-content" }}>
-          {tree.map((group, i) => (
-            <ManagerColumn
-              key={(group.manager?.id ?? "none") + i}
-              group={group}
-            />
-          ))}
-        </div>
+      <div className="space-y-3">
+        {tree.map((group, i) => (
+          <ManagerBlock
+            key={(group.manager?.id ?? "none") + i}
+            group={group}
+          />
+        ))}
       </div>
     </div>
   );
 }
 
-function ManagerColumn({
+function ManagerBlock({
   group,
 }: {
   group: import("@/lib/nightos/referral-tree").CastBasedNode;
@@ -222,7 +216,7 @@ function ManagerColumn({
     : "管理者未割り当て";
 
   return (
-    <div className="flex flex-col gap-2 w-[240px] shrink-0 rounded-card bg-amethyst-muted/20 border border-amethyst-border p-2.5">
+    <div className="flex flex-col gap-2 rounded-card bg-amethyst-muted/20 border border-amethyst-border p-2.5">
       <div className="flex items-center gap-1.5">
         <Crown size={14} className="text-amethyst-dark shrink-0" />
         <span className="text-body-sm font-semibold text-ink flex-1 truncate">

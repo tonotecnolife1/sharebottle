@@ -75,7 +75,7 @@ export function buildCastBasedTree(args: {
 /**
  * 顧客の紹介ツリーを構築する。
  * ルート = referred_by_customer_id が null の顧客。
- * 子 = そのルート顧客の紹介で来た顧客たち（再帰）。
+ * 子 = その紹介元顧客の紹介で来た顧客たち（再帰）。
  */
 export function buildReferralTree(args: {
   customers: Customer[];

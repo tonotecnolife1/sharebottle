@@ -1,5 +1,5 @@
 // ═══════════════ Customer filter helpers (shared) ═══════════════
-// リスト/マップ両方で共通利用するフィルター。
+// 顧客相関図で共通利用するフィルター。
 
 import type { Customer } from "@/types/nightos";
 
