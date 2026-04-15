@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Crown, GitBranch, User, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, Crown, User, Users } from "lucide-react";
 import type { Cast, Customer } from "@/types/nightos";
-import { buildCastBasedTree, buildReferralTree, countReferrals } from "@/lib/nightos/referral-tree";
+import {
+  buildCastBasedTree,
+  buildReferralTree,
+  countReferrals,
+} from "@/lib/nightos/referral-tree";
 import { cn, formatCustomerName } from "@/lib/utils";
 import { FunnelBadge } from "@/features/customer-card/components/funnel-badge";
 import { EmptyState } from "@/components/nightos/empty-state";
@@ -14,9 +18,6 @@ interface Props {
   mode: "customer" | "cast";
 }
 
-/**
- * 顧客マップビュー。customer ベース（紹介チェーン）と cast ベース（管理者→担当→顧客）を切替。
- */
 export function CustomerMapView({ customers, casts, mode }: Props) {
   if (customers.length === 0) {
     return (
@@ -37,6 +38,9 @@ export function CustomerMapView({ customers, casts, mode }: Props) {
 }
 
 // ═══════════════ Customer-based (referral tree) ═══════════════
+// Layout: each root customer = one vertical column
+//         descendants stacked below within the column
+//         columns arranged horizontally with horizontal scroll
 
 function CustomerBasedMap({
   customers,
@@ -47,81 +51,46 @@ function CustomerBasedMap({
 }) {
   const tree = buildReferralTree({ customers, casts });
   const castById = new Map(casts.map((c) => [c.id, c]));
+  const chainCount = tree.filter((n) => n.children.length > 0).length;
 
   return (
     <div className="space-y-3">
       <div className="text-[10px] text-ink-muted px-1">
-        紹介チェーン {tree.filter((n) => n.children.length > 0).length}本 ·
-        ルート顧客 {tree.length}人
+        紹介チェーン {chainCount}本 · ルート顧客 {tree.length}人 · 横にスクロール →
       </div>
-      {tree.map((node) => (
-        <ReferralNodeRow key={node.customer.id} node={node} castById={castById} />
-      ))}
+
+      <div className="overflow-x-auto pb-3 -mx-5 px-5">
+        <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+          {tree.map((node) => (
+            <ReferralColumn
+              key={node.customer.id}
+              node={node}
+              castById={castById}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function ReferralNodeRow({
+function ReferralColumn({
   node,
   castById,
 }: {
   node: import("@/types/nightos").CustomerReferralNode;
   castById: Map<string, Cast>;
 }) {
-  const [expanded, setExpanded] = useState(true);
   const refCount = countReferrals(node);
-  const hasChildren = node.children.length > 0;
-  const manager = node.customer.manager_cast_id
-    ? castById.get(node.customer.manager_cast_id)
-    : null;
-  const cast = castById.get(node.customer.cast_id);
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-stretch gap-1.5">
-        {hasChildren && (
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="w-5 shrink-0 flex items-center justify-center text-ink-muted rounded hover:bg-pearl-soft"
-            aria-label={expanded ? "折りたたむ" : "展開する"}
-          >
-            {expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-          </button>
-        )}
-        {!hasChildren && <div className="w-5 shrink-0" />}
-
-        <a
-          href={`/cast/customers/${node.customer.id}`}
-          className="flex-1 rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-3 py-2 active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-body-sm font-semibold text-ink">
-              {formatCustomerName(node.customer.name)}
-            </span>
-            <FunnelBadge stage={node.customer.funnel_stage ?? "store_only"} compact />
-            {refCount > 0 && (
-              <span className="text-[10px] text-roseGold-dark font-medium">
-                →{refCount}人紹介
-              </span>
-            )}
-          </div>
-          <div className="text-[10px] text-ink-muted mt-0.5 truncate">
-            {manager && `管理: ${manager.name} / `}
-            担当: {cast?.name ?? "—"}
-            {node.customer.job && ` · ${node.customer.job}`}
-          </div>
-        </a>
-      </div>
-
-      {hasChildren && expanded && (
-        <div className="pl-4 ml-3 border-l-2 border-amethyst-border/40 space-y-1.5">
+    <div className="flex flex-col gap-2 w-[260px] shrink-0">
+      <RootBadge count={refCount} />
+      <ReferralNodeCard node={node} castById={castById} isRoot />
+      {node.children.length > 0 && (
+        <div className="pl-3 ml-2 border-l-2 border-amethyst-border/40 space-y-2">
           {node.children.map((child) => (
-            <ReferralNodeRow
-              key={child.customer.id}
-              node={child}
-              castById={castById}
-            />
+            <RecursiveChild key={child.customer.id} node={child} castById={castById} />
           ))}
         </div>
       )}
@@ -129,7 +98,89 @@ function ReferralNodeRow({
   );
 }
 
+function RecursiveChild({
+  node,
+  castById,
+}: {
+  node: import("@/types/nightos").CustomerReferralNode;
+  castById: Map<string, Cast>;
+}) {
+  return (
+    <>
+      <ReferralNodeCard node={node} castById={castById} />
+      {node.children.length > 0 && (
+        <div className="pl-3 ml-2 border-l-2 border-amethyst-border/30 space-y-2">
+          {node.children.map((child) => (
+            <RecursiveChild key={child.customer.id} node={child} castById={castById} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function RootBadge({ count }: { count: number }) {
+  return (
+    <div className="inline-flex items-center gap-1 text-[10px] text-amethyst-dark font-medium w-fit">
+      <Crown size={10} />
+      ルート顧客
+      {count > 0 && <span className="text-roseGold-dark">→{count}人紹介</span>}
+    </div>
+  );
+}
+
+function ReferralNodeCard({
+  node,
+  castById,
+  isRoot,
+}: {
+  node: import("@/types/nightos").CustomerReferralNode;
+  castById: Map<string, Cast>;
+  isRoot?: boolean;
+}) {
+  const manager = node.customer.manager_cast_id
+    ? castById.get(node.customer.manager_cast_id)
+    : null;
+  const cast = castById.get(node.customer.cast_id);
+
+  return (
+    <a
+      href={`/cast/customers/${node.customer.id}`}
+      className={cn(
+        "block rounded-card bg-pearl-warm border shadow-soft-card px-3 py-2 active:scale-[0.99] transition-transform",
+        isRoot ? "border-amethyst-border" : "border-pearl-soft",
+      )}
+    >
+      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+        <span className="text-body-sm font-semibold text-ink truncate">
+          {formatCustomerName(node.customer.name)}
+        </span>
+        <FunnelBadge
+          stage={node.customer.funnel_stage ?? "store_only"}
+          compact
+        />
+      </div>
+      <div className="text-[10px] text-ink-muted space-y-0.5">
+        <div className="truncate">
+          <span className="text-ink-secondary">管理:</span>{" "}
+          <span className="text-ink">{manager?.name ?? "—"}</span>
+        </div>
+        <div className="truncate">
+          <span className="text-ink-secondary">担当:</span>{" "}
+          <span className="text-ink">{cast?.name ?? "—"}</span>
+        </div>
+        {node.customer.job && (
+          <div className="truncate text-ink-muted">{node.customer.job}</div>
+        )}
+      </div>
+    </a>
+  );
+}
+
 // ═══════════════ Cast-based (manager → cast → customers) ═══════════════
+// Layout: each manager = one vertical column
+//         within column: sub-groups by 担当キャスト
+//         columns arranged horizontally with horizontal scroll
 
 function CastBasedMap({
   customers,
@@ -139,39 +190,40 @@ function CastBasedMap({
   casts: Cast[];
 }) {
   const tree = buildCastBasedTree({ customers, casts });
+  const managerCount = tree.filter((n) => n.manager).length;
 
   return (
     <div className="space-y-3">
       <div className="text-[10px] text-ink-muted px-1">
-        管理者 {tree.filter((n) => n.manager).length}人 / 顧客 {customers.length}人
+        管理者 {managerCount}人 · 顧客 {customers.length}人 · 横にスクロール →
       </div>
-      {tree.map((managerGroup, i) => (
-        <ManagerGroupRow
-          key={(managerGroup.manager?.id ?? "none") + i}
-          group={managerGroup}
-        />
-      ))}
+
+      <div className="overflow-x-auto pb-3 -mx-5 px-5">
+        <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+          {tree.map((group, i) => (
+            <ManagerColumn
+              key={(group.manager?.id ?? "none") + i}
+              group={group}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-function ManagerGroupRow({
+function ManagerColumn({
   group,
 }: {
   group: import("@/lib/nightos/referral-tree").CastBasedNode;
 }) {
-  const [expanded, setExpanded] = useState(true);
   const managerLabel = group.manager
     ? `${group.manager.name}${group.manager.club_role === "mama" ? "ママ" : "姉さん"}`
     : "管理者未割り当て";
 
   return (
-    <div className="rounded-card bg-amethyst-muted/20 border border-amethyst-border overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-amethyst-muted/30"
-      >
+    <div className="flex flex-col gap-2 w-[240px] shrink-0 rounded-card bg-amethyst-muted/20 border border-amethyst-border p-2.5">
+      <div className="flex items-center gap-1.5">
         <Crown size={14} className="text-amethyst-dark shrink-0" />
         <span className="text-body-sm font-semibold text-ink flex-1 truncate">
           {managerLabel}
@@ -179,25 +231,18 @@ function ManagerGroupRow({
         <span className="text-[10px] text-ink-muted shrink-0">
           {group.totalCustomers}人
         </span>
-        {expanded ? (
-          <ChevronDown size={13} className="text-ink-muted shrink-0" />
-        ) : (
-          <ChevronRight size={13} className="text-ink-muted shrink-0" />
-        )}
-      </button>
+      </div>
 
-      {expanded && (
-        <div className="px-2 pb-2 space-y-2">
-          {group.byCast.map((bucket, idx) => (
-            <CastBucketRow key={(bucket.cast?.id ?? "none") + idx} bucket={bucket} />
-          ))}
-        </div>
-      )}
+      <div className="space-y-2">
+        {group.byCast.map((bucket, idx) => (
+          <CastBucket key={(bucket.cast?.id ?? "none") + idx} bucket={bucket} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function CastBucketRow({
+function CastBucket({
   bucket,
 }: {
   bucket: import("@/lib/nightos/referral-tree").CastBasedNode["byCast"][number];
@@ -212,26 +257,26 @@ function CastBucketRow({
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-pearl-soft"
+        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-left hover:bg-pearl-soft"
       >
-        <Users size={12} className="text-roseGold-dark shrink-0" />
+        <Users size={11} className="text-roseGold-dark shrink-0" />
         <span className="text-[11px] font-medium text-ink flex-1 truncate">
           {castLabel}
         </span>
-        <span className="text-[10px] text-ink-muted shrink-0">
-          {bucket.customers.length}人
+        <span className="text-[9px] text-ink-muted shrink-0">
+          {bucket.customers.length}
         </span>
         {expanded ? (
-          <ChevronDown size={11} className="text-ink-muted shrink-0" />
+          <ChevronDown size={10} className="text-ink-muted shrink-0" />
         ) : (
-          <ChevronRight size={11} className="text-ink-muted shrink-0" />
+          <ChevronRight size={10} className="text-ink-muted shrink-0" />
         )}
       </button>
 
       {expanded && (
-        <div className="px-2 pb-2 pt-1 space-y-1">
+        <div className="px-1.5 pb-1.5 pt-1 space-y-1">
           {bucket.customers.map((c) => (
-            <CustomerLeafRow key={c.id} customer={c} />
+            <CustomerLeaf key={c.id} customer={c} />
           ))}
         </div>
       )}
@@ -239,13 +284,13 @@ function CastBucketRow({
   );
 }
 
-function CustomerLeafRow({ customer }: { customer: Customer }) {
+function CustomerLeaf({ customer }: { customer: Customer }) {
   return (
     <a
       href={`/cast/customers/${customer.id}`}
-      className="flex items-center gap-2 px-2 py-1.5 rounded-btn hover:bg-pearl-soft"
+      className="flex items-center gap-1.5 px-2 py-1.5 rounded-btn hover:bg-pearl-soft"
     >
-      <User size={11} className="text-ink-muted shrink-0" />
+      <User size={10} className="text-ink-muted shrink-0" />
       <span className="text-[11px] text-ink flex-1 truncate">
         {formatCustomerName(customer.name)}
       </span>
@@ -256,7 +301,6 @@ function CustomerLeafRow({ customer }: { customer: Customer }) {
             ? "新規"
             : "常連"}
       </span>
-      <FunnelBadge stage={customer.funnel_stage ?? "store_only"} compact />
     </a>
   );
 }

@@ -12,8 +12,18 @@ export interface MasterHelpSplit {
   /** 自分がマスター（manager_cast_id === castId）の顧客 */
   masterCustomers: Customer[];
   /**
+   * 自分が担当（cast_id === castId）だがマスターは他の姉さん/ママ。
+   * 「他姉さん管理だが日常は私が接客」するケース。
+   */
+  assignedByOtherMaster: Array<{
+    customer: Customer;
+    masterName: string | null;
+    masterCastId: string | null;
+  }>;
+  /**
    * 他のマスターの顧客に自分がヘルプで入った実績。
    * visit.cast_id === castId AND customer.manager_cast_id !== castId
+   * AND customer.cast_id !== castId（= 一時的なヘルプ）
    */
   helpVisits: HelpVisitEntry[];
 }
@@ -36,13 +46,29 @@ export function splitMasterAndHelp(args: {
     (c) => c.manager_cast_id === castId,
   );
 
+  // 担当だがマスターは他（cast_id === me AND manager_cast_id !== me）
+  const assignedByOtherMaster = customers
+    .filter(
+      (c) => c.cast_id === castId && c.manager_cast_id !== castId,
+    )
+    .map((customer) => {
+      const masterCastId = customer.manager_cast_id ?? null;
+      const masterName = masterCastId
+        ? (castById.get(masterCastId)?.name ?? null)
+        : null;
+      return { customer, masterName, masterCastId };
+    });
+
+  const assignedCustomerIds = new Set(assignedByOtherMaster.map((a) => a.customer.id));
+
   const helpVisits: HelpVisitEntry[] = [];
   for (const v of visits) {
     if (v.cast_id !== castId) continue;
     const customer = customerById.get(v.customer_id);
     if (!customer) continue;
-    // Only count if THIS customer's master is someone else
+    // Skip if this is already a master customer or an assigned customer
     if (customer.manager_cast_id === castId) continue;
+    if (assignedCustomerIds.has(customer.id)) continue;
     const masterCastId = customer.manager_cast_id ?? null;
     const masterName = masterCastId
       ? (castById.get(masterCastId)?.name ?? null)
@@ -50,14 +76,13 @@ export function splitMasterAndHelp(args: {
     helpVisits.push({ visit: v, customer, masterName, masterCastId });
   }
 
-  // Sort help visits by date desc
   helpVisits.sort(
     (a, b) =>
       new Date(b.visit.visited_at).getTime() -
       new Date(a.visit.visited_at).getTime(),
   );
 
-  return { masterCustomers, helpVisits };
+  return { masterCustomers, assignedByOtherMaster, helpVisits };
 }
 
 /**

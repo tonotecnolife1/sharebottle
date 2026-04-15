@@ -6,7 +6,6 @@ import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { TeamOverviewBanner } from "@/features/mama-home/components/team-overview-banner";
 import { TeamPaceAlert } from "@/features/mama-home/components/team-pace-alert";
-import { MapEntryCard } from "@/features/mama-home/components/map-entry-card";
 import { AiAnalyticsLink } from "@/features/mama-home/components/ai-analytics-link";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
@@ -55,9 +54,6 @@ export default async function MamaHomePage() {
           teamCasts={teamCasts}
           teamCustomerCount={teamCustomers.length}
         />
-
-        {/* Map entry */}
-        <MapEntryCard />
 
         {/* AI analytics entry */}
         <AiAnalyticsLink />
