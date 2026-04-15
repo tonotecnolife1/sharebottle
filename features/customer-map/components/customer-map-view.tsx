@@ -141,20 +141,12 @@ function ReferralNodeCard({
     <a
       href={`/cast/customers/${node.customer.id}`}
       className={cn(
-        "block rounded-card bg-pearl-warm border shadow-soft-card px-3 py-2 active:scale-[0.99] transition-transform",
+        "block rounded-card bg-pearl-warm border shadow-soft-card px-3 py-1.5 active:scale-[0.99] transition-transform",
         isRoot ? "border-amethyst-border" : "border-pearl-soft",
       )}
     >
-      {isRoot && (
-        <div className="flex items-center gap-1 text-[10px] text-amethyst-dark font-medium mb-1">
-          <Crown size={10} />
-          紹介元顧客
-          {rootRefCount !== undefined && rootRefCount > 0 && (
-            <span className="text-roseGold-dark">→{rootRefCount}人紹介</span>
-          )}
-        </div>
-      )}
-      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+      {/* 1行目: 名前 + FunnelBadge [余白] 紹介元バッジ */}
+      <div className="flex items-center gap-1.5 min-w-0">
         <span className="text-body-sm font-semibold text-ink truncate">
           {formatCustomerName(node.customer.name)}
         </span>
@@ -162,18 +154,32 @@ function ReferralNodeCard({
           stage={node.customer.funnel_stage ?? "store_only"}
           compact
         />
+        {isRoot && (
+          <span className="ml-auto flex items-center gap-0.5 text-[10px] text-amethyst-dark font-medium shrink-0">
+            <Crown size={10} />
+            紹介元
+            {rootRefCount !== undefined && rootRefCount > 0 && (
+              <span className="text-roseGold-dark">→{rootRefCount}人</span>
+            )}
+          </span>
+        )}
       </div>
-      <div className="text-[10px] text-ink-muted space-y-0.5">
-        <div className="truncate">
-          <span className="text-ink-secondary">管理:</span>{" "}
+      {/* 2行目: 管理 · 担当 · 職業 を横並び */}
+      <div className="flex items-center gap-2 text-[10px] text-ink-muted mt-0.5 truncate">
+        <span className="truncate">
+          <span className="text-ink-secondary">管理</span>
           <span className="text-ink">{manager?.name ?? "—"}</span>
-        </div>
-        <div className="truncate">
-          <span className="text-ink-secondary">担当:</span>{" "}
+        </span>
+        <span className="text-pearl-soft">·</span>
+        <span className="truncate">
+          <span className="text-ink-secondary">担当</span>
           <span className="text-ink">{cast?.name ?? "—"}</span>
-        </div>
+        </span>
         {node.customer.job && (
-          <div className="truncate text-ink-muted">{node.customer.job}</div>
+          <>
+            <span className="text-pearl-soft">·</span>
+            <span className="truncate">{node.customer.job}</span>
+          </>
         )}
       </div>
     </a>
