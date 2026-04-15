@@ -13,43 +13,13 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { cn, formatCustomerName } from "@/lib/utils";
-import type { Customer } from "@/types/nightos";
-
-// ── localStorage persistence ──
-
-interface DouhanEntry {
-  id: string;
-  customerId: string;
-  customerName: string;
-  date: string; // YYYY-MM-DD
-  note: string;
-  status: "scheduled" | "completed" | "cancelled";
-  /** status === "cancelled" の時は必須 */
-  cancellationReason?: string;
-  /** キャンセル日時 ISO */
-  cancelledAt?: string;
-  createdAt: string;
-}
-
-const STORAGE_KEY = "nightos.douhans";
-
-function loadDouhans(): DouhanEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as DouhanEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveDouhans(entries: DouhanEntry[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
-
-// ── Props (server-provided initial data merged with localStorage) ──
+import { CURRENT_CAST_ID, CURRENT_STORE_ID } from "@/lib/nightos/constants";
+import {
+  deleteDouhan,
+  loadDouhansForCast,
+  upsertDouhan,
+} from "@/lib/nightos/douhan-store";
+import type { Customer, Douhan } from "@/types/nightos";
 
 interface Props {
   customers: Customer[];
@@ -57,102 +27,52 @@ interface Props {
 }
 
 export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
-  const [entries, setEntries] = useState<DouhanEntry[]>([]);
+  const [entries, setEntries] = useState<Douhan[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = loadDouhans();
-    // Seed initial mock data if empty
-    if (stored.length === 0) {
-      const seed: DouhanEntry[] = [
-        {
-          id: "d_seed_1",
-          customerId: "cust1",
-          customerName: "田中 太郎",
-          date: "2026-03-05",
-          note: "イタリアンで食事後に来店",
-          status: "completed",
-          createdAt: "2026-03-04T15:00:00+09:00",
-        },
-        {
-          id: "d_seed_2",
-          customerId: "cust3",
-          customerName: "渡辺 浩二",
-          date: "2026-03-12",
-          note: "銀座の寿司屋",
-          status: "completed",
-          createdAt: "2026-03-11T14:00:00+09:00",
-        },
-        {
-          id: "d_seed_3",
-          customerId: "cust5",
-          customerName: "山本 隆",
-          date: "2026-03-20",
-          note: "六本木のフレンチ",
-          status: "scheduled",
-          createdAt: "2026-03-18T10:00:00+09:00",
-        },
-        {
-          id: "d_seed_4",
-          customerId: "cust11",
-          customerName: "伊藤 雅人",
-          date: "2026-03-25",
-          note: "",
-          status: "scheduled",
-          createdAt: "2026-03-19T09:00:00+09:00",
-        },
-      ];
-      saveDouhans(seed);
-      setEntries(seed);
-    } else {
-      setEntries(stored);
-    }
+    setEntries(loadDouhansForCast(CURRENT_CAST_ID));
     setLoaded(true);
   }, []);
 
-  const persist = (updated: DouhanEntry[]) => {
-    setEntries(updated);
-    saveDouhans(updated);
-  };
+  const refresh = () => setEntries(loadDouhansForCast(CURRENT_CAST_ID));
 
   const addEntry = (customerId: string, date: string, note: string) => {
-    const customer = customers.find((c) => c.id === customerId);
-    const entry: DouhanEntry = {
+    const entry: Douhan = {
       id: `d_${Date.now()}`,
-      customerId,
-      customerName: customer?.name ?? "不明",
+      cast_id: CURRENT_CAST_ID,
+      customer_id: customerId,
+      store_id: CURRENT_STORE_ID,
       date,
-      note,
+      note: note || null,
       status: "scheduled",
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
-    persist([...entries, entry]);
+    upsertDouhan(entry);
+    refresh();
     setShowForm(false);
   };
 
-  const updateStatus = (id: string, status: DouhanEntry["status"]) => {
-    persist(entries.map((e) => (e.id === id ? { ...e, status } : e)));
+  const updateStatus = (entry: Douhan, status: Douhan["status"]) => {
+    upsertDouhan({ ...entry, status });
+    refresh();
   };
 
-  const cancelEntry = (id: string, reason: string) => {
-    persist(
-      entries.map((e) =>
-        e.id === id
-          ? {
-              ...e,
-              status: "cancelled",
-              cancellationReason: reason,
-              cancelledAt: new Date().toISOString(),
-            }
-          : e,
-      ),
-    );
+  const cancelEntry = (entry: Douhan, reason: string) => {
+    upsertDouhan({
+      ...entry,
+      status: "cancelled",
+      cancellation_reason: reason,
+      cancelled_at: new Date().toISOString(),
+    });
+    refresh();
   };
 
-  const deleteEntry = (id: string) => {
-    persist(entries.filter((e) => e.id !== id));
+  const removeEntry = (id: string) => {
+    deleteDouhan(id);
+    refresh();
   };
 
   // This month's entries
@@ -169,6 +89,10 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
     .filter((e) => e.status === "completed")
     .sort((a, b) => b.date.localeCompare(a.date));
   const cancelled = thisMonth.filter((e) => e.status === "cancelled");
+
+  // 顧客名解決用
+  const customerNameById = new Map(customers.map((c) => [c.id, c.name]));
+  const getCustomerName = (id: string) => customerNameById.get(id) ?? "不明";
 
   if (!loaded) return null;
 
@@ -190,7 +114,7 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
         </button>
       </div>
 
-      {/* ── Add form (directly below button) ── */}
+      {/* ── Add form ── */}
       {showForm && (
         <AddForm
           customers={customers}
@@ -227,9 +151,10 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
             <EntryCard
               key={e.id}
               entry={e}
-              onComplete={() => updateStatus(e.id, "completed")}
-              onCancel={(reason) => cancelEntry(e.id, reason)}
-              onDelete={() => deleteEntry(e.id)}
+              customerName={getCustomerName(e.customer_id)}
+              onComplete={() => updateStatus(e, "completed")}
+              onCancel={(reason) => cancelEntry(e, reason)}
+              onDelete={() => removeEntry(e.id)}
             />
           ))}
         </div>
@@ -250,8 +175,9 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
             <EntryCard
               key={e.id}
               entry={e}
-              onRevert={() => updateStatus(e.id, "scheduled")}
-              onDelete={() => deleteEntry(e.id)}
+              customerName={getCustomerName(e.customer_id)}
+              onRevert={() => updateStatus(e, "scheduled")}
+              onDelete={() => removeEntry(e.id)}
             />
           ))}
           {!showAll && completed.length > 2 && (
@@ -276,7 +202,8 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
             <EntryCard
               key={e.id}
               entry={e}
-              onDelete={() => deleteEntry(e.id)}
+              customerName={getCustomerName(e.customer_id)}
+              onDelete={() => removeEntry(e.id)}
             />
           ))}
         </div>
@@ -304,12 +231,14 @@ const CANCEL_REASON_PRESETS = [
 
 function EntryCard({
   entry,
+  customerName,
   onComplete,
   onCancel,
   onRevert,
   onDelete,
 }: {
-  entry: DouhanEntry;
+  entry: Douhan;
+  customerName: string;
   onComplete?: () => void;
   onCancel?: (reason: string) => void;
   onRevert?: () => void;
@@ -361,7 +290,7 @@ function EntryCard({
             )}
           </div>
           <span className="text-body-sm font-medium text-ink truncate">
-            {formatCustomerName(entry.customerName)}
+            {formatCustomerName(customerName)}
           </span>
         </div>
         <span className="text-[10px] text-ink-muted shrink-0 ml-2">
@@ -377,10 +306,10 @@ function EntryCard({
       )}
 
       {/* Cancellation reason */}
-      {isCancelled && entry.cancellationReason && (
+      {isCancelled && entry.cancellation_reason && (
         <p className="text-[10px] text-ink-secondary pl-8">
           <span className="text-rose font-medium">理由:</span>{" "}
-          {entry.cancellationReason}
+          {entry.cancellation_reason}
         </p>
       )}
 

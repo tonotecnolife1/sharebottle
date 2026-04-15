@@ -6,7 +6,9 @@ import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { TeamOverviewBanner } from "@/features/mama-home/components/team-overview-banner";
 import { TeamPaceAlert } from "@/features/mama-home/components/team-pace-alert";
+import { CancellationAlert } from "@/features/mama-home/components/cancellation-alert";
 import { AiAnalyticsLink } from "@/features/mama-home/components/ai-analytics-link";
+import { FunnelVisualization } from "@/features/mama-home/components/funnel-visualization";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import {
@@ -49,10 +51,19 @@ export default async function MamaHomePage() {
         {/* Team pace alert (urgent first) */}
         <TeamPaceAlert paceList={paceList} />
 
+        {/* Douhan cancellation alert (syncs with cast's localStorage) */}
+        <CancellationAlert teamCasts={teamCasts} />
+
         {/* Team overview banner */}
         <TeamOverviewBanner
           teamCasts={teamCasts}
           teamCustomerCount={teamCustomers.length}
+        />
+
+        {/* Funnel visualization */}
+        <FunnelVisualization
+          customers={teamCustomers}
+          teamCasts={teamCasts}
         />
 
         {/* AI analytics entry */}
