@@ -141,44 +141,39 @@ function ReferralNodeCard({
     <a
       href={`/cast/customers/${node.customer.id}`}
       className={cn(
-        "block rounded-card bg-pearl-warm border shadow-soft-card px-3 py-1.5 active:scale-[0.99] transition-transform",
+        "block rounded-card bg-pearl-warm border shadow-soft-card px-3 py-2 active:scale-[0.99] transition-transform",
         isRoot ? "border-amethyst-border" : "border-pearl-soft",
       )}
     >
-      {/* 1行目: 名前 + FunnelBadge [余白] 紹介元バッジ */}
-      <div className="flex items-center gap-1.5 min-w-0">
+      {/* 1行目: 名前 + ファネル状態バッジ（文言付き） [余白] 紹介元ラベル */}
+      <div className="flex items-center gap-2 min-w-0">
         <span className="text-body-sm font-semibold text-ink truncate">
           {formatCustomerName(node.customer.name)}
         </span>
         <FunnelBadge
           stage={node.customer.funnel_stage ?? "store_only"}
-          compact
         />
         {isRoot && (
-          <span className="ml-auto flex items-center gap-0.5 text-[10px] text-amethyst-dark font-medium shrink-0">
+          <span className="ml-auto flex items-center gap-1 text-[10px] text-amethyst-dark font-medium shrink-0 bg-amethyst-muted/40 border border-amethyst-border rounded-badge px-1.5 py-0.5">
             <Crown size={10} />
-            紹介元
+            紹介元顧客
             {rootRefCount !== undefined && rootRefCount > 0 && (
-              <span className="text-roseGold-dark">→{rootRefCount}人</span>
+              <span className="text-roseGold-dark">（{rootRefCount}人紹介）</span>
             )}
           </span>
         )}
       </div>
-      {/* 2行目: 管理 · 担当 · 職業 を横並び */}
-      <div className="flex items-center gap-2 text-[10px] text-ink-muted mt-0.5 truncate">
-        <span className="truncate">
-          <span className="text-ink-secondary">管理</span>
-          <span className="text-ink">{manager?.name ?? "—"}</span>
-        </span>
-        <span className="text-pearl-soft">·</span>
-        <span className="truncate">
-          <span className="text-ink-secondary">担当</span>
-          <span className="text-ink">{cast?.name ?? "—"}</span>
-        </span>
+      {/* 2行目: 管理：X、担当：Y、職業 */}
+      <div className="text-[11px] text-ink-secondary mt-1 truncate">
+        <span>管理：</span>
+        <span className="text-ink font-medium">{manager?.name ?? "—"}</span>
+        <span className="text-ink-muted">、</span>
+        <span>担当：</span>
+        <span className="text-ink font-medium">{cast?.name ?? "—"}</span>
         {node.customer.job && (
           <>
-            <span className="text-pearl-soft">·</span>
-            <span className="truncate">{node.customer.job}</span>
+            <span className="text-ink-muted">、</span>
+            <span className="text-ink-muted">{node.customer.job}</span>
           </>
         )}
       </div>
@@ -291,21 +286,38 @@ function CastBucket({
 }
 
 function CustomerLeaf({ customer }: { customer: Customer }) {
+  const categoryLabel =
+    customer.category === "vip"
+      ? "VIP"
+      : customer.category === "new"
+        ? "新規"
+        : "常連";
+  const categoryStyle =
+    customer.category === "vip"
+      ? "bg-roseGold-muted text-roseGold-dark border-roseGold-border"
+      : customer.category === "new"
+        ? "bg-amethyst-muted/50 text-amethyst-dark border-amethyst-border"
+        : "bg-pearl-soft text-ink-secondary border-pearl-soft";
   return (
     <a
       href={`/cast/customers/${customer.id}`}
-      className="flex items-center gap-1.5 px-2 py-1.5 rounded-btn hover:bg-pearl-soft"
+      className="flex items-center gap-2 px-2 py-1.5 rounded-btn hover:bg-pearl-soft"
     >
-      <User size={10} className="text-ink-muted shrink-0" />
-      <span className="text-[11px] text-ink flex-1 truncate">
+      <span className="text-[12px] text-ink flex-1 truncate">
         {formatCustomerName(customer.name)}
       </span>
-      <span className="text-[9px] text-ink-muted shrink-0">
-        {customer.category === "vip"
-          ? "VIP"
-          : customer.category === "new"
-            ? "新規"
-            : "常連"}
+      {customer.job && (
+        <span className="text-[10px] text-ink-muted truncate max-w-[40%]">
+          {customer.job}
+        </span>
+      )}
+      <span
+        className={cn(
+          "text-[10px] font-medium shrink-0 border rounded-badge px-1.5 py-0.5",
+          categoryStyle,
+        )}
+      >
+        {categoryLabel}
       </span>
     </a>
   );
