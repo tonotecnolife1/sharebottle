@@ -16,7 +16,7 @@ import { Card } from "@/components/nightos/card";
 import { Badge } from "@/components/nightos/badge";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
 import { getCustomerStoreOverviews } from "@/lib/nightos/supabase-queries";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatBottleRemainingPct, formatCurrency } from "@/lib/utils";
 import type { Coupon, CustomerRank, CouponType, RankTier } from "@/types/nightos";
 
 export default async function CustomerStoreDetailPage({
@@ -116,7 +116,10 @@ export default async function CustomerStoreDetailPage({
                       {b.brand}
                     </span>
                     <span className="text-body-sm text-ink-secondary">
-                      残 {b.remaining_glasses}/{b.total_glasses}杯
+                      残 {formatBottleRemainingPct(
+                        b.remaining_glasses,
+                        b.total_glasses,
+                      )}
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-pearl-soft overflow-hidden">

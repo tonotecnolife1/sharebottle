@@ -506,8 +506,6 @@ function formatVisitStats(visits: Visit[], today: Date): string {
     0,
     Math.floor((today.getTime() - lastVisit.getTime()) / DAY_MS),
   );
-  const nominatedCount = visits.filter((v) => v.is_nominated).length;
-  const nominationRate = Math.round((nominatedCount / count) * 100);
 
   let interval = 0;
   if (count >= 2) {
@@ -523,7 +521,6 @@ function formatVisitStats(visits: Visit[], today: Date): string {
   const parts = [`来店${count}回`];
   parts.push(daysSince === 0 ? "最終来店今日" : `最終来店${daysSince}日前`);
   if (interval > 0) parts.push(`通常は${interval}日間隔`);
-  parts.push(`指名率${nominationRate}%`);
   return `来店: ${parts.join("、")}`;
 }
 

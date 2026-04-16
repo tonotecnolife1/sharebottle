@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { StoreInfoCard } from "@/components/nightos/card";
-import { cn } from "@/lib/utils";
+import { cn, formatBottleRemainingPct } from "@/lib/utils";
 import type { Bottle, CustomerContext } from "@/types/nightos";
 import { BottleSuggestion } from "./bottle-suggestion";
 
@@ -59,7 +59,10 @@ function BottleRow({ bottle }: { bottle: Bottle }) {
   return (
     <div className="flex items-center gap-2 text-body-md text-ink">
       <span>
-        {bottle.brand}（残 {bottle.remaining_glasses}杯 / {bottle.total_glasses}杯）
+        {bottle.brand}（残 {formatBottleRemainingPct(
+          bottle.remaining_glasses,
+          bottle.total_glasses,
+        )}）
       </span>
       {isLow && (
         <span

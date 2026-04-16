@@ -4,7 +4,7 @@ import { AlertTriangle, Minus, Trash2, Wine } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/nightos/card";
-import { cn } from "@/lib/utils";
+import { cn, formatBottleRemainingPct } from "@/lib/utils";
 import type { BottleWithCustomer } from "@/lib/nightos/supabase-queries";
 import { consumeBottleAction, deleteBottleAction } from "../actions";
 
@@ -93,10 +93,10 @@ export function BottleListClient({ bottles: initial }: Props) {
                   </div>
                   <div className="text-right">
                     <span className="font-display text-display-sm text-ink">
-                      {b.remaining_glasses}
-                    </span>
-                    <span className="text-body-sm text-ink-muted">
-                      /{b.total_glasses}杯
+                      {formatBottleRemainingPct(
+                        b.remaining_glasses,
+                        b.total_glasses,
+                      )}
                     </span>
                   </div>
                 </div>

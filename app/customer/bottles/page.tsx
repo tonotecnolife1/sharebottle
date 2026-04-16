@@ -4,16 +4,11 @@ import { Card } from "@/components/nightos/card";
 import { EmptyState } from "@/components/nightos/empty-state";
 import { CURRENT_CUSTOMER_ID } from "@/lib/nightos/constants";
 import { getCustomerBottleViews } from "@/lib/nightos/supabase-queries";
-import { cn } from "@/lib/utils";
+import { cn, formatBottleRemainingPct } from "@/lib/utils";
 import type { CustomerBottleView } from "@/types/nightos";
 
 export default async function CustomerBottlesPage() {
   const bottles = await getCustomerBottleViews(CURRENT_CUSTOMER_ID);
-
-  const totalRemaining = bottles.reduce(
-    (sum, b) => sum + b.bottle.remaining_glasses,
-    0,
-  );
 
   // Group bottles by store
   const byStore = new Map<string, { storeName: string; bottles: CustomerBottleView[] }>();
@@ -31,7 +26,7 @@ export default async function CustomerBottlesPage() {
     <div className="animate-fade-in">
       <PageHeader
         title="マイボトル"
-        subtitle={`${storeGroups.length}店舗 · ${bottles.length}本 · 残${totalRemaining}杯`}
+        subtitle={`${storeGroups.length}店舗 · ${bottles.length}本`}
       />
       <div className="px-5 pt-4 pb-6 space-y-5">
         {bottles.length === 0 ? (
@@ -89,10 +84,7 @@ function BottleCard({ bv }: { bv: CustomerBottleView }) {
         </div>
         <div className="text-right">
           <div className="font-display text-display-sm text-ink">
-            {b.remaining_glasses}
-          </div>
-          <div className="text-[10px] text-ink-muted">
-            / {b.total_glasses}杯
+            {formatBottleRemainingPct(b.remaining_glasses, b.total_glasses)}
           </div>
         </div>
       </div>

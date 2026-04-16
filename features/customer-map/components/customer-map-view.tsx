@@ -50,12 +50,11 @@ function CustomerBasedMap({
 }) {
   const tree = buildReferralTree({ customers, casts });
   const castById = new Map(casts.map((c) => [c.id, c]));
-  const chainCount = tree.filter((n) => n.children.length > 0).length;
 
   return (
     <div className="space-y-3">
       <div className="text-[10px] text-ink-muted px-1">
-        紹介チェーン {chainCount}本 · 紹介元顧客 {tree.length}人
+        担当顧客グループ {tree.length}件
       </div>
 
       <div className="space-y-4">
@@ -158,10 +157,7 @@ function ReferralNodeCard({
         {isRoot && (
           <span className="ml-auto flex items-center gap-1 text-[10px] text-amethyst-dark font-medium shrink-0 bg-amethyst-muted/40 border border-amethyst-border rounded-badge px-1.5 py-0.5">
             <Crown size={10} />
-            紹介元顧客
-            {rootRefCount !== undefined && rootRefCount > 0 && (
-              <span className="text-roseGold-dark">（{rootRefCount}人紹介）</span>
-            )}
+            総顧客{(rootRefCount ?? 0) + 1}人
           </span>
         )}
       </div>
@@ -195,22 +191,15 @@ function CastBasedMap({
   casts: Cast[];
 }) {
   const tree = buildCastBasedTree({ customers, casts });
-  const managerCount = tree.filter((n) => n.manager).length;
 
   return (
     <div className="space-y-3">
-      <div className="text-[10px] text-ink-muted px-1">
-        管理者 {managerCount}人 · 顧客 {customers.length}人
-      </div>
-
-      <div className="space-y-3">
-        {tree.map((group, i) => (
-          <ManagerBlock
-            key={(group.manager?.id ?? "none") + i}
-            group={group}
-          />
-        ))}
-      </div>
+      {tree.map((group, i) => (
+        <ManagerBlock
+          key={(group.manager?.id ?? "none") + i}
+          group={group}
+        />
+      ))}
     </div>
   );
 }

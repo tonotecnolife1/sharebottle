@@ -39,6 +39,20 @@ export function formatTime(dateStr: string): string {
 }
 
 /**
+ * ボトルの残量を「約X%」形式でフォーマット。
+ * 実際に何杯残っているか正確にはわからないので 10%刻みで概算表示する。
+ */
+export function formatBottleRemainingPct(
+  remaining: number,
+  total: number,
+): string {
+  if (total <= 0) return "約0%";
+  const pct = Math.max(0, Math.min(100, (remaining / total) * 100));
+  const rounded = Math.round(pct / 10) * 10;
+  return `約${rounded}%`;
+}
+
+/**
  * Copy text to clipboard.
  *
  * Uses `navigator.clipboard` when available (HTTPS / localhost), and falls

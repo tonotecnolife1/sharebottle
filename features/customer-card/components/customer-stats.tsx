@@ -1,4 +1,4 @@
-import { Calendar, Coins, Star } from "lucide-react";
+import { Calendar, Coins } from "lucide-react";
 import { StatCard } from "@/components/nightos/stat-card";
 import { formatCurrency } from "@/lib/utils";
 import type { CustomerContext } from "@/types/nightos";
@@ -16,14 +16,11 @@ const AVG_SPEND_PER_VISIT: Record<
 
 export function CustomerStats({ context }: { context: CustomerContext }) {
   const visitCount = context.visits.length;
-  const nominatedCount = context.visits.filter((v) => v.is_nominated).length;
-  const nominationRate =
-    visitCount === 0 ? 0 : Math.round((nominatedCount / visitCount) * 100);
   const estimatedSales =
     visitCount * AVG_SPEND_PER_VISIT[context.customer.category];
 
   return (
-    <div className="grid grid-cols-3 gap-2.5">
+    <div className="grid grid-cols-2 gap-2.5">
       <StatCard
         label="来店"
         value={visitCount}
@@ -36,13 +33,6 @@ export function CustomerStats({ context }: { context: CustomerContext }) {
         unit="円"
         icon={<Coins size={12} className="text-roseGold-dark" />}
         tone="rose"
-      />
-      <StatCard
-        label="指名率"
-        value={nominationRate}
-        unit="%"
-        icon={<Star size={12} className="text-amethyst-dark" />}
-        tone="amethyst"
       />
     </div>
   );

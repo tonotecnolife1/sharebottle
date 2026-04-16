@@ -10,7 +10,7 @@ import {
   Wine,
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
-import { cn, formatCustomerName } from "@/lib/utils";
+import { cn, formatBottleRemainingPct, formatCustomerName } from "@/lib/utils";
 import type { FollowReason, FollowTarget } from "@/types/nightos";
 
 const BOTTLE_LOW_THRESHOLD = 5;
@@ -131,7 +131,10 @@ export function FollowTargetCard({
             <div className="flex items-center gap-1">
               <Wine size={10} className="text-roseGold-dark shrink-0" />
               <span>
-                {bottle.brand}（残{bottle.remaining_glasses}/{bottle.total_glasses}杯）
+                {bottle.brand}（残 {formatBottleRemainingPct(
+                  bottle.remaining_glasses,
+                  bottle.total_glasses,
+                )}）
               </span>
               {bottle.remaining_glasses <= BOTTLE_LOW_THRESHOLD && (
                 <span className="text-amber">⚠️</span>

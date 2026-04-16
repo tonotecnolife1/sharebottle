@@ -11,8 +11,8 @@ interface Props {
 
 /**
  * 顧客の並べ方を切り替える。
- * - 顧客ベース: 紹介元顧客を頂点にした紹介チェーン
- * - キャストベース: 管理者→担当キャスト→顧客 の階層
+ * - 担当顧客: 担当顧客グループ（紹介チェーン）ごとに表示
+ * - ヘルプ顧客: 管理者→担当キャスト→顧客 の階層
  */
 export function ViewGroupingToggle({ value, onChange }: Props) {
   return (
@@ -27,7 +27,7 @@ export function ViewGroupingToggle({ value, onChange }: Props) {
             : "text-amethyst-dark",
         )}
       >
-        顧客ベース
+        担当顧客
       </button>
       <button
         type="button"
@@ -37,7 +37,7 @@ export function ViewGroupingToggle({ value, onChange }: Props) {
           value === "cast" ? "bg-amethyst text-pearl" : "text-amethyst-dark",
         )}
       >
-        キャストベース
+        ヘルプ顧客
       </button>
     </div>
   );

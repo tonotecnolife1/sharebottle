@@ -150,10 +150,6 @@ function buildPrompt(args: {
   lines.push(`来店回数: ${visits.length}回`);
   if (visits.length > 0) {
     lines.push(`最終来店: ${visits[0].visited_at.slice(0, 10)}`);
-    const nominatedCount = visits.filter((v) => v.is_nominated).length;
-    lines.push(
-      `指名率: ${Math.round((nominatedCount / visits.length) * 100)}%`,
-    );
   }
   lines.push("");
 
