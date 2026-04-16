@@ -17,7 +17,6 @@ import {
   getVenueType,
   setRole,
   setVenueType,
-  setClubRole,
   type NightosRole,
 } from "@/lib/nightos/role-store";
 import { setStorePermission, type StorePermission } from "@/lib/nightos/store-permission-store";
@@ -32,7 +31,6 @@ export default function RoleSelectorPage() {
   useEffect(() => {
     const existing = getRole();
     if (existing === "cast") router.replace("/cast/home");
-    else if (existing === "mama") router.replace("/cast/home");
     else if (existing === "store") router.replace("/store");
     else if (existing === "customer") router.replace("/customer/home");
     // Restore venue preference
@@ -50,11 +48,9 @@ export default function RoleSelectorPage() {
     const dest =
       role === "cast"
         ? "/cast/home"
-        : role === "mama"
-          ? "/mama/home"
-          : role === "store"
-            ? "/store"
-            : "/customer/home";
+        : role === "store"
+          ? "/store"
+          : "/customer/home";
     router.push(dest);
   };
 
@@ -107,7 +103,7 @@ export default function RoleSelectorPage() {
                       クラブ
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
-                      店長・リーダー・キャストの連携プレー
+                      メンバー管理はオーナー・スタッフ側で
                     </div>
                   </div>
                 </div>
@@ -158,7 +154,7 @@ export default function RoleSelectorPage() {
             {/* Cast */}
             <button
               type="button"
-              onClick={() => { setClubRole("help"); pickRole("cast"); }}
+              onClick={() => pickRole("cast")}
               className="text-left transition-transform active:scale-[0.98]"
             >
               <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
@@ -182,34 +178,6 @@ export default function RoleSelectorPage() {
                 </div>
               </Card>
             </button>
-
-            {/* 店長・リーダー (Club only) */}
-            {venue === "club" && (
-              <button
-                type="button"
-                onClick={() => { setClubRole("mama"); pickRole("cast"); }}
-                className="text-left transition-transform active:scale-[0.98]"
-              >
-                <Card className="!border-amethyst-border !bg-gradient-pearl p-5 shadow-glow-amethyst">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
-                      <Crown size={26} className="text-pearl" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
-                        For 店長 / リーダー
-                      </div>
-                      <div className="text-display-sm text-ink">
-                        店長・リーダー
-                      </div>
-                      <div className="text-body-sm text-ink-secondary mt-0.5">
-                        キャスト機能＋メンバー全体の管理
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </button>
-            )}
 
             {/* Store staff — input only */}
             <button

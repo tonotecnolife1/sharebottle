@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import {
   BarChart3,
-  Crown,
   FileText,
   Home,
   MessageCircle,
@@ -14,7 +12,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SAKURA_MAMA_DISPLAY_NAME } from "@/lib/nightos/constants";
-import { getClubRole } from "@/lib/nightos/role-store";
 
 interface Tab {
   key: string;
@@ -24,27 +21,27 @@ interface Tab {
   match: (pathname: string) => boolean;
 }
 
-const BASE_TABS: Tab[] = [
+const TABS: Tab[] = [
   {
     key: "home",
     label: "ホーム",
     href: "/cast/home",
     icon: Home,
-    match: (p) => p === "/cast/home" || p === "/mama/home",
+    match: (p) => p === "/cast/home",
   },
   {
     key: "customers",
     label: "顧客",
     href: "/cast/customers",
     icon: Users,
-    match: (p) => p.startsWith("/cast/customers") || p.startsWith("/mama/customers"),
+    match: (p) => p.startsWith("/cast/customers"),
   },
   {
     key: "ruri-mama",
     label: SAKURA_MAMA_DISPLAY_NAME,
     href: "/cast/ruri-mama",
     icon: Sparkles,
-    match: (p) => p.startsWith("/cast/ruri-mama") || p.startsWith("/mama/ruri-mama"),
+    match: (p) => p.startsWith("/cast/ruri-mama"),
   },
   {
     key: "templates",
@@ -58,50 +55,29 @@ const BASE_TABS: Tab[] = [
     label: "チャット",
     href: "/cast/chat",
     icon: MessageCircle,
-    match: (p) => p.startsWith("/cast/chat") || p.startsWith("/mama/chat"),
+    match: (p) => p.startsWith("/cast/chat"),
   },
   {
     key: "stats",
     label: "成績",
     href: "/cast/stats",
     icon: BarChart3,
-    match: (p) => p.startsWith("/cast/stats") || p.startsWith("/mama/stats"),
+    match: (p) => p.startsWith("/cast/stats"),
   },
 ];
 
-const MEMBER_TAB: Tab = {
-  key: "team",
-  label: "メンバー",
-  href: "/mama/team",
-  icon: Crown,
-  match: (p) => p.startsWith("/mama/team") || p.startsWith("/mama/map"),
-};
-
 export function CastTabBar() {
   const pathname = usePathname() ?? "";
-  const [showMemberTab, setShowMemberTab] = useState(false);
-
-  useEffect(() => {
-    const role = getClubRole();
-    setShowMemberTab(role === "mama" || role === "oneesan");
-  }, []);
 
   // Hide on full-screen views
   if (pathname.startsWith("/cast/ruri-mama")) return null;
-  if (pathname.startsWith("/mama/ruri-mama")) return null;
   if (pathname.match(/^\/cast\/chat\/.+/)) return null;
-  if (pathname.match(/^\/mama\/chat\/.+/)) return null;
-
-  // Insert メンバー tab after ホーム for mama/oneesan
-  const tabs = showMemberTab
-    ? [BASE_TABS[0], MEMBER_TAB, ...BASE_TABS.slice(1)]
-    : BASE_TABS;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
       <div className="mx-auto max-w-[520px] px-3 pb-safe pointer-events-auto">
         <div className="rounded-full bg-pearl-warm/95 backdrop-blur-md border border-pearl-soft shadow-elevated-light flex items-center justify-around px-1.5 py-2">
-          {tabs.map((tab) => {
+          {TABS.map((tab) => {
             const active = tab.match(pathname);
             const Icon = tab.icon;
             return (

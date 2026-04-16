@@ -5,8 +5,11 @@ import {
   CalendarPlus,
   ClipboardList,
   Clock,
+  Crown,
   Filter,
+  GitBranch,
   List,
+  Sparkles,
   UserPlus,
   Users,
   Wine,
@@ -150,6 +153,40 @@ export default async function StoreHubPage() {
               icon={<Wine size={18} />}
               label="ボトル管理"
               description="残量管理・消費記録"
+            />
+          </div>
+        </section>
+
+        {/* Member management — available to both owner and staff */}
+        <section className="space-y-2">
+          <h2 className="text-label-md text-ink-secondary font-medium flex items-center gap-1.5">
+            <Crown size={14} className="text-amethyst-dark" />
+            メンバー管理
+          </h2>
+          <div className="space-y-2">
+            <ListLink
+              href="/mama/team"
+              icon={<Crown size={18} />}
+              label="メンバー一覧"
+              description="キャスト・顧客の動き"
+            />
+            <ListLink
+              href="/mama/customers"
+              icon={<Users size={18} />}
+              label="全顧客"
+              description="メンバー担当の全顧客"
+            />
+            <ListLink
+              href="/mama/map"
+              icon={<GitBranch size={18} />}
+              label="相関図"
+              description="紹介チェーン・担当関係"
+            />
+            <ListLink
+              href="/mama/ai-analytics"
+              icon={<Sparkles size={18} />}
+              label="さくらママ分析"
+              description="AI接客アドバイスの効果"
             />
           </div>
         </section>
