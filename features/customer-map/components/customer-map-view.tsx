@@ -78,6 +78,8 @@ function ReferralTree({
   castById: Map<string, Cast>;
 }) {
   const refCount = countReferrals(node);
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = node.children.length > 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -87,8 +89,16 @@ function ReferralTree({
         isRoot
         rootRefCount={refCount}
       />
-      {node.children.length > 0 && (
-        <div className="ml-3 mt-2">
+      {hasChildren && (
+        <ReferralToggle
+          expanded={expanded}
+          onToggle={() => setExpanded((v) => !v)}
+          childCount={node.children.length}
+          tone="strong"
+        />
+      )}
+      {hasChildren && expanded && (
+        <div className="ml-3 mt-1">
           {node.children.map((child, idx) => (
             <TreeChildWrapper
               key={child.customer.id}
@@ -111,11 +121,22 @@ function RecursiveChild({
   node: import("@/types/nightos").CustomerReferralNode;
   castById: Map<string, Cast>;
 }) {
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = node.children.length > 0;
+
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <ReferralNodeCard node={node} castById={castById} />
-      {node.children.length > 0 && (
-        <div className="ml-3 mt-2">
+      {hasChildren && (
+        <ReferralToggle
+          expanded={expanded}
+          onToggle={() => setExpanded((v) => !v)}
+          childCount={node.children.length}
+          tone="soft"
+        />
+      )}
+      {hasChildren && expanded && (
+        <div className="ml-3 mt-1">
           {node.children.map((child, idx) => (
             <TreeChildWrapper
               key={child.customer.id}
@@ -127,7 +148,50 @@ function RecursiveChild({
           ))}
         </div>
       )}
-    </>
+    </div>
+  );
+}
+
+/**
+ * 紹介チェーンを折りたたむトグル。展開時は「紹介を折りたたむ」、
+ * 折りたたみ時は「紹介を表示 (N人)」のラベルに切り替わる。
+ */
+function ReferralToggle({
+  expanded,
+  onToggle,
+  childCount,
+  tone,
+}: {
+  expanded: boolean;
+  onToggle: () => void;
+  childCount: number;
+  tone: "strong" | "soft";
+}) {
+  const toneClass =
+    tone === "strong"
+      ? "bg-amethyst-muted/40 border-amethyst-border text-amethyst-dark"
+      : "bg-pearl-soft border-pearl-soft text-ink-secondary";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        "self-start ml-3 inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-badge border active:scale-[0.97] transition-transform",
+        toneClass,
+      )}
+    >
+      {expanded ? (
+        <>
+          <ChevronDown size={11} />
+          紹介を折りたたむ
+        </>
+      ) : (
+        <>
+          <ChevronRight size={11} />
+          紹介を表示（{childCount}人）
+        </>
+      )}
+    </button>
   );
 }
 
