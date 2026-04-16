@@ -88,9 +88,15 @@ function ReferralTree({
         rootRefCount={refCount}
       />
       {node.children.length > 0 && (
-        <div className="pl-3 ml-2 border-l-2 border-amethyst-border/40 space-y-2">
-          {node.children.map((child) => (
-            <RecursiveChild key={child.customer.id} node={child} castById={castById} />
+        <div className="ml-3 mt-2">
+          {node.children.map((child, idx) => (
+            <TreeChildWrapper
+              key={child.customer.id}
+              isLast={idx === node.children.length - 1}
+              lineTone="strong"
+            >
+              <RecursiveChild node={child} castById={castById} />
+            </TreeChildWrapper>
           ))}
         </div>
       )}
@@ -109,13 +115,55 @@ function RecursiveChild({
     <>
       <ReferralNodeCard node={node} castById={castById} />
       {node.children.length > 0 && (
-        <div className="pl-3 ml-2 border-l-2 border-amethyst-border/30 space-y-2">
-          {node.children.map((child) => (
-            <RecursiveChild key={child.customer.id} node={child} castById={castById} />
+        <div className="ml-3 mt-2">
+          {node.children.map((child, idx) => (
+            <TreeChildWrapper
+              key={child.customer.id}
+              isLast={idx === node.children.length - 1}
+              lineTone="soft"
+            >
+              <RecursiveChild node={child} castById={castById} />
+            </TreeChildWrapper>
           ))}
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * ツリーの子要素を、親からの L字ライン（縦線＋横線のエルボー）で繋ぐラッパ。
+ * 最後の子だけ縦線をエルボーの位置で止めることで、兄弟関係が視覚的に分かる。
+ */
+function TreeChildWrapper({
+  children,
+  isLast,
+  lineTone = "soft",
+}: {
+  children: React.ReactNode;
+  isLast: boolean;
+  lineTone?: "strong" | "soft";
+}) {
+  const lineColor =
+    lineTone === "strong"
+      ? "bg-amethyst-border"
+      : "bg-amethyst-border/60";
+  return (
+    <div className="relative pl-6 mt-2 first:mt-0">
+      {/* Horizontal elbow (card center y) */}
+      <div
+        className={cn("absolute left-0 top-4 w-6 h-px", lineColor)}
+      />
+      {/* Vertical trunk. Last child: stop at elbow. Others: extend into the 8px gap below. */}
+      <div
+        className={cn(
+          "absolute left-0 top-0 w-px",
+          lineColor,
+          isLast ? "h-4" : "bottom-[-8px]",
+        )}
+      />
+      {children}
+    </div>
   );
 }
 
@@ -225,9 +273,16 @@ function ManagerBlock({
         </span>
       </div>
 
-      <div className="space-y-2">
+      {/* Manager → Cast connectors */}
+      <div className="ml-2 mt-1">
         {group.byCast.map((bucket, idx) => (
-          <CastBucket key={(bucket.cast?.id ?? "none") + idx} bucket={bucket} />
+          <TreeChildWrapper
+            key={(bucket.cast?.id ?? "none") + idx}
+            isLast={idx === group.byCast.length - 1}
+            lineTone="strong"
+          >
+            <CastBucket bucket={bucket} />
+          </TreeChildWrapper>
         ))}
       </div>
     </div>
@@ -265,10 +320,17 @@ function CastBucket({
         )}
       </button>
 
+      {/* Cast → Customer connectors */}
       {expanded && (
-        <div className="px-1.5 pb-1.5 pt-1 space-y-1">
-          {bucket.customers.map((c) => (
-            <CustomerLeaf key={c.id} customer={c} />
+        <div className="pl-2 pr-1.5 pb-1.5 pt-1">
+          {bucket.customers.map((c, idx) => (
+            <TreeChildWrapper
+              key={c.id}
+              isLast={idx === bucket.customers.length - 1}
+              lineTone="soft"
+            >
+              <CustomerLeaf customer={c} />
+            </TreeChildWrapper>
           ))}
         </div>
       )}
