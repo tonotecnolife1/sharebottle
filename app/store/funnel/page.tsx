@@ -93,12 +93,7 @@ export default function StoreFunnelPage() {
             <Card key={cast.id} className="p-3 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-body-sm font-medium text-ink">
-                  {cast.name}
-                  {cast.club_role === "mama"
-                    ? "ママ"
-                    : cast.club_role === "oneesan"
-                      ? "姉さん"
-                      : ""}
+                  {cast.name}さん
                 </span>
                 <span className="text-[10px] text-ink-muted">
                   担当 {stats.assigned + stats.lineExchanged} → LINE{" "}

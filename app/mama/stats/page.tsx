@@ -15,7 +15,6 @@ import {
   currencyFormatter,
 } from "@/features/cast-stats/components/goal-progress";
 import { CastRepeatTrend } from "@/features/cast-stats/components/repeat-trend";
-import { SingleCastTrend } from "@/features/cast-stats/components/single-cast-trend";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import { getCastStatsData } from "@/lib/nightos/supabase-queries";
 
@@ -28,12 +27,6 @@ export default async function MamaStatsPage() {
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         <div className="grid grid-cols-1 gap-3">
-          <GoalProgress
-            label="今月の指名本数"
-            current={data.monthly.nominationCount}
-            goal={data.targets.nominationGoal}
-            unit="本"
-          />
           <GoalProgress
             label="今月の売上"
             current={data.monthly.sales}
@@ -80,16 +73,6 @@ export default async function MamaStatsPage() {
 
         <section>
           <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-display-sm text-ink">指名の動き</h2>
-            <span className="text-label-sm text-ink-muted">この2週間</span>
-          </div>
-          <Card className="p-4">
-            <SingleCastTrend points={data.nominationTrend} />
-          </Card>
-        </section>
-
-        <section>
-          <div className="flex items-baseline justify-between mb-2">
             <h2 className="text-display-sm text-ink">再来店率の動き</h2>
             <span className="text-label-sm text-ink-muted">この1ヶ月</span>
           </div>
@@ -104,12 +87,6 @@ export default async function MamaStatsPage() {
             <h2 className="text-display-sm text-ink">年間成績</h2>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
-            <StatCard
-              label="年間指名"
-              value={data.yearly.nominationCount}
-              unit="本"
-              tone="rose"
-            />
             <StatCard
               label="年間売上"
               value={currencyFormatter(data.yearly.sales)}
@@ -138,11 +115,10 @@ export default async function MamaStatsPage() {
             <div className="flex-1">
               <div className="text-label-md font-semibold text-ink mb-1">
                 <Sparkles size={11} className="inline mr-1" />
-                {data.cast.name}
-                {data.cast.club_role === "mama" ? "ママ" : "姉さん"}へ
+                {data.cast.name}さんへ
               </div>
               <p className="text-body-sm text-ink leading-relaxed">
-                ご自身の成績はチーム全体の指針になります。チームタブで配下の動きも確認してみてくださいね。
+                ご自身の成績は全体の指針になります。メンバータブで配下の動きも確認してみてくださいね。
               </p>
             </div>
           </div>

@@ -21,9 +21,9 @@ type RoleFilter = "all" | "mama" | "oneesan" | "help";
 
 const FILTERS: { value: RoleFilter; label: string }[] = [
   { value: "all", label: "全員" },
-  { value: "oneesan", label: "姉さん" },
+  { value: "oneesan", label: "リーダー" },
   { value: "help", label: "キャスト" },
-  { value: "mama", label: "ママ" },
+  { value: "mama", label: "店長" },
 ];
 
 export default function StoreDouhanPacePage() {
@@ -141,9 +141,9 @@ export default function StoreDouhanPacePage() {
                       {cast?.club_role && (
                         <span className="text-[10px] text-ink-muted">
                           {cast.club_role === "mama"
-                            ? "ママ"
+                            ? "店長"
                             : cast.club_role === "oneesan"
-                              ? "姉さん"
+                              ? "リーダー"
                               : "キャスト"}
                         </span>
                       )}

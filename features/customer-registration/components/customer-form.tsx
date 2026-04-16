@@ -178,12 +178,12 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         hint="この顧客はタップ1回でキャストに紐づきます"
       />
 
-      {/* ── 管理者（ママ/姉さん） ── */}
+      {/* ── 管理者 ── */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
           <Crown size={13} className="text-roseGold-dark" />
           <label className="text-label-md text-ink font-medium">
-            管理者（ママ/姉さん）
+            管理者
           </label>
           {!managerOverridden && managerId && (
             <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-badge">
@@ -203,8 +203,7 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
           <option value="">管理者なし</option>
           {managerOptions.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name}
-              {m.club_role === "mama" ? "ママ" : "姉さん"}
+              {m.name}さん
             </option>
           ))}
         </select>

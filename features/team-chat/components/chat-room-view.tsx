@@ -374,12 +374,12 @@ function MessageRow({
           )}
           {msg.sender_role === "mama" && !msg.is_bot && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-champagne-dark text-ink">
-              ママ
+              店長
             </span>
           )}
           {msg.sender_role === "oneesan" && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-roseGold/20 text-roseGold-dark">
-              お姉さん
+              リーダー
             </span>
           )}
           <span className="text-label-sm text-ink-muted">{timeStr}</span>

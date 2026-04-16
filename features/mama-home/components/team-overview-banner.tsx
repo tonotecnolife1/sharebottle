@@ -11,10 +11,6 @@ interface Props {
 
 export function TeamOverviewBanner({ teamCasts, teamCustomerCount }: Props) {
   const totalSales = teamCasts.reduce((sum, c) => sum + c.monthly_sales, 0);
-  const totalNominations = teamCasts.reduce(
-    (sum, c) => sum + c.nomination_count,
-    0,
-  );
 
   return (
     <Link href="/mama/team" className="block active:scale-[0.99] transition-transform">
@@ -26,12 +22,12 @@ export function TeamOverviewBanner({ teamCasts, teamCustomerCount }: Props) {
         <div className="relative">
           <div className="flex items-center gap-2 mb-2 text-label-sm text-pearl/90 uppercase tracking-wider">
             <Crown size={12} />
-            Team Overview
+            Member Overview
           </div>
           <div className="flex items-center justify-between">
             <div>
               <div className="text-display-sm font-display text-pearl">
-                チーム {teamCasts.length}人
+                メンバー {teamCasts.length}人
               </div>
               <div className="text-body-sm text-pearl/80 mt-0.5">
                 {teamCustomerCount}人のお客様を担当
@@ -40,21 +36,13 @@ export function TeamOverviewBanner({ teamCasts, teamCustomerCount }: Props) {
             <ChevronRight size={18} className="text-pearl/70" />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-pearl/20">
-            <div>
-              <div className="text-[10px] text-pearl/70 flex items-center gap-1">
-                <TrendingUp size={10} />
-                今月のチーム売上
-              </div>
-              <div className="text-body-md font-display text-pearl mt-0.5">
-                {formatCurrency(totalSales)}
-              </div>
+          <div className="mt-3 pt-3 border-t border-pearl/20">
+            <div className="text-[10px] text-pearl/70 flex items-center gap-1">
+              <TrendingUp size={10} />
+              今月の売上合計
             </div>
-            <div>
-              <div className="text-[10px] text-pearl/70">チーム指名</div>
-              <div className="text-body-md font-display text-pearl mt-0.5">
-                {totalNominations}本
-              </div>
+            <div className="text-body-md font-display text-pearl mt-0.5">
+              {formatCurrency(totalSales)}
             </div>
           </div>
         </div>

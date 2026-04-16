@@ -67,7 +67,7 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
           <EmptyState
             icon={<MessageCircle size={22} />}
             title="まだメッセージがありません"
-            description="チームとのやり取りや、@さくらママ(AI) への相談を始めるとここに表示されます。"
+            description="みんなとのやり取りや、@さくらママ(AI) への相談を始めるとここに表示されます。"
             tone="amethyst"
           />
         </div>

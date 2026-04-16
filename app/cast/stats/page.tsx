@@ -15,7 +15,6 @@ import {
   currencyFormatter,
 } from "@/features/cast-stats/components/goal-progress";
 import { CastRepeatTrend } from "@/features/cast-stats/components/repeat-trend";
-import { SingleCastTrend } from "@/features/cast-stats/components/single-cast-trend";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { getCastStatsData } from "@/lib/nightos/supabase-queries";
 
@@ -29,12 +28,6 @@ export default async function CastStatsPage() {
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Goal progress */}
         <div className="grid grid-cols-1 gap-3">
-          <GoalProgress
-            label="今月の指名本数"
-            current={data.monthly.nominationCount}
-            goal={data.targets.nominationGoal}
-            unit="本"
-          />
           <GoalProgress
             label="今月の売上"
             current={data.monthly.sales}
@@ -94,20 +87,9 @@ export default async function CastStatsPage() {
             value={data.monthly.helpVisitCount}
             unit="件"
             tone="default"
-            hint="他姉さん顧客への接客"
+            hint="他の担当者顧客への接客"
           />
         </div>
-
-        {/* Nomination trend */}
-        <section>
-          <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-display-sm text-ink">指名の動き</h2>
-            <span className="text-label-sm text-ink-muted">この2週間</span>
-          </div>
-          <Card className="p-4">
-            <SingleCastTrend points={data.nominationTrend} />
-          </Card>
-        </section>
 
         {/* Repeat trend */}
         <section>
@@ -127,12 +109,6 @@ export default async function CastStatsPage() {
             <h2 className="text-display-sm text-ink">年間成績</h2>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
-            <StatCard
-              label="年間指名"
-              value={data.yearly.nominationCount}
-              unit="本"
-              tone="rose"
-            />
             <StatCard
               label="年間売上"
               value={currencyFormatter(data.yearly.sales)}
@@ -184,22 +160,19 @@ export default async function CastStatsPage() {
 }
 
 function buildEncouragement(data: Awaited<ReturnType<typeof getCastStatsData>>): string {
-  const nomPct = Math.round(
-    (data.monthly.nominationCount / data.targets.nominationGoal) * 100,
-  );
   const salesPct = Math.round(
     (data.monthly.sales / data.targets.salesGoal) * 100,
   );
   const rate = Math.round(data.monthly.followRate * 100);
 
-  if (nomPct >= 100 && salesPct >= 100) {
-    return `今月は目標2つとも達成🌸 この調子なら来月の目標も伸ばしてみていいかもね✨`;
+  if (salesPct >= 100) {
+    return `今月の売上目標を達成🌸 この調子なら来月の目標も伸ばしてみていいかもね✨`;
   }
-  if (nomPct >= 80) {
-    return `指名は目標の${nomPct}%まで来てるわ。あと${data.targets.nominationGoal - data.monthly.nominationCount}本で達成、大事なお客様から連絡していきましょ。`;
+  if (salesPct >= 80) {
+    return `売上は目標の${salesPct}%まで来てるわ。大事なお客様に丁寧に連絡を続けましょ。`;
   }
   if (rate < 50) {
     return `連絡達成率${rate}%はちょっと寂しいわね💌 1日3人だけ、お礼LINEを送る習慣からスタートしてみて。`;
   }
-  return `指名${nomPct}%、売上${salesPct}%の進捗ね。連続${data.followStreakDays}日お客様に連絡できてるから、このペースで続けましょ☕`;
+  return `売上${salesPct}%の進捗ね。連続${data.followStreakDays}日お客様に連絡できてるから、このペースで続けましょ☕`;
 }

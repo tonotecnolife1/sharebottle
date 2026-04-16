@@ -71,7 +71,7 @@ export default async function MamaMapPage() {
         <Card className="p-3 flex items-center justify-between">
           <span className="text-body-sm text-ink-secondary flex items-center gap-1.5">
             <Users size={13} className="text-roseGold-dark" />
-            チーム顧客合計
+            顧客合計
           </span>
           <span className="text-body-md text-ink font-medium">
             {teamCustomers.length}人

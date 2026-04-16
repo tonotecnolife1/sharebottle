@@ -210,7 +210,7 @@ function ManagerBlock({
   group: import("@/lib/nightos/referral-tree").CastBasedNode;
 }) {
   const managerLabel = group.manager
-    ? `${group.manager.name}${group.manager.club_role === "mama" ? "ママ" : "姉さん"}`
+    ? `${group.manager.name}さん`
     : "管理者未割り当て";
 
   return (
@@ -241,7 +241,7 @@ function CastBucket({
 }) {
   const [expanded, setExpanded] = useState(true);
   const castLabel = bucket.cast
-    ? `${bucket.cast.name}${bucket.cast.club_role === "mama" ? "ママ" : bucket.cast.club_role === "oneesan" ? "姉さん" : ""} 担当`
+    ? `${bucket.cast.name}さん担当`
     : "担当未割り当て";
 
   return (

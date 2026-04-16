@@ -29,7 +29,7 @@ export function HelpVisitsSection({
         <EmptyState
           icon={<HandHelping size={20} />}
           title="ヘルプ実績はまだありません"
-          description="他の姉さん管理のお客様に接客した記録があればここに表示されます。"
+          description="他の担当者管理のお客様に接客した記録があればここに表示されます。"
         />
       </section>
     );

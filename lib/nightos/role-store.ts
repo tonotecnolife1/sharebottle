@@ -44,10 +44,10 @@ export function setVenueType(type: VenueType): void {
 // ── Club role hierarchy ──
 
 export function getClubRole(): ClubRole {
-  if (typeof window === "undefined") return "oneesan";
+  if (typeof window === "undefined") return "help";
   const raw = window.localStorage.getItem(CLUB_ROLE_KEY);
   if (raw === "mama" || raw === "oneesan" || raw === "help") return raw;
-  return "oneesan";
+  return "help";
 }
 
 export function setClubRole(role: ClubRole): void {

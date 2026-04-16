@@ -15,7 +15,7 @@ export default async function MamaCustomersPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="チームの全顧客"
+        title="全顧客"
         subtitle={`${customers.length}人のお客様`}
       />
 

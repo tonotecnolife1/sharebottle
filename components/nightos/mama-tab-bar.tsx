@@ -32,7 +32,7 @@ const TABS: Tab[] = [
   },
   {
     key: "team",
-    label: "チーム",
+    label: "メンバー",
     href: "/mama/team",
     icon: Crown,
     match: (p) => p.startsWith("/mama/team"),

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Crown, TrendingUp, Users } from "lucide-react";
+import { ChevronRight, Crown, Users } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
@@ -22,7 +22,6 @@ export default async function MamaTeamPage() {
   ]);
 
   const totalSales = teamCasts.reduce((s, c) => s + c.monthly_sales, 0);
-  const totalNominations = teamCasts.reduce((s, c) => s + c.nomination_count, 0);
   const avgRepeat =
     teamCasts.length > 0
       ? teamCasts.reduce((s, c) => s + c.repeat_rate, 0) / teamCasts.length
@@ -45,26 +44,19 @@ export default async function MamaTeamPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="チーム管理" subtitle="配下のキャスト・顧客の動き" showBack />
+      <PageHeader title="メンバー管理" subtitle="キャスト・顧客の動き" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Team totals */}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
           <StatCard
-            label="チーム売上"
+            label="売上合計"
             value={formatCurrency(totalSales).replace("¥", "")}
             unit="円"
             tone="rose"
           />
           <StatCard
-            label="チーム指名"
-            value={totalNominations}
-            unit="本"
-            tone="rose"
-            icon={<TrendingUp size={12} className="text-roseGold-dark" />}
-          />
-          <StatCard
-            label="チーム人数"
+            label="メンバー人数"
             value={teamCasts.length}
             unit="人"
             tone="amethyst"
@@ -90,12 +82,12 @@ export default async function MamaTeamPage() {
           </span>
         </Card>
 
-        {/* お姉さんたち */}
+        {/* リーダー */}
         {oneesans.length > 0 && (
           <section className="space-y-2.5">
             <h2 className="text-display-sm text-ink flex items-center gap-1.5">
               <Crown size={16} className="text-roseGold-dark" />
-              お姉さん（{oneesans.length}人）
+              リーダー（{oneesans.length}人）
             </h2>
             {oneesans.map((cast) => {
               const customersForThis = teamCustomers.filter(
@@ -207,7 +199,7 @@ function CastCard({
               </h3>
               {assignedOneesanName && (
                 <span className="text-[10px] text-ink-muted">
-                  / {assignedOneesanName}姉さん付き
+                  / {assignedOneesanName}さん付き
                 </span>
               )}
               {paceCfg && (

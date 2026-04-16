@@ -17,6 +17,7 @@ import {
   getVenueType,
   setRole,
   setVenueType,
+  setClubRole,
   type NightosRole,
 } from "@/lib/nightos/role-store";
 import { setStorePermission, type StorePermission } from "@/lib/nightos/store-permission-store";
@@ -31,7 +32,7 @@ export default function RoleSelectorPage() {
   useEffect(() => {
     const existing = getRole();
     if (existing === "cast") router.replace("/cast/home");
-    else if (existing === "mama") router.replace("/mama/home");
+    else if (existing === "mama") router.replace("/cast/home");
     else if (existing === "store") router.replace("/store");
     else if (existing === "customer") router.replace("/customer/home");
     // Restore venue preference
@@ -106,7 +107,7 @@ export default function RoleSelectorPage() {
                       クラブ
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
-                      ママ・お姉さん・キャストの連携プレー
+                      店長・リーダー・キャストの連携プレー
                     </div>
                   </div>
                 </div>
@@ -157,7 +158,7 @@ export default function RoleSelectorPage() {
             {/* Cast */}
             <button
               type="button"
-              onClick={() => pickRole("cast")}
+              onClick={() => { setClubRole("help"); pickRole("cast"); }}
               className="text-left transition-transform active:scale-[0.98]"
             >
               <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
@@ -182,11 +183,11 @@ export default function RoleSelectorPage() {
               </Card>
             </button>
 
-            {/* ママ & 姉さん (Club only) */}
+            {/* 店長・リーダー (Club only) */}
             {venue === "club" && (
               <button
                 type="button"
-                onClick={() => pickRole("mama")}
+                onClick={() => { setClubRole("mama"); pickRole("cast"); }}
                 className="text-left transition-transform active:scale-[0.98]"
               >
                 <Card className="!border-amethyst-border !bg-gradient-pearl p-5 shadow-glow-amethyst">
@@ -196,13 +197,13 @@ export default function RoleSelectorPage() {
                     </div>
                     <div className="flex-1">
                       <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
-                        For ママ / 姉さん
+                        For 店長 / リーダー
                       </div>
                       <div className="text-display-sm text-ink">
-                        ママ・姉さん
+                        店長・リーダー
                       </div>
                       <div className="text-body-sm text-ink-secondary mt-0.5">
-                        キャスト機能＋チーム全体の管理
+                        キャスト機能＋メンバー全体の管理
                       </div>
                     </div>
                   </div>

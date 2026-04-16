@@ -176,8 +176,7 @@ export function ChangeManagerButton({
           <option value="">管理者なし</option>
           {managers.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name}
-              {m.club_role === "mama" ? "ママ" : "姉さん"}
+              {m.name}さん
             </option>
           ))}
         </select>

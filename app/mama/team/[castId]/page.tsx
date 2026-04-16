@@ -50,9 +50,9 @@ export default async function MamaTeamCastDetailPage({
 
   const roleLabel =
     cast.club_role === "mama"
-      ? "ママ"
+      ? "店長"
       : cast.club_role === "oneesan"
-        ? "お姉さん"
+        ? "リーダー"
         : "キャスト";
 
   return (
