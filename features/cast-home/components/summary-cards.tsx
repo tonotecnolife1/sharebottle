@@ -18,7 +18,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
       />
       <Link href="/cast/stats#repeat" className="block">
         <StatCard
-          label="また来てくれた率"
+          label="再来店率"
           value={repeatPct}
           unit="%"
           icon={<Heart size={12} className="text-blush-dark" />}
@@ -27,7 +27,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
         />
       </Link>
       <StatCard
-        label="今月の新しいお客様"
+        label="今月の新規お客様"
         value={summary.newCustomerCount}
         unit="人"
         icon={<UserPlus size={12} className="text-amethyst-dark" />}

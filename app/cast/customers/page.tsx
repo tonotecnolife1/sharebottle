@@ -24,7 +24,7 @@ export default async function CastCustomerListPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader
-        title="顧客相関図"
+        title="顧客リスト"
         subtitle={`${allMyCustomers.length}人の顧客を管理`}
         showBack
       />

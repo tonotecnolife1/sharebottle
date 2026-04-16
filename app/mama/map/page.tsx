@@ -33,7 +33,7 @@ export default async function MamaMapPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="顧客相関図" subtitle="紹介チェーンで戦略を立てる" showBack />
+      <PageHeader title="顧客リスト" subtitle="紹介チェーンで戦略を立てる" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Funnel snapshot */}

@@ -3,7 +3,7 @@ import { ChevronRight, GitBranch } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 
 /**
- * ホームから顧客相関図へ入り口のカード。
+ * ホームから顧客リストへ入り口のカード。
  */
 export function MapEntryCard() {
   return (
@@ -15,7 +15,7 @@ export function MapEntryCard() {
           </div>
           <div className="flex-1">
             <div className="text-body-sm font-semibold text-ink">
-              顧客相関図を見る
+              顧客リストを見る
             </div>
             <div className="text-[10px] text-ink-secondary mt-0.5">
               紹介チェーン・ファネルで作戦を立てる

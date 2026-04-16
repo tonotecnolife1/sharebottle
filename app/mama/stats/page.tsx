@@ -46,7 +46,7 @@ export default async function MamaStatsPage() {
         <div className="grid grid-cols-3 gap-2.5">
           <div id="repeat">
             <StatCard
-              label="また来てくれた率"
+              label="再来店率"
               value={Math.round(data.monthly.repeatRate * 100)}
               unit="%"
               tone="rose"
@@ -61,7 +61,7 @@ export default async function MamaStatsPage() {
             icon={<TrendingUp size={12} className="text-amethyst-dark" />}
           />
           <StatCard
-            label="新しいお客様"
+            label="今月の新規お客様"
             value={data.monthly.newCustomerCount}
             unit="人"
             tone="default"
@@ -90,7 +90,7 @@ export default async function MamaStatsPage() {
 
         <section>
           <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-display-sm text-ink">また来てくれた率の動き</h2>
+            <h2 className="text-display-sm text-ink">再来店率の動き</h2>
             <span className="text-label-sm text-ink-muted">この1ヶ月</span>
           </div>
           <Card className="p-4">
