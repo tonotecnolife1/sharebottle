@@ -35,6 +35,12 @@ export default async function CastStatsPage() {
             unit=""
             formatter={currencyFormatter}
           />
+          <GoalProgress
+            label="今月の同伴"
+            current={data.monthly.douhanCount}
+            goal={data.targets.douhanGoal}
+            unit="回"
+          />
         </div>
 
         {/* Monthly quick stats */}

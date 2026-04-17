@@ -300,6 +300,21 @@ export interface CustomerContext {
   visits: Visit[];
 }
 
+// ═══════════════ Cast goal types ═══════════════
+
+export interface CastGoal {
+  castId: string;
+  /** 月次売上目標（円） */
+  salesGoal: number;
+  /** 月次同伴目標（回） */
+  douhanGoal: number;
+  /** 自由メモ — リーダーが期待値や方針を一言で */
+  note: string | null;
+  /** 目標を設定したキャスト ID（リーダー or ママ） */
+  setBy: string | null;
+  updatedAt: string;
+}
+
 // ═══════════════ Ruri-Mama chat types ═══════════════
 
 export type ChatRole = "user" | "assistant";

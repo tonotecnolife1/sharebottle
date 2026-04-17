@@ -1,20 +1,31 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, ChevronRight, HandHelping, Heart, User } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  ChevronRight,
+  HandHelping,
+  Heart,
+  User,
+} from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CancelledDouhanSection } from "@/features/team-management/components/cancelled-douhan-section";
+import { GoalSettingCard } from "@/features/team-management/components/goal-setting-card";
 import {
   getAllCasts,
+  getCastGoal,
   getCastStatsData,
 } from "@/lib/nightos/supabase-queries";
 import {
   MOCK_TODAY,
+  mockCastGoals,
   mockCasts,
   mockCustomers,
   mockVisits,
 } from "@/lib/nightos/mock-data";
+import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import {
   aggregateHelpVisitsByCustomer,
   filterHelpVisitsByPeriod,
@@ -34,6 +45,15 @@ export default async function MamaTeamCastDetailPage({
     getCastStatsData(params.castId),
     getAllCasts(),
   ]);
+  const goal = getCastGoal(params.castId);
+
+  // Find coaching room between current manager and this cast
+  const coachingRoomId = `coaching_${CURRENT_MAMA_ID}_${params.castId}`;
+
+  // Find the setter's name for the goal
+  const setterCast = goal.setBy
+    ? mockCasts.find((c) => c.id === goal.setBy)
+    : null;
 
   // Master + help split for this cast
   const { masterCustomers, helpVisits } = splitMasterAndHelp({
@@ -96,6 +116,33 @@ export default async function MamaTeamCastDetailPage({
             {Math.round(stats.monthly.followRate * 100)}%
           </span>
         </Card>
+
+        {/* Goal setting */}
+        <GoalSettingCard
+          castId={params.castId}
+          castName={cast.name}
+          goal={goal}
+          setterName={setterCast?.name}
+        />
+
+        {/* Coaching chat link */}
+        <Link
+          href={`/cast/chat/${coachingRoomId}`}
+          className="flex items-center justify-between p-3 rounded-btn border border-emerald/30 bg-emerald/5 hover:bg-emerald/10 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen size={15} className="text-emerald shrink-0" />
+            <div>
+              <div className="text-body-sm font-medium text-ink">
+                指導ノートを開く
+              </div>
+              <div className="text-[10px] text-ink-muted mt-0.5">
+                チャットで指導メモを送る
+              </div>
+            </div>
+          </div>
+          <ChevronRight size={14} className="text-ink-muted shrink-0" />
+        </Link>
 
         {/* Master customers */}
         <section className="space-y-2">

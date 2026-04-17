@@ -1,6 +1,7 @@
 import type {
   Bottle,
   Cast,
+  CastGoal,
   CastMemo,
   Customer,
   Douhan,
@@ -1537,5 +1538,82 @@ export const mockCastMemos: CastMemo[] = [
     next_topics: "ブルゴーニュのテイスティング、最近読んだ本",
     visit_notes: null,
     updated_at: "2026-03-18T23:00:00+09:00",
+  },
+];
+
+// ── キャスト目標（月次）──
+// リーダーや店舗スタッフが設定する。未設定はデフォルト値で補完。
+export const mockCastGoals: CastGoal[] = [
+  {
+    castId: "cast1",
+    salesGoal: 1_500_000,
+    douhanGoal: 4,
+    note: "今月は新規からの指名化に集中して。困ったら相談して",
+    setBy: "cast_oneesan2",
+    updatedAt: "2026-03-01T10:00:00+09:00",
+  },
+  {
+    castId: "cast_help2",
+    salesGoal: 800_000,
+    douhanGoal: 2,
+    note: "LINE交換率を上げることが今月のテーマ。お客様のお名前を覚えることから",
+    setBy: "cast1",
+    updatedAt: "2026-03-01T11:00:00+09:00",
+  },
+  {
+    castId: "cast_oneesan2",
+    salesGoal: 3_000_000,
+    douhanGoal: 8,
+    note: null,
+    setBy: null,
+    updatedAt: "2026-03-01T09:00:00+09:00",
+  },
+  {
+    castId: "cast_oneesan3",
+    salesGoal: 2_500_000,
+    douhanGoal: 6,
+    note: null,
+    setBy: null,
+    updatedAt: "2026-03-01T09:00:00+09:00",
+  },
+  {
+    castId: "cast_oneesan4",
+    salesGoal: 2_800_000,
+    douhanGoal: 7,
+    note: null,
+    setBy: null,
+    updatedAt: "2026-03-01T09:00:00+09:00",
+  },
+  {
+    castId: "cast_oneesan5",
+    salesGoal: 2_200_000,
+    douhanGoal: 5,
+    note: null,
+    setBy: null,
+    updatedAt: "2026-03-01T09:00:00+09:00",
+  },
+  {
+    castId: "cast_oneesan6",
+    salesGoal: 2_000_000,
+    douhanGoal: 5,
+    note: null,
+    setBy: null,
+    updatedAt: "2026-03-01T09:00:00+09:00",
+  },
+  {
+    castId: "cast_help3",
+    salesGoal: 700_000,
+    douhanGoal: 2,
+    note: "接客の基本を固める月。ヘルプ回数を増やして経験値を積もう",
+    setBy: "cast_oneesan5",
+    updatedAt: "2026-03-02T10:00:00+09:00",
+  },
+  {
+    castId: "cast_help4",
+    salesGoal: 750_000,
+    douhanGoal: 2,
+    note: null,
+    setBy: "cast_oneesan6",
+    updatedAt: "2026-03-02T10:00:00+09:00",
   },
 ];

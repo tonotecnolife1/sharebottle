@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Hash, MessageCircle, Users } from "lucide-react";
+import { BookOpen, Hash, MessageCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/nightos/empty-state";
 import type { ChatRoom } from "../types";
@@ -12,7 +12,7 @@ interface Props {
   currentCastId: string;
 }
 
-type FilterTab = "all" | "channels" | "dm";
+type FilterTab = "all" | "channels" | "dm" | "coaching";
 
 export function ChatRoomList({ rooms, currentCastId }: Props) {
   const [tab, setTab] = useState<FilterTab>("all");
@@ -28,25 +28,35 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
       ? sorted
       : tab === "channels"
         ? sorted.filter((r) => r.type === "channel")
-        : sorted.filter((r) => r.type === "dm");
+        : tab === "coaching"
+          ? sorted.filter((r) => r.type === "coaching")
+          : sorted.filter((r) => r.type === "dm");
 
   return (
     <div>
       {/* Filter tabs */}
       <div className="flex gap-1 px-5 py-3 border-b border-pearl-soft">
-        {(["all", "channels", "dm"] as FilterTab[]).map((t) => (
+        {(["all", "channels", "dm", "coaching"] as FilterTab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-label-sm font-medium transition-colors",
+              "px-3 py-1.5 rounded-full text-label-sm font-medium transition-colors whitespace-nowrap",
               tab === t
-                ? "bg-amethyst-muted text-amethyst-dark"
+                ? t === "coaching"
+                  ? "bg-emerald/10 text-emerald"
+                  : "bg-amethyst-muted text-amethyst-dark"
                 : "text-ink-muted hover:text-ink-secondary",
             )}
           >
-            {t === "all" ? "すべて" : t === "channels" ? "チャンネル" : "DM"}
+            {t === "all"
+              ? "すべて"
+              : t === "channels"
+              ? "チャンネル"
+              : t === "coaching"
+              ? "📚 指導"
+              : "DM"}
           </button>
         ))}
       </div>
@@ -110,11 +120,15 @@ function RoomRow({
           "w-12 h-12 rounded-full flex items-center justify-center shrink-0",
           room.type === "channel"
             ? "bg-amethyst-muted text-amethyst-dark"
+            : room.type === "coaching"
+            ? "bg-emerald/10 text-emerald"
             : "bg-pearl-soft text-ink-secondary",
         )}
       >
         {room.type === "channel" ? (
           <Hash size={20} />
+        ) : room.type === "coaching" ? (
+          <BookOpen size={20} />
         ) : memberCount > 2 ? (
           <Users size={20} />
         ) : (

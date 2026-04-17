@@ -1,6 +1,7 @@
 import type {
   Bottle,
   Cast,
+  CastGoal,
   CastHomeData,
   CastMemo,
   Customer,
@@ -16,6 +17,7 @@ import { inferManagerCastId } from "./manager-assignment";
 import {
   MOCK_TODAY,
   mockBottles,
+  mockCastGoals,
   mockCastMemos,
   mockCastMessages,
   mockCasts,
@@ -260,6 +262,43 @@ export async function transferCustomers(
       mockCustomers[idx] = { ...mockCustomers[idx], cast_id: newCastId };
     }
   }
+}
+
+const DEFAULT_SALES_GOAL = 1_000_000;
+const DEFAULT_DOUHAN_GOAL = 3;
+
+export function getCastGoal(castId: string): CastGoal {
+  const found = mockCastGoals.find((g) => g.castId === castId);
+  if (found) return found;
+  return {
+    castId,
+    salesGoal: DEFAULT_SALES_GOAL,
+    douhanGoal: DEFAULT_DOUHAN_GOAL,
+    note: null,
+    setBy: null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export async function setCastGoal(
+  castId: string,
+  input: { salesGoal: number; douhanGoal: number; note: string | null; setBy: string | null },
+): Promise<CastGoal> {
+  const idx = mockCastGoals.findIndex((g) => g.castId === castId);
+  const updated: CastGoal = {
+    castId,
+    salesGoal: input.salesGoal,
+    douhanGoal: input.douhanGoal,
+    note: input.note,
+    setBy: input.setBy,
+    updatedAt: new Date().toISOString(),
+  };
+  if (idx >= 0) {
+    mockCastGoals[idx] = updated;
+  } else {
+    mockCastGoals.push(updated);
+  }
+  return updated;
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
@@ -749,6 +788,8 @@ export interface CastStatsData {
     masterCustomerCount: number;
     /** 今月のヘルプ実績件数（他姉さん管理顧客への接客） */
     helpVisitCount: number;
+    /** 今月の同伴完了数 */
+    douhanCount: number;
   };
   yearly: {
     nominationCount: number;
@@ -760,6 +801,7 @@ export interface CastStatsData {
   targets: {
     nominationGoal: number;
     salesGoal: number;
+    douhanGoal: number;
   };
   /** Last 14 days of nomination counts for THIS cast only. */
   nominationTrend: { date: string; count: number }[];
@@ -790,12 +832,12 @@ function getCastStatsDataMock(castId: string): CastStatsData {
     label: p.label,
     rate: p[trendKey],
   }));
-  // Per-cast targets — could come from a settings table eventually.
-  // For VIPs-heavy casts (あかり) the goals are higher.
-  const targets =
-    castId === "cast1"
-      ? { nominationGoal: 25, salesGoal: 2_400_000 }
-      : { nominationGoal: 20, salesGoal: 1_800_000 };
+  const goal = getCastGoal(castId);
+  const targets = {
+    nominationGoal: 20,
+    salesGoal: goal.salesGoal,
+    douhanGoal: goal.douhanGoal,
+  };
 
   // Mock follow streak — generated from MOCK_FOLLOW_RATE
   const followRate = MOCK_FOLLOW_RATE[castId] ?? 0;
@@ -835,6 +877,14 @@ function getCastStatsDataMock(castId: string): CastStatsData {
     today: MOCK_TODAY,
   });
 
+  const monthDouhansCompleted = mockDouhans.filter(
+    (d) =>
+      d.cast_id === castId &&
+      new Date(d.date) >= monthStart &&
+      new Date(d.date) <= now &&
+      d.status === "completed",
+  ).length;
+
   return {
     cast,
     monthly: {
@@ -845,6 +895,7 @@ function getCastStatsDataMock(castId: string): CastStatsData {
       newCustomerCount: monthNewCount,
       masterCustomerCount: split.masterCustomers.length,
       helpVisitCount: helpThisMonth.length,
+      douhanCount: monthDouhansCompleted,
     },
     yearly: {
       nominationCount: yearNominations,

@@ -2,7 +2,7 @@ import type { ClubRole } from "@/lib/nightos/constants";
 
 // ═══════════════ Team Chat Types ═══════════════
 
-export type ChatRoomType = "channel" | "dm";
+export type ChatRoomType = "channel" | "dm" | "coaching";
 
 export interface ChatRoom {
   id: string;

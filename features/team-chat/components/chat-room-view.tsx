@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
+  BookOpen,
   MessageCircle,
   Send,
   Sparkles,
@@ -47,6 +48,14 @@ export function ChatRoomView({
           .join(", ");
 
   const memberCount = room.member_ids.length;
+  const isCoaching = room.type === "coaching";
+
+  const COACHING_CHIPS = [
+    "✨ よかった点：",
+    "📝 改善点：",
+    "🎯 今週の振り返り：",
+    "💬 目標確認：",
+  ];
 
   // Top-level messages (not thread replies)
   const topMessages = messages.filter((m) => !m.thread_parent_id);
@@ -155,6 +164,16 @@ export function ChatRoomView({
         <div className="w-14" /> {/* spacer for centering */}
       </header>
 
+      {/* Coaching banner */}
+      {isCoaching && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald/5 border-b border-emerald/20">
+          <BookOpen size={13} className="text-emerald shrink-0" />
+          <p className="text-[11px] text-emerald">
+            指導ノート — ここでのやり取りは育成記録として残ります
+          </p>
+        </div>
+      )}
+
       {/* Thread drawer */}
       {activeThread && (
         <div className="fixed inset-0 z-50 flex flex-col bg-pearl">
@@ -176,14 +195,14 @@ export function ChatRoomView({
 
           {/* Thread messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-            <MessageRow msg={activeThread} currentCastId={currentCastId} />
+            <MessageRow msg={activeThread} currentCastId={currentCastId} isCoaching={isCoaching} />
             {activeThreadReplies.length > 0 && (
               <div className="text-label-sm text-ink-muted pl-2">
                 {activeThreadReplies.length} replies
               </div>
             )}
             {activeThreadReplies.map((m) => (
-              <MessageRow key={m.id} msg={m} currentCastId={currentCastId} />
+              <MessageRow key={m.id} msg={m} currentCastId={currentCastId} isCoaching={isCoaching} />
             ))}
           </div>
 
@@ -241,6 +260,7 @@ export function ChatRoomView({
               <MessageRow
                 msg={msg}
                 currentCastId={currentCastId}
+                isCoaching={isCoaching}
                 onOpenThread={() => setThreadOpen(msg.id)}
               />
               {/* Thread preview */}
@@ -275,6 +295,22 @@ export function ChatRoomView({
           );
         })}
       </div>
+
+      {/* Coaching quick-insert chips */}
+      {isCoaching && (
+        <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 pt-2 flex gap-1.5 overflow-x-auto">
+          {COACHING_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => setInput((prev) => (prev ? prev + "\n" + chip : chip))}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-emerald/10 text-emerald text-[11px] font-medium border border-emerald/20 hover:bg-emerald/20 transition-colors"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input bar */}
       <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
@@ -323,10 +359,12 @@ export function ChatRoomView({
 function MessageRow({
   msg,
   currentCastId,
+  isCoaching,
   onOpenThread,
 }: {
   msg: ChatMessage;
   currentCastId: string;
+  isCoaching?: boolean;
   onOpenThread?: () => void;
 }) {
   const isMe = msg.sender_id === currentCastId;
@@ -380,6 +418,11 @@ function MessageRow({
           {msg.sender_role === "oneesan" && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-roseGold/20 text-roseGold-dark">
               リーダー
+            </span>
+          )}
+          {isCoaching && !msg.is_bot && (
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald/10 text-emerald border border-emerald/20">
+              指導
             </span>
           )}
           <span className="text-label-sm text-ink-muted">{timeStr}</span>
