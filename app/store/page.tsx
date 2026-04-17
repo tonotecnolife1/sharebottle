@@ -180,7 +180,7 @@ export default async function StoreHubPage() {
               href="/mama/map"
               icon={<GitBranch size={18} />}
               label="相関図"
-              description="紹介チェーン・担当関係"
+              description="お連れ様・担当関係"
             />
             <ListLink
               href="/mama/ai-analytics"

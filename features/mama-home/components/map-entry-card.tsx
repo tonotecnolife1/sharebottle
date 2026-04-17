@@ -18,7 +18,7 @@ export function MapEntryCard() {
               顧客リストを見る
             </div>
             <div className="text-[10px] text-ink-secondary mt-0.5">
-              紹介チェーン・ファネルで作戦を立てる
+              お連れ様の繋がり・ファネルで作戦を立てる
             </div>
           </div>
           <ChevronRight size={14} className="text-ink-muted" />

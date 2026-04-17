@@ -183,12 +183,12 @@ function ReferralToggle({
       {expanded ? (
         <>
           <ChevronDown size={11} />
-          紹介を折りたたむ
+          お連れ様を折りたたむ
         </>
       ) : (
         <>
           <ChevronRight size={11} />
-          紹介を表示（{childCount}人）
+          お連れ様を表示（{childCount}人）
         </>
       )}
     </button>

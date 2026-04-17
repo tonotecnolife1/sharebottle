@@ -24,7 +24,7 @@ export function ReferralTreeView({ nodes }: Props) {
       <EmptyState
         icon={<User size={22} />}
         title="表示できる顧客がいません"
-        description="新しく登録したお客様に紹介元を選ぶと、ここに繋がりが描かれていきます。"
+        description="新しく登録したお客様にご本人を選ぶと、ここに繋がりが描かれていきます。"
         tone="amethyst"
       />
     );
@@ -82,7 +82,7 @@ function ReferralNodeCard({ node }: { node: CustomerReferralNode }) {
               <span>担当: {node.assignedCastName ?? "—"}</span>
               {referralCount > 0 && (
                 <span className="text-roseGold-dark">
-                  →{referralCount}人紹介
+                  →お連れ様{referralCount}人
                 </span>
               )}
             </div>

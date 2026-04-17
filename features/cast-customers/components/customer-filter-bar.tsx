@@ -42,7 +42,7 @@ const FUNNEL_OPTIONS: { value: FunnelFilter; label: string }[] = [
 
 const REFERRER_OPTIONS: { value: ReferrerFilter; label: string }[] = [
   { value: "all", label: "全て" },
-  { value: "yes", label: "紹介あり" },
+  { value: "yes", label: "お連れ様あり" },
   { value: "no", label: "ルート顧客" },
 ];
 
@@ -184,7 +184,7 @@ export function CustomerFilterBar({
           </div>
 
           {/* Referrer */}
-          <FilterRow label="紹介">
+          <FilterRow label="お連れ様">
             <div className="flex flex-wrap gap-1">
               {REFERRER_OPTIONS.map((opt) => (
                 <ChipButton

@@ -50,14 +50,14 @@ export default async function CustomerCardPage({
           <FunnelBadge stage={customer.funnel_stage ?? "store_only"} />
           {referrer && (
             <span className="text-[10px] text-ink-muted">
-              紹介元: {referrer.name}さま
+              ご本人: {referrer.name}さま
             </span>
           )}
           <a
             href={`/store/customers/new?referrer=${customer.id}`}
             className="ml-auto text-[10px] text-amethyst-dark underline underline-offset-2"
           >
-            + この方の紹介で登録
+            + この方のお連れ様として登録
           </a>
         </div>
 

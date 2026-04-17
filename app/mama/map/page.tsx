@@ -33,7 +33,7 @@ export default async function MamaMapPage() {
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title="顧客リスト" subtitle="紹介チェーンで戦略を立てる" showBack />
+      <PageHeader title="顧客リスト" subtitle="お連れ様の繋がりで戦略を立てる" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Funnel snapshot */}
@@ -61,7 +61,7 @@ export default async function MamaMapPage() {
         <Card className="p-3 flex items-center justify-between">
           <span className="text-body-sm text-ink-secondary flex items-center gap-1.5">
             <GitBranch size={13} className="text-amethyst-dark" />
-            紹介チェーン数
+            お連れ様の繋がり数
           </span>
           <span className="text-body-md text-ink font-medium">
             {totalReferralChains}本
@@ -80,9 +80,9 @@ export default async function MamaMapPage() {
 
         {/* Tree */}
         <section className="space-y-2">
-          <h2 className="text-display-sm text-ink">紹介ツリー</h2>
+          <h2 className="text-display-sm text-ink">お連れ様の繋がり</h2>
           <p className="text-[10px] text-ink-muted">
-            紹介元顧客から下に紹介で来たお客様を表示。色つき枠は紹介元、細枠は紹介経由。
+            ご本人から下にお連れ様として来たお客様を表示。色つき枠はご本人、細枠はお連れ様経由。
           </p>
           <ReferralTreeView nodes={tree} />
         </section>

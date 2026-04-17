@@ -212,12 +212,12 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         </p>
       </div>
 
-      {/* ── 紹介元 ── */}
+      {/* ── お連れ様の場合のご本人 ── */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
           <Users size={13} className="text-amethyst-dark" />
           <label className="text-label-md text-ink font-medium">
-            紹介元（任意）
+            どなたのお連れ様？（任意）
           </label>
         </div>
         <select
@@ -226,7 +226,7 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
           className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
           style={{ fontSize: "16px" }}
         >
-          <option value="">自己来店・紹介なし</option>
+          <option value="">自己来店・お連れ様ではない</option>
           {referrerOptions.map((r) => (
             <option key={r.value} value={r.value}>
               {r.label}
@@ -234,7 +234,7 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
           ))}
         </select>
         <p className="text-label-sm text-ink-muted">
-          紹介元を選ぶと相関図で繋がりが見えるようになります
+          ご本人を選ぶと相関図で繋がりが見えるようになります
         </p>
       </div>
 
