@@ -30,8 +30,6 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 const ROLE_BADGE: Record<string, { label: string; color: string }> = {
-  oneesan: { label: "リーダー", color: "text-roseGold-dark bg-roseGold/10" },
-  help: { label: "キャスト", color: "text-amethyst-dark bg-amethyst-muted" },
   mama: { label: "ママ", color: "text-ink bg-champagne" },
 };
 

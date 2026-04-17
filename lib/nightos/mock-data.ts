@@ -1542,7 +1542,7 @@ export const mockCastMemos: CastMemo[] = [
 ];
 
 // ── キャスト目標（月次）──
-// リーダーや店舗スタッフが設定する。未設定はデフォルト値で補完。
+// 管理者（ママ・店舗スタッフ）が設定する。未設定はデフォルト値で補完。
 export const mockCastGoals: CastGoal[] = [
   {
     castId: "cast1",

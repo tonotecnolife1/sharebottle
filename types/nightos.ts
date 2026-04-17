@@ -308,9 +308,9 @@ export interface CastGoal {
   salesGoal: number;
   /** 月次同伴目標（回） */
   douhanGoal: number;
-  /** 自由メモ — リーダーが期待値や方針を一言で */
+  /** 自由メモ — 期待値や方針を一言で */
   note: string | null;
-  /** 目標を設定したキャスト ID（リーダー or ママ） */
+  /** 目標を設定したキャスト ID（管理者） */
   setBy: string | null;
   updatedAt: string;
 }

@@ -17,12 +17,11 @@ import {
 import { CURRENT_STORE_ID } from "@/lib/nightos/constants";
 import { cn } from "@/lib/utils";
 
-type RoleFilter = "all" | "mama" | "oneesan" | "help";
+type RoleFilter = "all" | "mama" | "cast";
 
 const FILTERS: { value: RoleFilter; label: string }[] = [
   { value: "all", label: "全員" },
-  { value: "oneesan", label: "リーダー" },
-  { value: "help", label: "キャスト" },
+  { value: "cast", label: "キャスト" },
   { value: "mama", label: "店長" },
 ];
 
@@ -48,7 +47,8 @@ export default function StoreDouhanPacePage() {
     if (roleFilter === "all") return paceList;
     return paceList.filter((p) => {
       const cast = storeCasts.find((c) => c.id === p.castId);
-      return cast?.club_role === roleFilter;
+      if (roleFilter === "mama") return cast?.club_role === "mama";
+      return cast?.club_role !== "mama";
     });
   }, [paceList, storeCasts, roleFilter]);
 
@@ -140,11 +140,7 @@ export default function StoreDouhanPacePage() {
                       </span>
                       {cast?.club_role && (
                         <span className="text-[10px] text-ink-muted">
-                          {cast.club_role === "mama"
-                            ? "店長"
-                            : cast.club_role === "oneesan"
-                              ? "リーダー"
-                              : "キャスト"}
+                          {cast.club_role === "mama" ? "店長" : "キャスト"}
                         </span>
                       )}
                     </div>

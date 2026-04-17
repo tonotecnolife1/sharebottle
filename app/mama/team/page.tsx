@@ -5,6 +5,7 @@ import { StatCard } from "@/components/nightos/stat-card";
 import { TeamPaceAlert } from "@/features/mama-home/components/team-pace-alert";
 import { CancellationAlert } from "@/features/mama-home/components/cancellation-alert";
 import { UpcomingDouhanList } from "@/features/team-management/components/upcoming-douhan-list";
+import { CoachingRemindersCard } from "@/features/team-management/components/coaching-reminders-card";
 import { CastListShell } from "@/features/team-management/components/cast-list-shell";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import {
@@ -47,6 +48,11 @@ export default async function MamaTeamPage() {
             teamCasts={teamCasts}
             douhans={mockDouhans}
             customers={teamCustomers}
+            today={MOCK_TODAY}
+          />
+          <CoachingRemindersCard
+            leaderId={CURRENT_MAMA_ID}
+            teamCasts={teamCasts}
             today={MOCK_TODAY}
           />
         </section>

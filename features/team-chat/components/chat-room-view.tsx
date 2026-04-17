@@ -415,11 +415,6 @@ function MessageRow({
               店長
             </span>
           )}
-          {msg.sender_role === "oneesan" && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-roseGold/20 text-roseGold-dark">
-              リーダー
-            </span>
-          )}
           {isCoaching && !msg.is_bot && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald/10 text-emerald border border-emerald/20">
               指導

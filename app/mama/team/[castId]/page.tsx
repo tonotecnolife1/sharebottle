@@ -68,12 +68,7 @@ export default async function MamaTeamCastDetailPage({
   });
   const helpEntries = aggregateHelpVisitsByCustomer(helpThisMonth);
 
-  const roleLabel =
-    cast.club_role === "mama"
-      ? "店長"
-      : cast.club_role === "oneesan"
-        ? "リーダー"
-        : "キャスト";
+  const roleLabel = cast.club_role === "mama" ? "店長" : "キャスト";
 
   return (
     <div className="animate-fade-in">
