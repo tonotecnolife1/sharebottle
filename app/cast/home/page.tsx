@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Crown, GitBranch, Sparkles, Users } from "lucide-react";
+import { ChevronRight, Crown, Sparkles, Users } from "lucide-react";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 
@@ -77,7 +77,7 @@ export default async function CastHomePage() {
             </h2>
             <span className="text-label-sm text-ink-muted">管理者向け</span>
           </header>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <TeamLink
               href="/mama/team"
               icon={<Crown size={16} />}
@@ -88,13 +88,7 @@ export default async function CastHomePage() {
               href="/mama/customers"
               icon={<Users size={16} />}
               label="全顧客"
-              description="お店全体のお客様"
-            />
-            <TeamLink
-              href="/mama/map"
-              icon={<GitBranch size={16} />}
-              label="相関図"
-              description="お連れ様関係"
+              description="一覧・相関図・ファネル"
             />
             <TeamLink
               href="/mama/ai-analytics"
