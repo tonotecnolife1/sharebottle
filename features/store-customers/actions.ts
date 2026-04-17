@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
   deleteCustomer,
+  transferCustomers,
   updateCustomer,
   type UpdateCustomerInput,
 } from "@/lib/nightos/supabase-queries";
@@ -29,4 +30,17 @@ export async function deleteCustomerAction(id: string) {
   revalidatePath("/store/customers");
   revalidatePath("/cast/home");
   return { ok: true as const };
+}
+
+export async function transferCustomersAction(
+  customerIds: string[],
+  newCastId: string,
+) {
+  if (!customerIds.length || !newCastId) {
+    return { ok: false as const, error: "移管先と対象顧客を選択してください" };
+  }
+  await transferCustomers(customerIds, newCastId);
+  revalidatePath("/store/customers");
+  revalidatePath("/cast/home");
+  return { ok: true as const, count: customerIds.length };
 }

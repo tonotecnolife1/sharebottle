@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { CustomerListClient } from "@/features/store-customers/components/customer-list-client";
 import {
@@ -14,7 +16,19 @@ export default async function StoreCustomersPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="顧客一覧" subtitle="検索・編集・削除" showBack />
-      <div className="px-5 pt-4 pb-6">
+      <div className="px-5 pt-4 pb-6 space-y-4">
+        <Link
+          href="/store/customers/transfer"
+          className="flex items-center justify-between w-full p-3 rounded-btn border border-amethyst-border bg-amethyst-muted/30 hover:bg-amethyst-muted/50 transition-colors"
+        >
+          <div>
+            <div className="text-body-sm font-medium text-ink">担当移管</div>
+            <div className="text-[10px] text-ink-muted mt-0.5">
+              キャスト間で顧客の担当を引き継ぐ
+            </div>
+          </div>
+          <ArrowRight size={14} className="text-amethyst-dark shrink-0" />
+        </Link>
         <CustomerListClient customers={customers} casts={casts} />
       </div>
     </div>

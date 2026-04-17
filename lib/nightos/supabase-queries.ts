@@ -246,6 +246,22 @@ function updateCustomerMock(
   return updated;
 }
 
+/**
+ * Bulk-transfer customers to a new cast (担当移管).
+ * Only updates cast_id; all other fields are preserved.
+ */
+export async function transferCustomers(
+  customerIds: string[],
+  newCastId: string,
+): Promise<void> {
+  for (const id of customerIds) {
+    const idx = mockCustomers.findIndex((c) => c.id === id);
+    if (idx >= 0) {
+      mockCustomers[idx] = { ...mockCustomers[idx], cast_id: newCastId };
+    }
+  }
+}
+
 export async function deleteCustomer(id: string): Promise<void> {
   if (!isSupabaseConfigured()) {
     return deleteCustomerMock(id);
