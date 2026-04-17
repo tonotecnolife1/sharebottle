@@ -35,21 +35,34 @@ import {
 } from "./store-mock-data";
 import { CURRENT_STORE_ID } from "./constants";
 import {
+  consumeBottleReal,
   createBottleReal,
   createCustomerReal,
   createVisitReal,
+  deleteBottleReal,
+  deleteCustomerReal,
   deleteScreenshotReal,
+  deleteVisitReal,
+  getAllBottlesReal,
   getAllCastsReal,
   getAllCustomersReal,
   getCastByIdReal,
+  getCastGoalReal,
   getCastHomeDataReal,
+  getCustomerByIdReal,
   getCustomerContextReal,
   getCustomersForCastReal,
   getRecentVisitsForCastReal,
+  getRecentVisitsReal,
   getScreenshotsForCustomerReal,
+  getSubordinateCastsReal,
+  getTeamCustomersReal,
   recordFollowLogReal,
   saveScreenshotReal,
+  setCastGoalReal,
+  transferCustomersReal,
   updateCastMemoReal,
+  updateCustomerReal,
 } from "./supabase-real";
 
 // ─────────────────────────────────────────────────────────────
@@ -143,6 +156,14 @@ export async function getAllCasts(): Promise<Cast[]> {
  * - お姉さん: 自分配下のキャスト（直属＋孫弟子まで再帰的に収集）
  */
 export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]> {
+  return withFallback(
+    "getSubordinateCasts",
+    () => getSubordinateCastsReal(leaderCastId),
+    () => getSubordinateCastsMock(leaderCastId),
+  );
+}
+
+function getSubordinateCastsMock(leaderCastId: string): Cast[] {
   const leader = mockCasts.find((c) => c.id === leaderCastId);
   if (!leader) return [];
 
@@ -153,7 +174,6 @@ export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]>
   }
 
   if (leader.club_role === "oneesan") {
-    // Transitive subordinates: direct reports + their reports + ...
     const result: Cast[] = [];
     const queue: string[] = [leader.id];
     const seen = new Set<string>([leader.id]);
@@ -184,8 +204,17 @@ export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]>
 export async function getTeamCustomers(
   leaderCastId: string,
 ): Promise<Array<Customer & { cast_name: string }>> {
+  return withFallback(
+    "getTeamCustomers",
+    () => getTeamCustomersReal(leaderCastId),
+    () => getTeamCustomersMock(leaderCastId),
+  );
+}
+
+async function getTeamCustomersMock(
+  leaderCastId: string,
+): Promise<Array<Customer & { cast_name: string }>> {
   const team = await getSubordinateCasts(leaderCastId);
-  // Include leader's own customers + all subordinates'
   const teamIds = new Set([leaderCastId, ...team.map((c) => c.id)]);
   const customers = mockCustomers.filter((c) => teamIds.has(c.cast_id));
   return customers.map((c) => {
@@ -222,10 +251,11 @@ export async function updateCustomer(
   id: string,
   input: UpdateCustomerInput,
 ): Promise<Customer | null> {
-  if (!isSupabaseConfigured()) return updateCustomerMock(id, input);
-  // TODO: real Supabase update — keeping mock for now since the
-  // Supabase write path mirrors createCustomerReal
-  return updateCustomerMock(id, input);
+  return withFallback(
+    "updateCustomer",
+    () => updateCustomerReal(id, input),
+    () => updateCustomerMock(id, input),
+  );
 }
 
 function updateCustomerMock(
@@ -256,56 +286,85 @@ export async function transferCustomers(
   customerIds: string[],
   newCastId: string,
 ): Promise<void> {
-  for (const id of customerIds) {
-    const idx = mockCustomers.findIndex((c) => c.id === id);
-    if (idx >= 0) {
-      mockCustomers[idx] = { ...mockCustomers[idx], cast_id: newCastId };
-    }
-  }
+  return withFallback(
+    "transferCustomers",
+    () => transferCustomersReal(customerIds, newCastId),
+    () => {
+      for (const id of customerIds) {
+        const idx = mockCustomers.findIndex((c) => c.id === id);
+        if (idx >= 0) {
+          mockCustomers[idx] = { ...mockCustomers[idx], cast_id: newCastId };
+        }
+      }
+    },
+  );
 }
 
 const DEFAULT_SALES_GOAL = 1_000_000;
 const DEFAULT_DOUHAN_GOAL = 3;
 
-export function getCastGoal(castId: string): CastGoal {
-  const found = mockCastGoals.find((g) => g.castId === castId);
-  if (found) return found;
-  return {
-    castId,
-    salesGoal: DEFAULT_SALES_GOAL,
-    douhanGoal: DEFAULT_DOUHAN_GOAL,
-    note: null,
-    setBy: null,
-    updatedAt: new Date().toISOString(),
-  };
+export async function getCastGoal(castId: string): Promise<CastGoal> {
+  return withFallback(
+    "getCastGoal",
+    async () => {
+      const result = await getCastGoalReal(castId);
+      return result ?? {
+        castId,
+        salesGoal: DEFAULT_SALES_GOAL,
+        douhanGoal: DEFAULT_DOUHAN_GOAL,
+        note: null,
+        setBy: null,
+        updatedAt: new Date().toISOString(),
+      };
+    },
+    () => {
+      const found = mockCastGoals.find((g) => g.castId === castId);
+      if (found) return found;
+      return {
+        castId,
+        salesGoal: DEFAULT_SALES_GOAL,
+        douhanGoal: DEFAULT_DOUHAN_GOAL,
+        note: null,
+        setBy: null,
+        updatedAt: new Date().toISOString(),
+      };
+    },
+  );
 }
 
 export async function setCastGoal(
   castId: string,
   input: { salesGoal: number; douhanGoal: number; note: string | null; setBy: string | null },
 ): Promise<CastGoal> {
-  const idx = mockCastGoals.findIndex((g) => g.castId === castId);
-  const updated: CastGoal = {
-    castId,
-    salesGoal: input.salesGoal,
-    douhanGoal: input.douhanGoal,
-    note: input.note,
-    setBy: input.setBy,
-    updatedAt: new Date().toISOString(),
-  };
-  if (idx >= 0) {
-    mockCastGoals[idx] = updated;
-  } else {
-    mockCastGoals.push(updated);
-  }
-  return updated;
+  return withFallback(
+    "setCastGoal",
+    () => setCastGoalReal(castId, input),
+    () => {
+      const idx = mockCastGoals.findIndex((g) => g.castId === castId);
+      const updated: CastGoal = {
+        castId,
+        salesGoal: input.salesGoal,
+        douhanGoal: input.douhanGoal,
+        note: input.note,
+        setBy: input.setBy,
+        updatedAt: new Date().toISOString(),
+      };
+      if (idx >= 0) {
+        mockCastGoals[idx] = updated;
+      } else {
+        mockCastGoals.push(updated);
+      }
+      return updated;
+    },
+  );
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    return deleteCustomerMock(id);
-  }
-  return deleteCustomerMock(id);
+  return withFallback(
+    "deleteCustomer",
+    () => deleteCustomerReal(id),
+    () => deleteCustomerMock(id),
+  );
 }
 
 function deleteCustomerMock(id: string): void {
@@ -327,10 +386,11 @@ function deleteCustomerMock(id: string): void {
 }
 
 export async function getCustomerById(id: string): Promise<Customer | null> {
-  if (!isSupabaseConfigured()) {
-    return mockCustomers.find((c) => c.id === id) ?? null;
-  }
-  return mockCustomers.find((c) => c.id === id) ?? null;
+  return withFallback(
+    "getCustomerById",
+    () => getCustomerByIdReal(id),
+    () => mockCustomers.find((c) => c.id === id) ?? null,
+  );
 }
 
 // ═══════════════ Store CRUD: visits ═══════════════
@@ -341,8 +401,11 @@ export interface VisitWithNames extends Visit {
 }
 
 export async function getRecentVisits(limit = 50): Promise<VisitWithNames[]> {
-  if (!isSupabaseConfigured()) return getRecentVisitsMock(limit);
-  return getRecentVisitsMock(limit);
+  return withFallback(
+    "getRecentVisits",
+    () => getRecentVisitsReal(limit),
+    () => getRecentVisitsMock(limit),
+  );
 }
 
 function getRecentVisitsMock(limit: number): VisitWithNames[] {
@@ -361,10 +424,11 @@ function getRecentVisitsMock(limit: number): VisitWithNames[] {
 }
 
 export async function deleteVisit(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    return deleteVisitMock(id);
-  }
-  return deleteVisitMock(id);
+  return withFallback(
+    "deleteVisit",
+    () => deleteVisitReal(id),
+    () => deleteVisitMock(id),
+  );
 }
 
 function deleteVisitMock(id: string): void {
@@ -380,8 +444,11 @@ export interface BottleWithCustomer extends Bottle {
 }
 
 export async function getAllBottles(): Promise<BottleWithCustomer[]> {
-  if (!isSupabaseConfigured()) return getAllBottlesMock();
-  return getAllBottlesMock();
+  return withFallback(
+    "getAllBottles",
+    () => getAllBottlesReal(),
+    () => getAllBottlesMock(),
+  );
 }
 
 function getAllBottlesMock(): BottleWithCustomer[] {
@@ -401,8 +468,11 @@ export async function consumeBottle(
   id: string,
   glasses = 1,
 ): Promise<Bottle | null> {
-  if (!isSupabaseConfigured()) return consumeBottleMock(id, glasses);
-  return consumeBottleMock(id, glasses);
+  return withFallback(
+    "consumeBottle",
+    () => consumeBottleReal(id, glasses),
+    () => consumeBottleMock(id, glasses),
+  );
 }
 
 function consumeBottleMock(id: string, glasses: number): Bottle | null {
@@ -417,8 +487,11 @@ function consumeBottleMock(id: string, glasses: number): Bottle | null {
 }
 
 export async function deleteBottle(id: string): Promise<void> {
-  if (!isSupabaseConfigured()) return deleteBottleMock(id);
-  return deleteBottleMock(id);
+  return withFallback(
+    "deleteBottle",
+    () => deleteBottleReal(id),
+    () => deleteBottleMock(id),
+  );
 }
 
 function deleteBottleMock(id: string): void {
@@ -816,7 +889,7 @@ export async function getCastStatsData(castId: string): Promise<CastStatsData> {
   return getCastStatsDataMock(castId);
 }
 
-function getCastStatsDataMock(castId: string): CastStatsData {
+async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
   const cast = mockCasts.find((c) => c.id === castId);
   if (!cast) throw new Error(`Cast not found: ${castId}`);
 
@@ -832,7 +905,7 @@ function getCastStatsDataMock(castId: string): CastStatsData {
     label: p.label,
     rate: p[trendKey],
   }));
-  const goal = getCastGoal(castId);
+  const goal = await getCastGoal(castId);
   const targets = {
     nominationGoal: 20,
     salesGoal: goal.salesGoal,

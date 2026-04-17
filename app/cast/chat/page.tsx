@@ -2,12 +2,14 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { ChatRoomList } from "@/features/team-chat/components/chat-room-list";
 import { mockChatRooms } from "@/features/team-chat/lib/mock-chat-data";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 
-export default function ChatListPage() {
+export default async function ChatListPage() {
+  const castId = await getCurrentCastId();
+
   // Filter rooms that include the current cast
   const myRooms = mockChatRooms.filter((r) =>
-    r.member_ids.includes(CURRENT_CAST_ID),
+    r.member_ids.includes(castId),
   );
 
   return (
@@ -28,7 +30,7 @@ export default function ChatListPage() {
           <Plus size={20} />
         </button>
       </div>
-      <ChatRoomList rooms={myRooms} currentCastId={CURRENT_CAST_ID} />
+      <ChatRoomList rooms={myRooms} currentCastId={castId} />
     </div>
   );
 }

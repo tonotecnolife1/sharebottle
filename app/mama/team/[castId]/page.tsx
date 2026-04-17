@@ -25,7 +25,7 @@ import {
   mockCustomers,
   mockVisits,
 } from "@/lib/nightos/mock-data";
-import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
+import { getCurrentManagerId } from "@/lib/nightos/auth";
 import {
   aggregateHelpVisitsByCustomer,
   filterHelpVisitsByPeriod,
@@ -38,6 +38,7 @@ export default async function MamaTeamCastDetailPage({
 }: {
   params: { castId: string };
 }) {
+  const managerId = await getCurrentManagerId();
   const cast = mockCasts.find((c) => c.id === params.castId);
   if (!cast) notFound();
 
@@ -45,10 +46,10 @@ export default async function MamaTeamCastDetailPage({
     getCastStatsData(params.castId),
     getAllCasts(),
   ]);
-  const goal = getCastGoal(params.castId);
+  const goal = await getCastGoal(params.castId);
 
   // Find coaching room between current manager and this cast
-  const coachingRoomId = `coaching_${CURRENT_MAMA_ID}_${params.castId}`;
+  const coachingRoomId = `coaching_${managerId}_${params.castId}`;
 
   // Find the setter's name for the goal
   const setterCast = goal.setBy

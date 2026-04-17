@@ -13,7 +13,7 @@ import { RefreshMemoButton } from "@/features/customer-card/components/refresh-m
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
 import { VisitHistory } from "@/features/customer-card/components/visit-history";
 import { CustomerPhotoUpload } from "@/features/customer-card/components/customer-photo-upload";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 import { mockCustomers } from "@/lib/nightos/mock-data";
 import {
   getAllCasts,
@@ -26,9 +26,11 @@ export default async function CustomerCardPage({
 }: {
   params: { id: string };
 }) {
+  const castId = await getCurrentCastId();
+
   const [context, screenshots, allCasts] = await Promise.all([
-    getCustomerContext(CURRENT_CAST_ID, params.id),
-    getScreenshotsForCustomer(CURRENT_CAST_ID, params.id),
+    getCustomerContext(castId, params.id),
+    getScreenshotsForCustomer(castId, params.id),
     getAllCasts(),
   ]);
   if (!context) notFound();
@@ -80,8 +82,8 @@ export default async function CustomerCardPage({
             customerName={customer.name}
             currentManagerId={customer.manager_cast_id ?? null}
             allCasts={allCasts}
-            requesterCastId={CURRENT_CAST_ID}
-            requesterName={allCasts.find((c) => c.id === CURRENT_CAST_ID)?.name ?? "キャスト"}
+            requesterCastId={castId}
+            requesterName={allCasts.find((c) => c.id === castId)?.name ?? "キャスト"}
           />
         </div>
 
@@ -90,7 +92,7 @@ export default async function CustomerCardPage({
         {/* LINE exchange action */}
         <LineExchangeButton
           customerId={customer.id}
-          castId={CURRENT_CAST_ID}
+          castId={castId}
           initiallyExchanged={customer.funnel_stage === "line_exchanged"}
           initialExchangedAt={customer.line_exchanged_at ?? null}
         />
@@ -101,7 +103,7 @@ export default async function CustomerCardPage({
 
         <RefreshMemoButton
           customerId={customer.id}
-          castId={CURRENT_CAST_ID}
+          castId={castId}
           current={{
             last_topic: context.memo?.last_topic ?? null,
             service_tips: context.memo?.service_tips ?? null,

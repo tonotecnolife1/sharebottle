@@ -16,11 +16,12 @@ import {
 } from "@/features/cast-stats/components/goal-progress";
 import { CastRepeatTrend } from "@/features/cast-stats/components/repeat-trend";
 import { AiUsageSummary } from "@/features/cast-stats/components/ai-usage-summary";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 import { getCastStatsData } from "@/lib/nightos/supabase-queries";
 
 export default async function CastStatsPage() {
-  const data = await getCastStatsData(CURRENT_CAST_ID);
+  const castId = await getCurrentCastId();
+  const data = await getCastStatsData(castId);
 
   return (
     <div className="animate-fade-in">

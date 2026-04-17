@@ -7,7 +7,7 @@ import { CancellationAlert } from "@/features/mama-home/components/cancellation-
 import { UpcomingDouhanList } from "@/features/team-management/components/upcoming-douhan-list";
 import { CoachingRemindersCard } from "@/features/team-management/components/coaching-reminders-card";
 import { CastListShell } from "@/features/team-management/components/cast-list-shell";
-import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
+import { getCurrentManagerId } from "@/lib/nightos/auth";
 import {
   getSubordinateCasts,
   getTeamCustomers,
@@ -17,9 +17,10 @@ import { calculateDouhanPaceForAll } from "@/lib/nightos/douhan-pace";
 import { MOCK_TODAY, mockDouhans } from "@/lib/nightos/mock-data";
 
 export default async function MamaTeamPage() {
+  const managerId = await getCurrentManagerId();
   const [teamCasts, teamCustomers] = await Promise.all([
-    getSubordinateCasts(CURRENT_MAMA_ID),
-    getTeamCustomers(CURRENT_MAMA_ID),
+    getSubordinateCasts(managerId),
+    getTeamCustomers(managerId),
   ]);
 
   const totalSales = teamCasts.reduce((s, c) => s + c.monthly_sales, 0);
@@ -51,7 +52,7 @@ export default async function MamaTeamPage() {
             today={MOCK_TODAY}
           />
           <CoachingRemindersCard
-            leaderId={CURRENT_MAMA_ID}
+            leaderId={managerId}
             teamCasts={teamCasts}
             today={MOCK_TODAY}
           />

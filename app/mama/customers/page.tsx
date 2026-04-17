@@ -3,7 +3,7 @@ import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
 import { MamaCustomerPageShell } from "@/features/mama-home/components/mama-customer-page-shell";
-import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
+import { getCurrentManagerId } from "@/lib/nightos/auth";
 import {
   getAllCasts,
   getTeamCustomers,
@@ -15,8 +15,9 @@ import {
 } from "@/lib/nightos/referral-tree";
 
 export default async function MamaCustomersPage() {
+  const managerId = await getCurrentManagerId();
   const [customers, allCasts] = await Promise.all([
-    getTeamCustomers(CURRENT_MAMA_ID),
+    getTeamCustomers(managerId),
     getAllCasts(),
   ]);
 

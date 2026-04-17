@@ -15,11 +15,12 @@ import {
   currencyFormatter,
 } from "@/features/cast-stats/components/goal-progress";
 import { CastRepeatTrend } from "@/features/cast-stats/components/repeat-trend";
-import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
+import { getCurrentManagerId } from "@/lib/nightos/auth";
 import { getCastStatsData } from "@/lib/nightos/supabase-queries";
 
 export default async function MamaStatsPage() {
-  const data = await getCastStatsData(CURRENT_MAMA_ID);
+  const managerId = await getCurrentManagerId();
+  const data = await getCastStatsData(managerId);
 
   return (
     <div className="animate-fade-in">

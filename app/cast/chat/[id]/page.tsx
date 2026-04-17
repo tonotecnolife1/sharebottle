@@ -4,14 +4,16 @@ import {
   mockChatMessages,
   mockChatRooms,
 } from "@/features/team-chat/lib/mock-chat-data";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 import { mockCasts } from "@/lib/nightos/mock-data";
 
-export default function ChatRoomPage({
+export default async function ChatRoomPage({
   params,
 }: {
   params: { id: string };
 }) {
+  const castId = await getCurrentCastId();
+
   const room = mockChatRooms.find((r) => r.id === params.id);
   if (!room) notFound();
 
@@ -22,14 +24,14 @@ export default function ChatRoomPage({
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
 
-  const currentCast = mockCasts.find((c) => c.id === CURRENT_CAST_ID);
+  const currentCast = mockCasts.find((c) => c.id === castId);
   const castName = currentCast?.name ?? "あかり";
 
   return (
     <ChatRoomView
       room={room}
       messages={messages}
-      currentCastId={CURRENT_CAST_ID}
+      currentCastId={castId}
       currentCastName={castName}
     />
   );

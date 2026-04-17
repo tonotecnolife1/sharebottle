@@ -393,6 +393,270 @@ export async function deleteScreenshotReal(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// ═══════════════ Subordinate / team queries ═══════════════
+
+export async function getSubordinateCastsReal(
+  leaderCastId: string,
+): Promise<Cast[]> {
+  const supabase = createServerSupabaseClient();
+  const leader = await getCastByIdReal(leaderCastId);
+  if (!leader) return [];
+
+  if (leader.club_role === "mama") {
+    const { data, error } = await supabase
+      .from("nightos_casts")
+      .select("*")
+      .eq("store_id", leader.store_id)
+      .neq("id", leader.id);
+    if (error) throw error;
+    return (data ?? []).map(rowToCast);
+  }
+
+  if (leader.club_role === "oneesan") {
+    const { data: allCasts, error } = await supabase
+      .from("nightos_casts")
+      .select("*")
+      .eq("store_id", leader.store_id);
+    if (error) throw error;
+    const casts = (allCasts ?? []).map(rowToCast);
+    const result: Cast[] = [];
+    const queue = [leader.id];
+    const seen = new Set([leader.id]);
+    while (queue.length > 0) {
+      const parentId = queue.shift()!;
+      for (const c of casts) {
+        if (c.assigned_oneesan_id === parentId && !seen.has(c.id)) {
+          seen.add(c.id);
+          result.push(c);
+          queue.push(c.id);
+        }
+      }
+    }
+    return result;
+  }
+
+  return [];
+}
+
+export async function getTeamCustomersReal(
+  leaderCastId: string,
+): Promise<Array<Customer & { cast_name: string }>> {
+  const team = await getSubordinateCastsReal(leaderCastId);
+  const teamIds = [leaderCastId, ...team.map((c) => c.id)];
+
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .in("cast_id", teamIds);
+  if (error) throw error;
+
+  const castsById = new Map(team.map((c) => [c.id, c]));
+  return (data ?? []).map((row: any) => ({
+    ...rowToCustomer(row),
+    cast_name: castsById.get(row.cast_id)?.name ?? "不明",
+  }));
+}
+
+// ═══════════════ CRUD: customers (real) ═══════════════
+
+export async function updateCustomerReal(
+  id: string,
+  input: {
+    name: string;
+    birthday: string | null;
+    job: string | null;
+    favorite_drink: string | null;
+    category: CustomerCategory;
+    store_memo: string | null;
+    cast_id: string;
+  },
+): Promise<Customer | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .update({
+      name: input.name,
+      birthday: input.birthday,
+      job: input.job,
+      favorite_drink: input.favorite_drink,
+      category: input.category,
+      store_memo: input.store_memo,
+      cast_id: input.cast_id,
+    })
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToCustomer(data) : null;
+}
+
+export async function transferCustomersReal(
+  customerIds: string[],
+  newCastId: string,
+): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("customers")
+    .update({ cast_id: newCastId })
+    .in("id", customerIds);
+  if (error) throw error;
+}
+
+export async function deleteCustomerReal(id: string): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.from("customers").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function getCustomerByIdReal(
+  id: string,
+): Promise<Customer | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToCustomer(data) : null;
+}
+
+// ═══════════════ CRUD: visits (real) ═══════════════
+
+export async function getRecentVisitsReal(
+  limit: number,
+): Promise<Array<Visit & { customer_name: string; cast_name: string }>> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("visits")
+    .select("*, customers!inner(name), nightos_casts!inner(name)")
+    .order("visited_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...rowToVisit(row),
+    customer_name: row.customers?.name ?? "（不明）",
+    cast_name: row.nightos_casts?.name ?? "（不明）",
+  }));
+}
+
+export async function deleteVisitReal(id: string): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.from("visits").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ═══════════════ CRUD: bottles (real) ═══════════════
+
+export async function getAllBottlesReal(): Promise<
+  Array<Bottle & { customer_name: string; cast_id: string | null }>
+> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("bottles")
+    .select("*, customers!inner(name, cast_id)")
+    .order("remaining_glasses", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...rowToBottle(row),
+    customer_name: row.customers?.name ?? "（不明）",
+    cast_id: row.customers?.cast_id ?? null,
+  }));
+}
+
+export async function consumeBottleReal(
+  id: string,
+  glasses: number,
+): Promise<Bottle | null> {
+  const supabase = createServerSupabaseClient();
+  const { data: current } = await supabase
+    .from("bottles")
+    .select("remaining_glasses")
+    .eq("id", id)
+    .maybeSingle();
+  if (!current) return null;
+  const newRemaining = Math.max(0, current.remaining_glasses - glasses);
+  const { data, error } = await supabase
+    .from("bottles")
+    .update({ remaining_glasses: newRemaining })
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToBottle(data) : null;
+}
+
+export async function deleteBottleReal(id: string): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.from("bottles").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ═══════════════ Cast goals (real) ═══════════════
+
+import type { CastGoal } from "@/types/nightos";
+
+export async function getCastGoalReal(castId: string): Promise<CastGoal | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_goals")
+    .select("*")
+    .eq("cast_id", castId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    castId: data.cast_id,
+    salesGoal: Number(data.sales_goal),
+    douhanGoal: data.douhan_goal,
+    note: data.note,
+    setBy: data.set_by,
+    updatedAt: data.updated_at,
+  };
+}
+
+export async function setCastGoalReal(
+  castId: string,
+  input: { salesGoal: number; douhanGoal: number; note: string | null; setBy: string | null },
+): Promise<CastGoal> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_goals")
+    .upsert({
+      cast_id: castId,
+      sales_goal: input.salesGoal,
+      douhan_goal: input.douhanGoal,
+      note: input.note,
+      set_by: input.setBy,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    castId: data.cast_id,
+    salesGoal: Number(data.sales_goal),
+    douhanGoal: data.douhan_goal,
+    note: data.note,
+    setBy: data.set_by,
+    updatedAt: data.updated_at,
+  };
+}
+
+// ═══════════════ Auth helper ═══════════════
+
+export async function getCastByAuthUserId(authUserId: string): Promise<Cast | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("nightos_casts")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToCast(data) : null;
+}
+
 // ═══════════════ Row → type mappers ═══════════════
 
 function rowToCast(row: any): Cast {
@@ -403,6 +667,8 @@ function rowToCast(row: any): Cast {
     nomination_count: row.nomination_count ?? 0,
     monthly_sales: Number(row.monthly_sales ?? 0),
     repeat_rate: Number(row.repeat_rate ?? 0),
+    club_role: row.club_role ?? undefined,
+    assigned_oneesan_id: row.assigned_oneesan_id ?? undefined,
   };
 }
 
@@ -418,6 +684,11 @@ function rowToCustomer(row: any): Customer {
     category: (row.category ?? "regular") as CustomerCategory,
     store_memo: row.store_memo,
     created_at: row.created_at,
+    referred_by_customer_id: row.referred_by_customer_id ?? null,
+    funnel_stage: row.funnel_stage ?? "store_only",
+    line_exchanged_cast_id: row.line_exchanged_cast_id ?? null,
+    line_exchanged_at: row.line_exchanged_at ?? null,
+    manager_cast_id: row.manager_cast_id ?? null,
   };
 }
 

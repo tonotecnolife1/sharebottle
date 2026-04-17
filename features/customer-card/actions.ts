@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 import {
   deleteScreenshot,
   getCustomerContext,
@@ -18,8 +18,9 @@ export async function updateCastMemoAction(args: {
   customerId: string;
   input: CastMemoInput;
 }) {
+  const castId = await getCurrentCastId();
   const memo = await updateCastMemo({
-    castId: CURRENT_CAST_ID,
+    castId,
     customerId: args.customerId,
     input: args.input,
   });
@@ -45,7 +46,8 @@ export async function applyMemoUpdateAction(args: {
   extraction: MemoExtractionResult;
   fieldsToApply: MemoFieldKey[];
 }) {
-  const context = await getCustomerContext(CURRENT_CAST_ID, args.customerId);
+  const castId = await getCurrentCastId();
+  const context = await getCustomerContext(castId, args.customerId);
   const currentMemo = context?.memo;
 
   const pick = (key: MemoFieldKey, fallback: string | null) =>
@@ -58,7 +60,7 @@ export async function applyMemoUpdateAction(args: {
   };
 
   const memo = await updateCastMemo({
-    castId: CURRENT_CAST_ID,
+    castId,
     customerId: args.customerId,
     input,
   });
@@ -67,7 +69,7 @@ export async function applyMemoUpdateAction(args: {
   // so the cast can revisit it later.
   const screenshot: LineScreenshot = await saveScreenshot({
     customerId: args.customerId,
-    castId: CURRENT_CAST_ID,
+    castId,
     imageData: args.imageData,
     mediaType: args.mediaType,
     extracted: args.extraction,

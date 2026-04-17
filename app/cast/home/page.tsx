@@ -11,17 +11,18 @@ import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
 import { Card } from "@/components/nightos/card";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { getCurrentCastId } from "@/lib/nightos/auth";
 import {
   getUnreadCastMessages,
   getCustomersForCast,
 } from "@/lib/nightos/supabase-queries";
 
 export default async function CastHomePage() {
+  const castId = await getCurrentCastId();
   const [data, storeMessages, customers] = await Promise.all([
-    fetchCastHomeData(CURRENT_CAST_ID),
-    getUnreadCastMessages(CURRENT_CAST_ID),
-    getCustomersForCast(CURRENT_CAST_ID),
+    fetchCastHomeData(castId),
+    getUnreadCastMessages(castId),
+    getCustomersForCast(castId),
   ]);
 
   return (
