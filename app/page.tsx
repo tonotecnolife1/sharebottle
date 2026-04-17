@@ -171,7 +171,7 @@ export default function RoleSelectorPage() {
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
                       {venue === "club"
-                        ? "接客・同伴・顧客・お店管理"
+                        ? "接客・同伴・顧客・メンバー管理"
                         : "接客・顧客・さくらママ・成績"}
                     </div>
                   </div>

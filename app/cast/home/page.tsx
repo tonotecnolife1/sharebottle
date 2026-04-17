@@ -73,7 +73,7 @@ export default async function CastHomePage() {
           <header className="flex items-baseline justify-between">
             <h2 className="text-display-sm text-ink flex items-center gap-1.5">
               <Crown size={15} className="text-amethyst-dark" />
-              お店管理
+              メンバー管理
             </h2>
             <span className="text-label-sm text-ink-muted">管理者向け</span>
           </header>
