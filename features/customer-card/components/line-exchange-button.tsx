@@ -21,7 +21,7 @@ interface Props {
  * キャストが顧客とLINE交換したことを記録するボタン。
  * - 未記録時: 大きな緑ボタン「LINE交換したよ」
  * - 記録済: 「💬 LINE交換済み」バッジ + 取り消しリンク
- * 記録後はチームチャット通知も表示案内（現状は簡易ローカル記録のみ）
+ * 記録後はお店のチャット通知も表示案内（現状は簡易ローカル記録のみ）
  */
 export function LineExchangeButton({
   customerId,
@@ -81,7 +81,7 @@ export function LineExchangeButton({
         </div>
         <div className="flex items-center justify-between">
           <p className="text-[11px] text-ink-secondary">
-            チームに共有済み。これでファネル上位に反映されました✨
+            お店に共有済み。これでファネル上位に反映されました✨
           </p>
           <button
             type="button"

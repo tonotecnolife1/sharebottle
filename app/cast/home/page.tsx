@@ -68,14 +68,14 @@ export default async function CastHomePage() {
           <FollowTargetList targets={data.targets} />
         </section>
 
-        {/* Team management — available to all casts, primarily used by leaders */}
+        {/* Store management — available to all casts, primarily used by leaders */}
         <section className="space-y-2 pt-2">
           <header className="flex items-baseline justify-between">
             <h2 className="text-display-sm text-ink flex items-center gap-1.5">
               <Crown size={15} className="text-amethyst-dark" />
-              チーム管理
+              お店管理
             </h2>
-            <span className="text-label-sm text-ink-muted">リーダー向け</span>
+            <span className="text-label-sm text-ink-muted">管理者向け</span>
           </header>
           <div className="grid grid-cols-2 gap-2">
             <TeamLink
@@ -88,7 +88,7 @@ export default async function CastHomePage() {
               href="/mama/customers"
               icon={<Users size={16} />}
               label="全顧客"
-              description="チーム担当の全顧客"
+              description="お店全体のお客様"
             />
             <TeamLink
               href="/mama/map"

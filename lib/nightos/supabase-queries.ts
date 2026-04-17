@@ -178,7 +178,7 @@ export async function getSubordinateCasts(leaderCastId: string): Promise<Cast[]>
 }
 
 /**
- * チーム全体の顧客一覧（mama/姉さん用）。
+ * お店全体の顧客一覧（mama/姉さん用）。
  * 自分 + 配下のキャストが担当する顧客すべてを返す。
  */
 export async function getTeamCustomers(

@@ -3,7 +3,7 @@
 
 export const CURRENT_STORE_ID = "store1";
 export const CURRENT_CAST_ID = "cast1"; // あかり
-// ママ/姉さんアプリのデモログイン用 = ゆき（姉さん、チームの頂点）
+// ママ/姉さんアプリのデモログイン用 = ゆき（姉さんの最上位）
 export const CURRENT_MAMA_ID = "cast_oneesan2";
 
 export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード用）
@@ -31,13 +31,13 @@ export const RURI_MAMA_MODEL = SAKURA_MAMA_MODEL;
 /**
  * UI に表示するさくらママの名前。
  * 通常の UI では「さくらママ」のみを表示する。
- * チームチャットなど、人間のキャストと AI が混在する場面では
+ * お店のチャットなど、人間のキャストと AI が混在する場面では
  * SAKURA_MAMA_CHAT_NAME で「(AI)」付きを使って区別する。
  */
 export const SAKURA_MAMA_DISPLAY_NAME = "さくらママ";
 
 /**
- * チーム内チャットで人間と区別するための表示名。
+ * お店のチャットで人間と区別するための表示名。
  * 他のキャストのメッセージと並んだ時に AI と一目で分かるように「(AI)」を付与。
  */
 export const SAKURA_MAMA_CHAT_NAME = "さくらママ(AI)";

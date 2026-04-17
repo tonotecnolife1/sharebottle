@@ -19,7 +19,7 @@ interface AlertEntry {
 }
 
 /**
- * チームメンバーのうち、今月キャンセルが threshold 件以上のキャストを警告する。
+ * お店のキャストのうち、今月キャンセルが threshold 件以上の者を警告する。
  * localStorage の同伴ストアから動的に読み込むため、キャストがキャンセルすると即反映。
  */
 export function CancellationAlert({ teamCasts, threshold = 2 }: Props) {

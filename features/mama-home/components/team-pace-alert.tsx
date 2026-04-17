@@ -8,7 +8,7 @@ interface Props {
 }
 
 /**
- * チーム内に 🔴 meeting_risk や 🟡 behind のキャストがいたら
+ * お店に 🔴 meeting_risk や 🟡 behind のキャストがいたら
  * ホームで目立つ警告バナーを表示する。
  */
 export function TeamPaceAlert({ paceList }: Props) {

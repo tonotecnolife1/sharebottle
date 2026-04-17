@@ -15,7 +15,7 @@ interface Props {
 
 /**
  * 顧客ファネル (店舗登録 → 担当付き → LINE交換) をスタックバーで可視化。
- * チーム全体の転換率とキャスト別 TOP3 を表示。
+ * お店全体の転換率とキャスト別 TOP3 を表示。
  */
 export function FunnelVisualization({ customers, teamCasts }: Props) {
   const stats = calculateFunnelStats(customers);
