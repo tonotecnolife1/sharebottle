@@ -80,6 +80,6 @@ export async function isAuthenticated(): Promise<boolean> {
 function getMockCast(): Cast | null {
   const cookieStore = cookies();
   const mockCastId = cookieStore.get("nightos.mock-cast-id")?.value;
-  const id = mockCastId || CURRENT_CAST_ID;
-  return mockCasts.find((c) => c.id === id) ?? null;
+  if (!mockCastId) return null;
+  return mockCasts.find((c) => c.id === mockCastId) ?? null;
 }

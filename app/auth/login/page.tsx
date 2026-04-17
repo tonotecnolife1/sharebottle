@@ -2,8 +2,51 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Crown, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/nightos/button";
+import { Card } from "@/components/nightos/card";
+import { cn } from "@/lib/utils";
+import { mockLogin } from "../actions";
+
+interface MockCast {
+  id: string;
+  name: string;
+  role: string;
+  description: string;
+}
+
+const MOCK_CASTS: MockCast[] = [
+  {
+    id: "cast1",
+    name: "あかり",
+    role: "キャスト（お姉さん）",
+    description: "ゆきの下で活動。あやなの育成担当",
+  },
+  {
+    id: "cast_oneesan2",
+    name: "ゆき",
+    role: "お姉さん（トップ）",
+    description: "お店のNo.1。あかりの育成担当。メンバー管理可能",
+  },
+  {
+    id: "cast_help2",
+    name: "あやな",
+    role: "キャスト（新人）",
+    description: "あかりの直属。接客の基本を固める段階",
+  },
+  {
+    id: "cast_oneesan3",
+    name: "もえ",
+    role: "お姉さん",
+    description: "売上2位。ちひろの育成担当",
+  },
+  {
+    id: "cast_oneesan4",
+    name: "れな",
+    role: "お姉さん",
+    description: "顧客数トップ。かなでの育成担当",
+  },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,19 +55,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [selectedCast, setSelectedCast] = useState<string | null>(null);
 
   const isSupabaseConfigured =
     typeof window !== "undefined" &&
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSupabaseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isSupabaseConfigured) {
-      router.push("/");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -38,7 +77,6 @@ export default function LoginPage() {
           password,
         });
         if (signUpErr) throw signUpErr;
-        setError(null);
         setMode("login");
         alert("確認メールを送信しました。メールを確認してからログインしてください。");
         return;
@@ -58,10 +96,15 @@ export default function LoginPage() {
     }
   };
 
+  const handleMockLogin = async (castId: string) => {
+    setSelectedCast(castId);
+    await mockLogin(castId);
+  };
+
   return (
-    <main className="bg-pearl min-h-dvh flex items-center justify-center px-6">
-      <div className="max-w-sm w-full space-y-8">
-        <div className="text-center space-y-2">
+    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-12">
+      <div className="max-w-md w-full flex flex-col gap-6">
+        <div className="text-center space-y-2 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-badge bg-amethyst-muted text-amethyst-dark text-label-sm border border-amethyst-border">
             <Sparkles size={14} />
             MVP
@@ -70,25 +113,12 @@ export default function LoginPage() {
             NIGHTOS
           </h1>
           <p className="text-body-md text-ink-secondary">
-            {mode === "login" ? "ログイン" : "アカウント作成"}
+            ログイン
           </p>
         </div>
 
-        {!isSupabaseConfigured && (
-          <div className="bg-amber/10 border border-amber/20 rounded-card p-4 text-body-sm text-amber">
-            Supabase が未設定のため、モックモードで動作します。
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="block mt-2 text-amethyst-dark font-medium underline"
-            >
-              モックモードで続ける →
-            </button>
-          </div>
-        )}
-
-        {isSupabaseConfigured && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {isSupabaseConfigured ? (
+          <form onSubmit={handleSupabaseSubmit} className="space-y-4 animate-fade-in">
             <div>
               <label className="text-label-sm text-ink-secondary block mb-1">
                 メールアドレス
@@ -113,20 +143,18 @@ export default function LoginPage() {
                 required
                 minLength={6}
                 className="w-full px-3 py-2.5 rounded-btn border border-pearl-soft bg-pearl-warm text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-border"
-                placeholder="••••••���•"
+                placeholder="••••••••"
               />
             </div>
 
-            {error && (
-              <p className="text-body-sm text-rose">{error}</p>
-            )}
+            {error && <p className="text-body-sm text-rose">{error}</p>}
 
             <Button type="submit" variant="primary" className="w-full" disabled={loading}>
               {loading
                 ? "処理中..."
                 : mode === "login"
                   ? "ログイン"
-                  : "��カウント作成"}
+                  : "アカウント作成"}
             </Button>
 
             <button
@@ -139,6 +167,68 @@ export default function LoginPage() {
                 : "既にアカウントをお持ちの方 →"}
             </button>
           </form>
+        ) : (
+          <div className="space-y-3 animate-fade-in">
+            <p className="text-body-sm text-ink-secondary text-center">
+              キャストを選択してログイン
+            </p>
+
+            {MOCK_CASTS.map((cast) => (
+              <button
+                key={cast.id}
+                type="button"
+                disabled={selectedCast !== null}
+                onClick={() => handleMockLogin(cast.id)}
+                className="w-full text-left transition-transform active:scale-[0.98] disabled:opacity-60"
+              >
+                <Card
+                  className={cn(
+                    "p-4",
+                    selectedCast === cast.id && "!border-amethyst-border !bg-amethyst-muted",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                        cast.role.includes("お姉さん") || cast.role.includes("トップ")
+                          ? "ruri-gradient"
+                          : "rose-gradient",
+                      )}
+                    >
+                      {cast.role.includes("お姉さん") || cast.role.includes("トップ") ? (
+                        <Crown size={18} className="text-pearl" />
+                      ) : (
+                        <User size={18} className="text-pearl" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-body-md font-semibold text-ink">
+                          {cast.name}
+                        </span>
+                        <span className="text-[10px] text-ink-muted px-1.5 py-0.5 rounded-badge bg-pearl-soft">
+                          {cast.role}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-muted mt-0.5 truncate">
+                        {cast.description}
+                      </p>
+                    </div>
+                    {selectedCast === cast.id && (
+                      <div className="text-[11px] text-amethyst-dark font-medium">
+                        ログイン中...
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </button>
+            ))}
+
+            <p className="text-[10px] text-ink-muted text-center pt-2">
+              デモ用のキャストを選択してください。データはモックです。
+            </p>
+          </div>
         )}
       </div>
     </main>
