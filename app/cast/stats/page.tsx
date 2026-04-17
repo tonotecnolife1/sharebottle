@@ -76,7 +76,7 @@ export default async function CastStatsPage() {
         {/* Master / Help split */}
         <div className="grid grid-cols-2 gap-2.5">
           <StatCard
-            label="マスター顧客"
+            label="管理顧客"
             value={data.monthly.masterCustomerCount}
             unit="人"
             tone="rose"

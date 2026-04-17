@@ -101,7 +101,7 @@ export default async function MamaTeamCastDetailPage({
         <section className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-display-sm text-ink">
-              マスター管理のお客様
+              管理しているお客様
             </h2>
             <span className="text-label-sm text-ink-muted">
               {masterCustomers.length}人
@@ -109,7 +109,7 @@ export default async function MamaTeamCastDetailPage({
           </div>
           {masterCustomers.length === 0 ? (
             <Card className="p-4 text-center text-body-sm text-ink-muted">
-              マスター管理のお客様はいません
+              管理しているお客様はいません
             </Card>
           ) : (
             masterCustomers.map((c) => (
