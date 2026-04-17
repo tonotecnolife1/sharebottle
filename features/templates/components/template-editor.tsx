@@ -3,7 +3,7 @@
 import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/nightos/card";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import { cn } from "@/lib/utils";
 import {
   TEMPLATE_CATEGORIES,
@@ -38,19 +38,20 @@ const EMPTY_EDITOR: EditorState = {
 };
 
 export function TemplateEditor({ category, onChange }: Props) {
+  const castId = useCastId();
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [customs, setCustoms] = useState<CustomTemplate[]>([]);
 
   // Restore on mount and when category changes
   useEffect(() => {
-    const all = loadCustomTemplates(CURRENT_CAST_ID);
+    const all = loadCustomTemplates(castId);
     setCustoms(all.filter((t) => t.category === category));
     onChange(all);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
   const refresh = () => {
-    const all = loadCustomTemplates(CURRENT_CAST_ID);
+    const all = loadCustomTemplates(castId);
     setCustoms(all.filter((t) => t.category === category));
     onChange(all);
   };
@@ -76,7 +77,7 @@ export function TemplateEditor({ category, onChange }: Props) {
     const label = editor.label.trim() || "マイテンプレート";
     const body = editor.body.trim();
     if (!body) return;
-    saveCustomTemplate(CURRENT_CAST_ID, {
+    saveCustomTemplate(castId, {
       id: editor.id,
       category,
       label,
@@ -89,7 +90,7 @@ export function TemplateEditor({ category, onChange }: Props) {
 
   const handleDelete = (id: string) => {
     if (!confirm("このテンプレートを削除しますか？")) return;
-    deleteCustomTemplate(CURRENT_CAST_ID, id);
+    deleteCustomTemplate(castId, id);
     refresh();
   };
 

@@ -2,7 +2,7 @@
 
 import { Loader2, Sparkles, Wine } from "lucide-react";
 import { useState } from "react";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import { cn } from "@/lib/utils";
 
 interface BottleRecommendation {
@@ -21,6 +21,7 @@ interface Props {
 }
 
 export function BottleSuggestion({ customerId }: Props) {
+  const castId = useCastId();
   const [phase, setPhase] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
@@ -37,7 +38,7 @@ export function BottleSuggestion({ customerId }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerId,
-          castId: CURRENT_CAST_ID,
+          castId: castId,
         }),
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);

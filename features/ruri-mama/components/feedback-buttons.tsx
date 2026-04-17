@@ -2,7 +2,7 @@
 
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import { cn } from "@/lib/utils";
 import {
   getFeedbackFor,
@@ -19,16 +19,16 @@ interface Props {
 }
 
 export function FeedbackButtons({ assistantContent }: Props) {
+  const castId = useCastId();
   const [feedback, setFeedback] = useState<FeedbackValue | null>(null);
 
-  // Restore previously-saved feedback for this message on mount
   useEffect(() => {
-    setFeedback(getFeedbackFor(CURRENT_CAST_ID, assistantContent));
-  }, [assistantContent]);
+    setFeedback(getFeedbackFor(castId, assistantContent));
+  }, [castId, assistantContent]);
 
   const handleClick = (value: FeedbackValue) => {
     setFeedback(value);
-    saveFeedback(CURRENT_CAST_ID, assistantContent, value);
+    saveFeedback(castId, assistantContent, value);
   };
 
   return (

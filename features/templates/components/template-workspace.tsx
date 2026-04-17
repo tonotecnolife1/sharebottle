@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/nightos/card";
 import { RuriMamaAvatar } from "@/components/nightos/ruri-mama-avatar";
 import { CustomerContextPicker } from "@/features/ruri-mama/components/customer-context-picker";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import type { Bottle, CastMemo, Customer } from "@/types/nightos";
 import { CategoryTabs } from "./category-tabs";
 import { TemplateCard } from "./template-card";
@@ -42,6 +42,7 @@ export function TemplateWorkspace({
   lookups,
   initialCustomerId,
 }: Props) {
+  const castId = useCastId();
   const [category, setCategory] = useState<TemplateCategory>("thanks");
   const [customerId, setCustomerId] = useState<string | undefined>(
     initialCustomerId,
@@ -85,7 +86,7 @@ export function TemplateWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerId,
-          castId: CURRENT_CAST_ID,
+          castId: castId,
           category,
         }),
       });

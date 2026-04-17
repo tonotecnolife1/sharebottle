@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Info, Plus, Sparkles, Trash2 } from "lucide-react";
-import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import { detectIntent } from "@/lib/nightos/intent-detector";
 import { HEARING_FLOWS } from "../data/system-prompt";
 import { recentFeedbackSamples } from "../lib/feedback-store";
@@ -118,6 +118,7 @@ export function ChatWindow({
   initialCustomerId,
   initialIsStubMode = false,
 }: Props) {
+  const castId = useCastId();
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [phase, setPhase] = useState<Phase>({ name: "intent-pick" });
   const [selectedCustomerId, setSelectedCustomerId] = useState<
@@ -156,7 +157,7 @@ export function ChatWindow({
 
   // On mount, restore persisted chat history (if any)
   useEffect(() => {
-    const stored = loadStoredMessages(CURRENT_CAST_ID);
+    const stored = loadStoredMessages(castId);
     if (stored && stored.length > 0) {
       setMessages([GREETING, ...stored]);
       // If the last persisted message was an assistant reply, mark as
@@ -173,7 +174,7 @@ export function ChatWindow({
   // Save on every change after the initial restore
   useEffect(() => {
     if (!historyLoaded) return;
-    saveMessagesToStorage(CURRENT_CAST_ID, messages);
+    saveMessagesToStorage(castId, messages);
   }, [messages, historyLoaded]);
 
   useEffect(() => {
@@ -185,7 +186,7 @@ export function ChatWindow({
 
   const handleClearHistory = () => {
     if (!confirm("これまでの相談履歴を全部削除しますか？")) return;
-    clearStoredMessages(CURRENT_CAST_ID);
+    clearStoredMessages(castId);
     setMessages([GREETING]);
     setPhase({ name: "intent-pick" });
   };
@@ -204,7 +205,7 @@ export function ChatWindow({
   ) => {
     setPhase({ name: "loading" });
     try {
-      const feedbackContext = recentFeedbackSamples(CURRENT_CAST_ID, 8);
+      const feedbackContext = recentFeedbackSamples(castId, 8);
       const res = await fetch("/api/ruri-mama", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -212,7 +213,7 @@ export function ChatWindow({
           messages: messagesToSend.filter((m) => m !== GREETING && m !== FREEFORM_PROMPT),
           customerId: selectedCustomerId,
           hearingContext,
-          castId: CURRENT_CAST_ID,
+          castId: castId,
           intent,
           recentFeedback: feedbackContext,
         }),
@@ -263,7 +264,7 @@ export function ChatWindow({
       intent: undefined, // 現状 intent を component で保持してないので将来拡張
       customerCategory: undefined,
       pickedAt: new Date().toISOString(),
-      castId: CURRENT_CAST_ID,
+      castId: castId,
     });
   };
 
@@ -291,7 +292,7 @@ export function ChatWindow({
           messages: [
             { role: "user", content: `ブラッシュアップ: ${direction.label}` },
           ],
-          castId: CURRENT_CAST_ID,
+          castId: castId,
           intent: "freeform",
           refineStep: "apply",
           previousReply: srcMessage.content,

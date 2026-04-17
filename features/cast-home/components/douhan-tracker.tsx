@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { cn, formatCustomerName } from "@/lib/utils";
-import { CURRENT_CAST_ID, CURRENT_STORE_ID } from "@/lib/nightos/constants";
+import { CURRENT_STORE_ID } from "@/lib/nightos/constants";
+import { useCastId } from "@/lib/nightos/cast-context";
 import {
   deleteDouhan,
   loadDouhansForCast,
@@ -27,22 +28,23 @@ interface Props {
 }
 
 export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
+  const castId = useCastId();
   const [entries, setEntries] = useState<Douhan[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setEntries(loadDouhansForCast(CURRENT_CAST_ID));
+    setEntries(loadDouhansForCast(castId));
     setLoaded(true);
-  }, []);
+  }, [castId]);
 
-  const refresh = () => setEntries(loadDouhansForCast(CURRENT_CAST_ID));
+  const refresh = () => setEntries(loadDouhansForCast(castId));
 
   const addEntry = (customerId: string, date: string, note: string) => {
     const entry: Douhan = {
       id: `d_${Date.now()}`,
-      cast_id: CURRENT_CAST_ID,
+      cast_id: castId,
       customer_id: customerId,
       store_id: CURRENT_STORE_ID,
       date,
