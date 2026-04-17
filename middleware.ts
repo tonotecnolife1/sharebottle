@@ -9,21 +9,18 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isSupabaseConfigured =
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!isSupabaseConfigured) {
+  const hasMockSession = !!request.cookies.get("nightos.mock-cast-id")?.value;
+  if (hasMockSession) {
     return NextResponse.next();
   }
 
-  const hasSession =
+  const hasSupabaseSession =
     request.cookies.get("sb-access-token")?.value ||
     Array.from(request.cookies.getAll()).some(
       (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"),
     );
 
-  if (!hasSession) {
+  if (!hasSupabaseSession) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
