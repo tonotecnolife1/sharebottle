@@ -3,6 +3,9 @@ import { ChevronRight, Crown, Users } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
+import { TeamPaceAlert } from "@/features/mama-home/components/team-pace-alert";
+import { CancellationAlert } from "@/features/mama-home/components/cancellation-alert";
+import { UpcomingDouhanList } from "@/features/team-management/components/upcoming-douhan-list";
 import { CURRENT_MAMA_ID } from "@/lib/nightos/constants";
 import {
   getSubordinateCasts,
@@ -47,6 +50,19 @@ export default async function MamaTeamPage() {
       <PageHeader title="メンバー管理" subtitle="キャスト・顧客の動き" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
+        {/* Tonight's summary — alerts + upcoming douhan reservations */}
+        <section className="space-y-2">
+          <h2 className="text-display-sm text-ink">今夜のサマリー</h2>
+          <TeamPaceAlert paceList={paceList} />
+          <CancellationAlert teamCasts={teamCasts} />
+          <UpcomingDouhanList
+            teamCasts={teamCasts}
+            douhans={mockDouhans}
+            customers={teamCustomers}
+            today={MOCK_TODAY}
+          />
+        </section>
+
         {/* Team totals */}
         <div className="grid grid-cols-2 gap-2.5">
           <StatCard
