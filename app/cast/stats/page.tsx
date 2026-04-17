@@ -15,6 +15,7 @@ import {
   currencyFormatter,
 } from "@/features/cast-stats/components/goal-progress";
 import { CastRepeatTrend } from "@/features/cast-stats/components/repeat-trend";
+import { AiUsageSummary } from "@/features/cast-stats/components/ai-usage-summary";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
 import { getCastStatsData } from "@/lib/nightos/supabase-queries";
 
@@ -96,6 +97,9 @@ export default async function CastStatsPage() {
             hint="他の担当者顧客への接客"
           />
         </div>
+
+        {/* AI usage */}
+        <AiUsageSummary />
 
         {/* Repeat trend */}
         <section>
