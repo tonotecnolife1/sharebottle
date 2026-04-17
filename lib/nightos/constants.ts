@@ -10,6 +10,8 @@ export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード
 
 export const ROLE_STORAGE_KEY = "nightos.role";
 export const VENUE_TYPE_STORAGE_KEY = "nightos.venue-type";
+/** "cast" = あかり（通常キャスト）, "leader" = ゆき（リーダー） */
+export const CAST_PERSONA_STORAGE_KEY = "nightos.cast-persona";
 
 // ── Venue type ──
 // クラブ: ママ・お姉さん・キャストの階層構造。同伴が重要。担当制。
