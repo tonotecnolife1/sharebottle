@@ -269,7 +269,7 @@ function ReferralNodeCard({
         {isRoot && (
           <span className="ml-auto flex items-center gap-1 text-[10px] text-amethyst-dark font-medium shrink-0 bg-amethyst-muted/40 border border-amethyst-border rounded-badge px-1.5 py-0.5">
             <Crown size={10} />
-            総顧客{(rootRefCount ?? 0) + 1}人
+            お連れ様合計{rootRefCount ?? 0}人
           </span>
         )}
       </div>
