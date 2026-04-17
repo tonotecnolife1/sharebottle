@@ -7,6 +7,10 @@ import { Button } from "@/components/nightos/button";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
+import {
+  BusinessCardUpload,
+  type ExtractedBusinessCard,
+} from "@/features/customer-registration/components/business-card-upload";
 import type { Cast, Customer, CustomerCategory } from "@/types/nightos";
 import { deleteCustomerAction, updateCustomerAction } from "../actions";
 
@@ -59,6 +63,16 @@ export function EditCustomerForm({ customer, casts }: Props) {
     });
   };
 
+  const applyBusinessCard = (fields: ExtractedBusinessCard) => {
+    if (fields.name) setName(fields.name);
+    if (fields.job) setJob(fields.job);
+    if (fields.store_memo) {
+      setStoreMemo((prev) =>
+        prev.trim() ? `${prev.trim()}\n${fields.store_memo}` : fields.store_memo ?? "",
+      );
+    }
+  };
+
   const handleDelete = () => {
     if (
       !confirm(
@@ -80,6 +94,8 @@ export function EditCustomerForm({ customer, casts }: Props) {
         submit();
       }}
     >
+      <BusinessCardUpload onApply={applyBusinessCard} mode="edit" />
+
       <TextInput
         label="お名前"
         name="name"

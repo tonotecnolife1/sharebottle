@@ -9,6 +9,10 @@ import { TextAreaInput } from "@/components/nightos/textarea";
 import { inferManagerCastId } from "@/lib/nightos/manager-assignment";
 import type { Cast, Customer, CustomerCategory } from "@/types/nightos";
 import { createCustomerAction } from "../actions";
+import {
+  BusinessCardUpload,
+  type ExtractedBusinessCard,
+} from "./business-card-upload";
 
 interface Props {
   casts: Cast[];
@@ -89,6 +93,17 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
     setManagerOverridden(false);
   };
 
+  const applyBusinessCard = (fields: ExtractedBusinessCard) => {
+    if (fields.name) setName(fields.name);
+    if (fields.job) setJob(fields.job);
+    if (fields.store_memo) {
+      // 既存メモがある場合は改行で追記、無い場合はそのまま
+      setStoreMemo((prev) =>
+        prev.trim() ? `${prev.trim()}\n${fields.store_memo}` : fields.store_memo ?? "",
+      );
+    }
+  };
+
   const submit = () => {
     setError(null);
     setSuccess(null);
@@ -128,6 +143,8 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         submit();
       }}
     >
+      <BusinessCardUpload onApply={applyBusinessCard} mode="new" />
+
       <TextInput
         label="お名前"
         name="name"
