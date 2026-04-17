@@ -13,10 +13,8 @@ import {
   Wine,
 } from "lucide-react";
 import {
-  getCastPersona,
   getRole,
   getVenueType,
-  setCastPersona,
   setRole,
   setVenueType,
   type NightosRole,
@@ -32,8 +30,7 @@ export default function RoleSelectorPage() {
 
   useEffect(() => {
     const existing = getRole();
-    if (existing === "cast")
-      router.replace(getCastPersona() === "leader" ? "/mama/team" : "/cast/home");
+    if (existing === "cast") router.replace("/cast/home");
     else if (existing === "store") router.replace("/store");
     else if (existing === "customer") router.replace("/customer/home");
     // Restore venue preference
@@ -154,46 +151,10 @@ export default function RoleSelectorPage() {
               {venue === "club" ? "クラブ" : "キャバクラ"} — 役割を選択
             </p>
 
-            {/* Leader persona */}
+            {/* Cast */}
             <button
               type="button"
-              onClick={() => {
-                setCastPersona("leader");
-                setRole("cast");
-                router.push("/mama/team");
-              }}
-              className="text-left transition-transform active:scale-[0.98]"
-            >
-              <Card className="!border-amethyst-border !bg-gradient-pearl p-5 shadow-glow-amethyst">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full ruri-gradient flex items-center justify-center shadow-soft-card">
-                    <Crown size={26} className="text-pearl" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-label-sm text-amethyst-dark tracking-wider uppercase mb-0.5">
-                      For Leader
-                    </div>
-                    <div className="text-display-sm text-ink">
-                      リーダー（ゆき）
-                    </div>
-                    <div className="text-body-sm text-ink-secondary mt-0.5">
-                      {venue === "club"
-                        ? "メンバー管理・育成・同伴ノルマ"
-                        : "チーム管理・目標・さくらママ"}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </button>
-
-            {/* Cast persona */}
-            <button
-              type="button"
-              onClick={() => {
-                setCastPersona("cast");
-                setRole("cast");
-                router.push("/cast/home");
-              }}
+              onClick={() => pickRole("cast")}
               className="text-left transition-transform active:scale-[0.98]"
             >
               <Card className="!border-roseGold-border !bg-gradient-pearl p-5 shadow-glow-rose">
@@ -210,8 +171,8 @@ export default function RoleSelectorPage() {
                     </div>
                     <div className="text-body-sm text-ink-secondary mt-0.5">
                       {venue === "club"
-                        ? "お客様担当・同伴・さくらママ・成績"
-                        : "お客様管理・さくらママ・成績"}
+                        ? "接客・同伴・顧客・チーム管理"
+                        : "接客・顧客・さくらママ・成績"}
                     </div>
                   </div>
                 </div>

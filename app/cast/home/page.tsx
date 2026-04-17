@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronRight, Crown, GitBranch, Sparkles, Users } from "lucide-react";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 
@@ -6,6 +8,7 @@ import { MorningBriefing } from "@/features/cast-home/components/morning-briefin
 import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
 import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
 import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
+import { Card } from "@/components/nightos/card";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import { fetchCastHomeData } from "@/features/cast-home/actions";
 import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
@@ -65,8 +68,79 @@ export default async function CastHomePage() {
           <FollowTargetList targets={data.targets} />
         </section>
 
+        {/* Team management — available to all casts, primarily used by leaders */}
+        <section className="space-y-2 pt-2">
+          <header className="flex items-baseline justify-between">
+            <h2 className="text-display-sm text-ink flex items-center gap-1.5">
+              <Crown size={15} className="text-amethyst-dark" />
+              チーム管理
+            </h2>
+            <span className="text-label-sm text-ink-muted">リーダー向け</span>
+          </header>
+          <div className="grid grid-cols-2 gap-2">
+            <TeamLink
+              href="/mama/team"
+              icon={<Crown size={16} />}
+              label="メンバー"
+              description="育成・目標設定"
+            />
+            <TeamLink
+              href="/mama/customers"
+              icon={<Users size={16} />}
+              label="全顧客"
+              description="チーム担当の全顧客"
+            />
+            <TeamLink
+              href="/mama/map"
+              icon={<GitBranch size={16} />}
+              label="相関図"
+              description="お連れ様関係"
+            />
+            <TeamLink
+              href="/mama/ai-analytics"
+              icon={<Sparkles size={16} />}
+              label="さくらママ分析"
+              description="AI接客の効果"
+            />
+          </div>
+        </section>
+
         <RoleSwitchLink />
       </div>
     </div>
+  );
+}
+
+function TeamLink({
+  href,
+  icon,
+  label,
+  description,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="block active:scale-[0.99] transition-transform"
+    >
+      <Card className="p-3 h-full">
+        <div className="flex items-start gap-2">
+          <div className="w-8 h-8 rounded-full bg-amethyst-muted text-amethyst-dark flex items-center justify-center shrink-0">
+            {icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <div className="text-body-sm font-semibold text-ink">{label}</div>
+              <ChevronRight size={12} className="text-ink-muted shrink-0" />
+            </div>
+            <div className="text-[10px] text-ink-muted truncate">{description}</div>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }
