@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
+import { extractMemoSchema, parseBody } from "@/lib/nightos/validation";
 import type { MemoExtractionResult } from "@/types/nightos";
 
 export const runtime = "nodejs";
@@ -67,16 +68,9 @@ interface ExtractMemoResponse {
 }
 
 export async function POST(req: Request) {
-  let body: RequestBody;
-  try {
-    body = (await req.json()) as RequestBody;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-
-  if (!body.imageBase64 || !body.customerId || !body.castId) {
-    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, extractMemoSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const body: RequestBody = parsed;
 
   // Stub mode — no API key set
   if (!process.env.ANTHROPIC_API_KEY) {

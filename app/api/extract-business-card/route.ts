@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
+import {
+  extractBusinessCardSchema,
+  parseBody,
+} from "@/lib/nightos/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,16 +62,9 @@ interface ExtractBusinessCardResponse {
 }
 
 export async function POST(req: Request) {
-  let body: RequestBody;
-  try {
-    body = (await req.json()) as RequestBody;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-
-  if (!body.imageBase64) {
-    return NextResponse.json({ error: "missing_image" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, extractBusinessCardSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const body: RequestBody = parsed;
 
   if (!process.env.ANTHROPIC_API_KEY) {
     const response: ExtractBusinessCardResponse = {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
+import { parseBody, suggestBottleSchema } from "@/lib/nightos/validation";
 import type { CustomerContext } from "@/types/nightos";
 
 export const runtime = "nodejs";
@@ -58,16 +59,9 @@ interface ApiResponse {
 }
 
 export async function POST(req: Request) {
-  let body: RequestBody;
-  try {
-    body = (await req.json()) as RequestBody;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-
-  if (!body.customerId || !body.castId) {
-    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, suggestBottleSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const body: RequestBody = parsed;
 
   const context = await getCustomerContext(body.castId, body.customerId);
   if (!context) {

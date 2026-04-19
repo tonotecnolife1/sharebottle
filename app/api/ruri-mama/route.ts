@@ -14,6 +14,7 @@ import {
 } from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
+import { parseBody, ruriMamaSchema } from "@/lib/nightos/validation";
 import type {
   Bottle,
   CustomerContext,
@@ -31,16 +32,9 @@ export const maxDuration = 60;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function POST(req: Request) {
-  let body: RuriMamaRequest;
-  try {
-    body = (await req.json()) as RuriMamaRequest;
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-
-  if (!body.messages?.length || !body.castId) {
-    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, ruriMamaSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const body = parsed as RuriMamaRequest;
 
   // ── Refine mode: take previous reply + direction, return 3 refined options ──
   if (body.refineStep === "apply" && body.previousReply && body.refinementDirection) {
