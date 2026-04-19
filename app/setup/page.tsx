@@ -8,6 +8,8 @@ export default function SetupPage() {
   const [status, setStatus] = useState<"idle" | "running" | "done" | "error">("idle");
   const [result, setResult] = useState<any>(null);
   const [schemaStatus, setSchemaStatus] = useState<"idle" | "info">("idle");
+  const [authStatus, setAuthStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [authResult, setAuthResult] = useState<any>(null);
 
   const runSetup = async () => {
     setStatus("running");
@@ -21,6 +23,21 @@ export default function SetupPage() {
     } catch (err: any) {
       setResult({ error: err.message });
       setStatus("error");
+    }
+  };
+
+  const runAuthSetup = async () => {
+    setAuthStatus("running");
+    try {
+      const res = await fetch("/api/setup-auth?secret=nightos-setup-2026", {
+        method: "POST",
+      });
+      const data = await res.json();
+      setAuthResult(data);
+      setAuthStatus(res.ok ? "done" : "error");
+    } catch (err: any) {
+      setAuthResult({ error: err.message });
+      setAuthStatus("error");
     }
   };
 
@@ -132,16 +149,80 @@ export default function SetupPage() {
           )}
         </Card>
 
+        <Card className="p-4 space-y-4">
+          <h2 className="text-body-md font-semibold text-ink">
+            Step 3 (任意): メールログイン用テストアカウント作成
+          </h2>
+          <p className="text-body-sm text-ink-secondary">
+            Supabase Auth に 5 名のテストユーザー（akari@test.nightos など）を作成し、
+            既存のキャストレコードに紐付けます。メール/パスワードでの実ログインが可能になります。
+          </p>
+          <p className="text-[11px] text-ink-muted bg-amber/10 border border-amber/20 rounded-btn p-2">
+            <strong>必要な環境変数:</strong> SUPABASE_SERVICE_ROLE_KEY
+            （Supabase Dashboard → Project Settings → API → service_role secret）
+          </p>
+
+          <Button
+            variant="ghost"
+            onClick={runAuthSetup}
+            disabled={authStatus === "running"}
+            className="w-full"
+          >
+            {authStatus === "running" ? "作成中..." : "Auth ユーザーを作成"}
+          </Button>
+
+          {authStatus === "done" && authResult && (
+            <div className="bg-emerald/10 border border-emerald/20 rounded-btn p-3 space-y-2">
+              <p className="text-body-sm font-semibold text-emerald">
+                Auth セットアップ完了
+              </p>
+              {authResult.accounts && authResult.accounts.length > 0 && (
+                <div className="text-[11px] text-ink-secondary space-y-1">
+                  <p className="font-semibold">作成済みアカウント:</p>
+                  <ul className="space-y-0.5 font-mono">
+                    {authResult.accounts.map((a: any, i: number) => (
+                      <li key={i}>
+                        {a.email} / {a.password} → {a.castName}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {authResult.log && (
+                <details className="text-[10px] text-ink-muted">
+                  <summary>詳細ログ</summary>
+                  <ul className="mt-1 space-y-0.5">
+                    {authResult.log.map((l: string, i: number) => (
+                      <li key={i}>{l}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
+
+          {authStatus === "error" && authResult && (
+            <div className="bg-rose/10 border border-rose/20 rounded-btn p-3">
+              <p className="text-body-sm font-semibold text-rose">
+                エラーが発生しました
+              </p>
+              <p className="text-[11px] text-ink-secondary mt-1">
+                {authResult.error}
+              </p>
+            </div>
+          )}
+        </Card>
+
         <Card className="p-4 space-y-2">
           <h2 className="text-body-md font-semibold text-ink">
-            Step 3: ログインして確認
+            Step 4: ログインして確認
           </h2>
           <p className="text-body-sm text-ink-secondary">
             セットアップ完了後、
             <a href="/auth/login" className="text-amethyst-dark underline ml-1">
               ログインページ
             </a>
-            からキャストを選んでアプリを確認してください。
+            からキャストを選択（デモ）またはメール/パスワードでログインしてください。
           </p>
         </Card>
       </div>

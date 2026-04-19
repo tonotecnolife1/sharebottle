@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Crown, Sparkles, User } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Crown, Mail, Sparkles, User } from "lucide-react";
 import { Card } from "@/components/nightos/card";
+import { Button } from "@/components/nightos/button";
 import { cn } from "@/lib/utils";
-import { mockLogin } from "../actions";
+import { emailLogin, mockLogin } from "../actions";
 
 interface MockCast {
   id: string;
@@ -48,10 +49,21 @@ const MOCK_CASTS: MockCast[] = [
 
 export default function LoginPage() {
   const [selectedCast, setSelectedCast] = useState<string | null>(null);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   const handleMockLogin = async (castId: string) => {
     setSelectedCast(castId);
     await mockLogin(castId);
+  };
+
+  const handleEmailLogin = (formData: FormData) => {
+    setEmailError(null);
+    startTransition(async () => {
+      const result = await emailLogin(formData);
+      if (result?.error) setEmailError(result.error);
+    });
   };
 
   return (
@@ -68,9 +80,55 @@ export default function LoginPage() {
           <p className="text-body-md text-ink-secondary">ログイン</p>
         </div>
 
+        <Card className="p-4 space-y-3 animate-fade-in">
+          <button
+            type="button"
+            onClick={() => setShowEmailForm((v) => !v)}
+            className="w-full flex items-center justify-center gap-2 text-body-sm text-amethyst-dark font-medium"
+          >
+            <Mail size={14} />
+            {showEmailForm ? "メールログインを閉じる" : "メールアドレスでログイン"}
+          </button>
+
+          {showEmailForm && (
+            <form action={handleEmailLogin} className="space-y-2">
+              <input
+                type="email"
+                name="email"
+                placeholder="email@test.nightos"
+                required
+                disabled={pending}
+                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="パスワード"
+                required
+                disabled={pending}
+                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={pending}
+                className="w-full"
+              >
+                {pending ? "ログイン中..." : "ログイン"}
+              </Button>
+              {emailError && (
+                <p className="text-[11px] text-rose">{emailError}</p>
+              )}
+              <p className="text-[10px] text-ink-muted text-center pt-1">
+                テスト用: akari@test.nightos / nightos2026
+              </p>
+            </form>
+          )}
+        </Card>
+
         <div className="space-y-3 animate-fade-in">
           <p className="text-body-sm text-ink-secondary text-center">
-            キャストを選択してログイン
+            またはキャストを選択してログイン（デモ）
           </p>
 
           {MOCK_CASTS.map((cast) => (
