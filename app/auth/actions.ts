@@ -2,8 +2,20 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isMockAuthDisabled } from "@/lib/nightos/env";
+import { mockCasts } from "@/lib/nightos/mock-data";
 
 export async function mockLogin(castId: string) {
+  if (isMockAuthDisabled()) {
+    throw new Error("Mock login is disabled on this environment");
+  }
+
+  // Validate against known cast IDs so random values can't be set
+  const known = mockCasts.some((c) => c.id === castId);
+  if (!known) {
+    throw new Error("Unknown cast ID");
+  }
+
   cookies().set("nightos.mock-cast-id", castId, {
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days

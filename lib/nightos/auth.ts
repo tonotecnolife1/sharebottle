@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { Cast } from "@/types/nightos";
 import { CURRENT_CAST_ID, CURRENT_MAMA_ID } from "./constants";
+import { isMockAuthDisabled } from "./env";
 import { mockCasts } from "./mock-data";
 
 function isSupabaseConfigured(): boolean {
@@ -66,18 +67,26 @@ export async function getCurrentManagerId(): Promise<string> {
  * Check if the current session is authenticated (real or mock).
  */
 export async function isAuthenticated(): Promise<boolean> {
-  if (!isSupabaseConfigured()) return true;
+  if (!isSupabaseConfigured()) {
+    // Without Supabase, only mock auth can authenticate — and only if enabled.
+    if (isMockAuthDisabled()) return false;
+    return !!cookies().get("nightos.mock-cast-id")?.value;
+  }
   try {
     const { createServerSupabaseClient } = await import("@/lib/supabase/server");
     const supabase = createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
-    return !!user;
+    if (user) return true;
+    // Supabase configured but no session: fall back to mock cookie if allowed
+    if (isMockAuthDisabled()) return false;
+    return !!cookies().get("nightos.mock-cast-id")?.value;
   } catch {
     return false;
   }
 }
 
 function getMockCast(): Cast | null {
+  if (isMockAuthDisabled()) return null;
   const cookieStore = cookies();
   const mockCastId = cookieStore.get("nightos.mock-cast-id")?.value;
   if (!mockCastId) return null;

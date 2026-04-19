@@ -124,6 +124,17 @@ NIGHTOS は 2 つのログイン方式を併用しています。
 
 `middleware.ts` がどちらの cookie でも認証済みと判定。`getCurrentCast()` は Supabase セッションを優先し、無ければ mock cookie を読みます。
 
+### 本番/ステージングで mock auth を無効化
+
+`NIGHTOS_DISABLE_MOCK_AUTH=true` を設定すると:
+
+- `/auth/login` のキャスト選択 UI が非表示になる（メール/パスワードのみ）
+- `mockLogin` server action がエラーを投げる
+- `middleware.ts` が `nightos.mock-cast-id` cookie を認証として受け付けない
+- `getCurrentCast()` が mock cookie を読まない
+
+ローカル開発では設定不要（未設定 = mock auth 有効）。
+
 ---
 
 ## 3分デモシナリオ

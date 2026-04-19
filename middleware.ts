@@ -2,6 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/auth/", "/api/", "/docs/", "/pitch"];
 
+function mockAuthDisabled(): boolean {
+  const v = process.env.NIGHTOS_DISABLE_MOCK_AUTH;
+  return v === "true" || v === "1";
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -9,9 +14,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasMockSession = !!request.cookies.get("nightos.mock-cast-id")?.value;
-  if (hasMockSession) {
-    return NextResponse.next();
+  // Mock cast cookie is only honored when mock auth is enabled.
+  if (!mockAuthDisabled()) {
+    const hasMockSession = !!request.cookies.get("nightos.mock-cast-id")?.value;
+    if (hasMockSession) {
+      return NextResponse.next();
+    }
   }
 
   const hasSupabaseSession =
