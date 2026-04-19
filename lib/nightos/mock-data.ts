@@ -1,10 +1,12 @@
 import type {
+  AiChat,
   Bottle,
   Cast,
   CastGoal,
   CastMemo,
   Customer,
   Douhan,
+  FollowLog,
   LineScreenshot,
   Store,
   Visit,
@@ -30,7 +32,43 @@ export interface StoreToCastMessage {
   read: boolean;
 }
 
-export const mockCastMessages: StoreToCastMessage[] = [];
+export const mockCastMessages: StoreToCastMessage[] = [
+  {
+    id: "cmsg1",
+    cast_id: "cast1",
+    message: "今夜VIP の田中様がご来店予定です。山崎12年のボトルが残り3杯なのでご案内お願いします。",
+    sent_at: "2026-03-19T18:30:00+09:00",
+    read: false,
+  },
+  {
+    id: "cmsg2",
+    cast_id: "cast1",
+    message: "先週の高橋様の件、指名化の進捗はいかがですか？来週のミーティングで共有お願いします。",
+    sent_at: "2026-03-18T17:00:00+09:00",
+    read: true,
+  },
+  {
+    id: "cmsg3",
+    cast_id: "cast_oneesan2",
+    message: "月末の棚卸しに向けて、ボトルの残量確認をお願いします。",
+    sent_at: "2026-03-17T16:00:00+09:00",
+    read: true,
+  },
+  {
+    id: "cmsg4",
+    cast_id: "cast_help2",
+    message: "明日からヘルプのシフト変更があります。出勤表を確認してください。",
+    sent_at: "2026-03-19T15:00:00+09:00",
+    read: false,
+  },
+  {
+    id: "cmsg5",
+    cast_id: "cast_oneesan3",
+    message: "渡辺様のお誕生日が近いです。サプライズの準備をお願いします。",
+    sent_at: "2026-03-16T14:00:00+09:00",
+    read: true,
+  },
+];
 
 /**
  * Cast → store requests. Displayed on the store hub.
@@ -44,7 +82,32 @@ export interface CastToStoreRequest {
   resolved: boolean;
 }
 
-export const mockCastRequests: CastToStoreRequest[] = [];
+export const mockCastRequests: CastToStoreRequest[] = [
+  {
+    id: "creq1",
+    cast_id: "cast1",
+    cast_name: "あかり",
+    message: "田中太郎様の誕生日（9月）にシャンパンタワーを企画したいです。予算と日程のご相談をお願いします。",
+    sent_at: "2026-03-18T19:00:00+09:00",
+    resolved: false,
+  },
+  {
+    id: "creq2",
+    cast_id: "cast_help2",
+    cast_name: "あやな",
+    message: "来週の土曜日、体調不良のためお休みをいただきたいです。",
+    sent_at: "2026-03-17T12:00:00+09:00",
+    resolved: true,
+  },
+  {
+    id: "creq3",
+    cast_id: "cast_oneesan3",
+    cast_name: "もえ",
+    message: "新しい名刺のデザインを変更したいです。サンプルを添付しましたのでご確認ください。",
+    sent_at: "2026-03-15T14:30:00+09:00",
+    resolved: false,
+  },
+];
 
 // ═══════════════ Customer (来店客) mock data ═══════════════
 
@@ -1615,5 +1678,85 @@ export const mockCastGoals: CastGoal[] = [
     note: null,
     setBy: "cast_oneesan6",
     updatedAt: "2026-03-02T10:00:00+09:00",
+  },
+];
+
+// ═══════════════ Follow Logs (連絡履歴) ═══════════════
+
+export const mockFollowLogs: FollowLog[] = [
+  { id: "fl1", customer_id: "cust1", cast_id: "cast1", template_type: "thanks", sent_at: "2026-03-10T20:00:00+09:00" },
+  { id: "fl2", customer_id: "cust2", cast_id: "cast1", template_type: "invite", sent_at: "2026-03-08T19:30:00+09:00" },
+  { id: "fl3", customer_id: "cust3", cast_id: "cast1", template_type: "birthday", sent_at: "2026-03-15T18:00:00+09:00" },
+  { id: "fl4", customer_id: "cust4", cast_id: "cast1", template_type: "thanks", sent_at: "2026-03-12T21:00:00+09:00" },
+  { id: "fl5", customer_id: "cust5", cast_id: "cast1", template_type: "seasonal", sent_at: "2026-03-01T17:00:00+09:00" },
+  { id: "fl6", customer_id: "cust1", cast_id: "cast1", template_type: "invite", sent_at: "2026-03-16T20:30:00+09:00" },
+  { id: "fl7", customer_id: "cust6", cast_id: "cast_oneesan2", template_type: "thanks", sent_at: "2026-03-14T19:00:00+09:00" },
+  { id: "fl8", customer_id: "cust7", cast_id: "cast_oneesan2", template_type: "invite", sent_at: "2026-03-11T20:00:00+09:00" },
+  { id: "fl9", customer_id: "cust8", cast_id: "cast_oneesan3", template_type: "thanks", sent_at: "2026-03-13T21:30:00+09:00" },
+  { id: "fl10", customer_id: "cust10", cast_id: "cast_oneesan3", template_type: "birthday", sent_at: "2026-03-09T18:00:00+09:00" },
+  { id: "fl11", customer_id: "cust12", cast_id: "cast_oneesan4", template_type: "seasonal", sent_at: "2026-03-07T17:00:00+09:00" },
+  { id: "fl12", customer_id: "cust14", cast_id: "cast_oneesan4", template_type: "thanks", sent_at: "2026-03-18T20:00:00+09:00" },
+  { id: "fl13", customer_id: "cust15", cast_id: "cast_help2", template_type: "thanks", sent_at: "2026-03-17T19:30:00+09:00" },
+  { id: "fl14", customer_id: "cust16", cast_id: "cast_oneesan5", template_type: "invite", sent_at: "2026-03-06T20:00:00+09:00" },
+  { id: "fl15", customer_id: "cust18", cast_id: "cast_oneesan6", template_type: "thanks", sent_at: "2026-03-05T21:00:00+09:00" },
+];
+
+// ═══════════════ AI Chats (さくらママ相談履歴) ═══════════════
+
+export const mockAiChats: AiChat[] = [
+  {
+    id: "aichat1",
+    cast_id: "cast1",
+    customer_id: "cust1",
+    messages: [
+      { role: "user", content: "田中太郎さんにお礼のLINEを送りたいのですが、どう書けばいいですか？" },
+      { role: "assistant", content: "田中太郎さんへのお礼LINEですね。前回の話題「息子さんの大学受験」に触れつつ、来店感謝を伝えましょう。\n\n【例文】\n田中さん、先日はありがとうございました！息子さんの受験、順調に進んでいますか？山崎12年、とても美味しかったですね。またゆっくりお話しできるのを楽しみにしています。\n\n自然に次回来店への期待を含めつつ、プライベートの話題で距離を縮められます。" },
+    ],
+    feedback: "helpful",
+    created_at: "2026-03-15T21:00:00+09:00",
+  },
+  {
+    id: "aichat2",
+    cast_id: "cast1",
+    customer_id: "cust3",
+    messages: [
+      { role: "user", content: "渡辺浩二さんの誕生日が近いのですが、何かサプライズのアイデアはありますか？" },
+      { role: "assistant", content: "渡辺さんのお誕生日、素敵なチャンスですね！渡辺さんはワイン好き（メルロー種がお好み）で、カテゴリは常連さん。\n\n【提案】\n1. 事前にバースデーカードを手書きで用意（「いつもありがとう」のメッセージ付き）\n2. 来店時にメルロー系の特別ワインをグラスでサービス\n3. テーブル装花を少しだけ華やかに\n\n派手すぎず、でも「覚えていてくれた」と感じてもらえる演出が常連さんには響きます。" },
+    ],
+    feedback: "helpful",
+    created_at: "2026-03-16T20:30:00+09:00",
+  },
+  {
+    id: "aichat3",
+    cast_id: "cast1",
+    customer_id: "cust2",
+    messages: [
+      { role: "user", content: "高橋誠さんを指名に繋げたいのですが、どうアプローチすればいいですか？" },
+      { role: "assistant", content: "高橋さんは来店3回目の新規のお客様ですね。IT企業の経営者で、ハイボールがお好み。\n\n指名化のポイントは「この子と話すと楽しい・居心地がいい」と思ってもらうことです。\n\n【戦略】\n1. 次回来店時に前回の話題（ゴルフの話）を自然に振る→「覚えていてくれた」感を演出\n2. 趣味のゴルフについて少し勉強して話題を広げる\n3. 「高橋さんとお話しするの楽しいです」と素直に伝える\n\n3回目は指名化の黄金タイミング。自然体で接するのがベストです。" },
+    ],
+    feedback: null,
+    created_at: "2026-03-17T22:00:00+09:00",
+  },
+  {
+    id: "aichat4",
+    cast_id: "cast_oneesan2",
+    customer_id: "cust6",
+    messages: [
+      { role: "user", content: "VIPの佐藤さんが最近来店頻度が減っています。どうすればいいですか？" },
+      { role: "assistant", content: "佐藤さんは大切なVIPのお客様ですね。来店頻度が減った原因を探ることが大切です。\n\n【アクション】\n1. まずは軽いトーンでLINEを送る（重たくならないように）\n2. 「最近お忙しいですか？」ではなく「先日○○の話をしていて佐藤さんを思い出しました」と自然に\n3. 新しいボトルの入荷情報や季節のイベント情報をさりげなく添える\n\nVIPのお客様には「来てください」より「あなたのことを考えていました」が効きます。" },
+    ],
+    feedback: "helpful",
+    created_at: "2026-03-14T21:30:00+09:00",
+  },
+  {
+    id: "aichat5",
+    cast_id: "cast_help2",
+    customer_id: null,
+    messages: [
+      { role: "user", content: "接客で緊張してうまく話せません。コツはありますか？" },
+      { role: "assistant", content: "新人の頃は誰でも緊張するものよ。大丈夫、慣れていきます。\n\n【すぐ使えるコツ】\n1. お客様の話を「聞く」ことに集中する（話す比率は相手7:自分3が理想）\n2. 相槌のバリエーションを増やす（「そうなんですね！」「素敵ですね」「もっと聞きたいです」）\n3. 困ったら「お仕事は何をされているんですか？」で話題を広げる\n\n上手に話す必要はありません。「あなたの話に興味があります」という姿勢が一番大切です。" },
+    ],
+    feedback: "helpful",
+    created_at: "2026-03-18T19:00:00+09:00",
   },
 ];

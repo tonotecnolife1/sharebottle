@@ -9,6 +9,11 @@ import {
   mockDouhans,
   mockCastGoals,
   mockStores,
+  mockCoupons,
+  mockCastMessages,
+  mockCastRequests,
+  mockFollowLogs,
+  mockAiChats,
 } from "@/lib/nightos/mock-data";
 
 /**
@@ -198,6 +203,79 @@ export async function POST(request: Request) {
       .upsert(goalRows, { onConflict: "cast_id" });
     log.push(goalErr ? `Goals: ${goalErr.message}` : `Goals: ${goalRows.length} upserted`);
 
+    // 10. Seed follow_logs
+    const followLogRows = mockFollowLogs.map((fl) => ({
+      id: fl.id,
+      customer_id: fl.customer_id,
+      cast_id: fl.cast_id,
+      template_type: fl.template_type,
+      sent_at: fl.sent_at,
+    }));
+    const { error: flErr } = await supabase
+      .from("follow_logs")
+      .upsert(followLogRows, { onConflict: "id" });
+    log.push(flErr ? `Follow logs: ${flErr.message}` : `Follow logs: ${followLogRows.length} upserted`);
+
+    // 11. Seed ai_chats
+    const aiChatRows = mockAiChats.map((ac) => ({
+      id: ac.id,
+      cast_id: ac.cast_id,
+      customer_id: ac.customer_id,
+      messages: JSON.stringify(ac.messages),
+      feedback: ac.feedback,
+      created_at: ac.created_at,
+    }));
+    const { error: acErr } = await supabase
+      .from("ai_chats")
+      .upsert(aiChatRows, { onConflict: "id" });
+    log.push(acErr ? `AI chats: ${acErr.message}` : `AI chats: ${aiChatRows.length} upserted`);
+
+    // 12. Seed cast_messages
+    const castMsgRows = mockCastMessages.map((cm) => ({
+      id: cm.id,
+      cast_id: cm.cast_id,
+      message: cm.message,
+      sent_at: cm.sent_at,
+      read: cm.read,
+    }));
+    const { error: cmErr } = await supabase
+      .from("cast_messages")
+      .upsert(castMsgRows, { onConflict: "id" });
+    log.push(cmErr ? `Cast messages: ${cmErr.message}` : `Cast messages: ${castMsgRows.length} upserted`);
+
+    // 13. Seed cast_requests
+    const castReqRows = mockCastRequests.map((cr) => ({
+      id: cr.id,
+      cast_id: cr.cast_id,
+      cast_name: cr.cast_name,
+      message: cr.message,
+      sent_at: cr.sent_at,
+      resolved: cr.resolved,
+    }));
+    const { error: crErr } = await supabase
+      .from("cast_requests")
+      .upsert(castReqRows, { onConflict: "id" });
+    log.push(crErr ? `Cast requests: ${crErr.message}` : `Cast requests: ${castReqRows.length} upserted`);
+
+    // 14. Seed coupons
+    const couponRows = mockCoupons.map((c) => ({
+      id: c.id,
+      customer_id: c.customer_id,
+      store_id: c.store_id,
+      store_name: c.store_name,
+      type: c.type,
+      title: c.title,
+      description: c.description,
+      valid_from: c.valid_from,
+      valid_until: c.valid_until,
+      used_at: c.used_at,
+      code: c.code,
+    }));
+    const { error: cpErr } = await supabase
+      .from("coupons")
+      .upsert(couponRows, { onConflict: "id" });
+    log.push(cpErr ? `Coupons: ${cpErr.message}` : `Coupons: ${couponRows.length} upserted`);
+
     return NextResponse.json({
       success: true,
       log,
@@ -210,6 +288,11 @@ export async function POST(request: Request) {
         visits: visitRows.length,
         douhans: douhanRows.length,
         goals: goalRows.length,
+        follow_logs: followLogRows.length,
+        ai_chats: aiChatRows.length,
+        cast_messages: castMsgRows.length,
+        cast_requests: castReqRows.length,
+        coupons: couponRows.length,
       },
     });
   } catch (err: any) {

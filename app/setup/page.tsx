@@ -63,7 +63,7 @@ export default function SetupPage() {
           </h2>
           <p className="text-body-sm text-ink-secondary">
             ボタンを押すと、モックデータと同じテストデータが Supabase に投入されます。
-            キャスト9名・顧客38名・来店履歴・ボトル・同伴予定など全て含みます。
+            キャスト9名・顧客38名・来店履歴・ボトル・同伴・目標・連絡履歴・AI相談・メッセージ・クーポンなど全て含みます。
           </p>
 
           <Button
@@ -90,6 +90,11 @@ export default function SetupPage() {
                   <span>来店: {result.summary.visits}</span>
                   <span>同伴: {result.summary.douhans}</span>
                   <span>目標: {result.summary.goals}</span>
+                  <span>連絡履歴: {result.summary.follow_logs}</span>
+                  <span>AI相談: {result.summary.ai_chats}</span>
+                  <span>メッセージ: {result.summary.cast_messages}</span>
+                  <span>申請: {result.summary.cast_requests}</span>
+                  <span>クーポン: {result.summary.coupons}</span>
                 </div>
               )}
               {result.log && (
