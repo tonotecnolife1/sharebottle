@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { ConnectionStatus } from "@/components/nightos/connection-status";
+import { FeedbackLink } from "@/components/nightos/feedback-link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,7 +47,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/ruri-mama-b.svg" />
       </head>
       <body className="font-sans bg-pearl text-ink antialiased">
+        <ConnectionStatus />
         {children}
+        <FeedbackLink />
       </body>
     </html>
   );

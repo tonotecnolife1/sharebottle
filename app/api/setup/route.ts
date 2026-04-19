@@ -454,4 +454,11 @@ CREATE TABLE IF NOT EXISTS coupons (
   used_at TIMESTAMPTZ,
   code TEXT
 );
+
+CREATE TABLE IF NOT EXISTS feedback (
+  id SERIAL PRIMARY KEY,
+  text TEXT NOT NULL,
+  page TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 `;
