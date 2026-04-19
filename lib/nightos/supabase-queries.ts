@@ -32,6 +32,8 @@ import {
   MOCK_FOLLOW_RATE,
   MOCK_NOMINATION_TREND,
   MOCK_REPEAT_TREND,
+  type RepeatPoint,
+  type TrendPoint,
 } from "./store-mock-data";
 import { CURRENT_STORE_ID } from "./constants";
 import {
@@ -57,6 +59,8 @@ import {
   getScreenshotsForCustomerReal,
   getSubordinateCastsReal,
   getTeamCustomersReal,
+  getCastStatsDataReal,
+  getStoreDashboardDataReal,
   recordFollowLogReal,
   saveScreenshotReal,
   setCastGoalReal,
@@ -518,8 +522,8 @@ export interface StoreDashboardData {
   totalSales: number;
   averageRepeatRate: number;
   averageFollowRate: number;
-  nominationTrend: typeof MOCK_NOMINATION_TREND;
-  repeatTrend: typeof MOCK_REPEAT_TREND;
+  nominationTrend: TrendPoint[];
+  repeatTrend: RepeatPoint[];
   castStats: {
     cast: Cast;
     followRate: number;
@@ -529,12 +533,11 @@ export interface StoreDashboardData {
 }
 
 export async function getStoreDashboardData(): Promise<StoreDashboardData> {
-  // The dashboard relies on aggregations + the trend fixtures, which
-  // are constant. For now we keep using the mock impl which already
-  // reads from mockCasts/mockCustomers/mockVisits — those will be
-  // populated from Supabase in a future iteration if RLS + per-store
-  // queries are needed.
-  return getStoreDashboardDataMock();
+  return withFallback(
+    "getStoreDashboardData",
+    () => getStoreDashboardDataReal(CURRENT_STORE_ID),
+    () => getStoreDashboardDataMock(),
+  );
 }
 
 function getStoreDashboardDataMock(): StoreDashboardData {
@@ -885,8 +888,11 @@ export interface CastStatsData {
 }
 
 export async function getCastStatsData(castId: string): Promise<CastStatsData> {
-  if (!isSupabaseConfigured()) return getCastStatsDataMock(castId);
-  return getCastStatsDataMock(castId);
+  return withFallback(
+    "getCastStatsData",
+    () => getCastStatsDataReal(castId, CURRENT_STORE_ID),
+    () => getCastStatsDataMock(castId),
+  );
 }
 
 async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {

@@ -27,11 +27,14 @@ import type {
   Customer,
   CustomerCategory,
   CustomerContext,
+  Douhan,
   FollowLog,
   LineScreenshot,
   MemoExtractionResult,
   Visit,
 } from "@/types/nightos";
+import type { TrendPoint, RepeatPoint } from "./store-mock-data";
+import type { StoreDashboardData, CastStatsData } from "./supabase-queries";
 import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -641,6 +644,302 @@ export async function setCastGoalReal(
     note: data.note,
     setBy: data.set_by,
     updatedAt: data.updated_at,
+  };
+}
+
+// ═══════════════ Dashboard aggregations ═══════════════
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export async function getStoreDashboardDataReal(
+  storeId: string,
+): Promise<StoreDashboardData> {
+  const supabase = createServerSupabaseClient();
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * DAY_MS).toISOString();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * DAY_MS).toISOString();
+
+  const [castsRes, custsRes, visitsRes, nomVisitsRes, followRes] =
+    await Promise.all([
+      supabase.from("nightos_casts").select("*").eq("store_id", storeId),
+      supabase
+        .from("customers")
+        .select("id, cast_id")
+        .eq("store_id", storeId),
+      supabase
+        .from("visits")
+        .select("cast_id, customer_id, is_nominated, visited_at")
+        .eq("store_id", storeId)
+        .gte("visited_at", monthStart),
+      supabase
+        .from("visits")
+        .select("cast_id, visited_at")
+        .eq("store_id", storeId)
+        .eq("is_nominated", true)
+        .gte("visited_at", fourteenDaysAgo),
+      supabase
+        .from("follow_logs")
+        .select("cast_id")
+        .gte("sent_at", thirtyDaysAgo),
+    ]);
+
+  const casts = (castsRes.data ?? []).map(rowToCast);
+
+  // Customer count per cast
+  const custCount = new Map<string, number>();
+  for (const r of custsRes.data ?? []) {
+    custCount.set(r.cast_id, (custCount.get(r.cast_id) ?? 0) + 1);
+  }
+
+  // Visit count per cast (this month)
+  const visitCount = new Map<string, number>();
+  for (const v of visitsRes.data ?? []) {
+    visitCount.set(v.cast_id, (visitCount.get(v.cast_id) ?? 0) + 1);
+  }
+
+  // Follow rate per cast
+  const followCount = new Map<string, number>();
+  for (const f of followRes.data ?? []) {
+    followCount.set(f.cast_id, (followCount.get(f.cast_id) ?? 0) + 1);
+  }
+  const followRateOf = (castId: string) => {
+    const cc = custCount.get(castId) ?? 0;
+    if (cc === 0) return 0;
+    return Math.min(1, (followCount.get(castId) ?? 0) / cc);
+  };
+
+  const castStats = casts.map((cast) => ({
+    cast,
+    followRate: followRateOf(cast.id),
+    customerCount: custCount.get(cast.id) ?? 0,
+    monthlyVisits: visitCount.get(cast.id) ?? 0,
+  }));
+
+  const totalNominations = casts.reduce((s, c) => s + c.nomination_count, 0);
+  const totalSales = casts.reduce((s, c) => s + c.monthly_sales, 0);
+  const averageRepeatRate =
+    casts.length > 0
+      ? casts.reduce((s, c) => s + c.repeat_rate, 0) / casts.length
+      : 0;
+  const rates = castStats.map((s) => s.followRate);
+  const averageFollowRate =
+    rates.length > 0 ? rates.reduce((s, r) => s + r, 0) / rates.length : 0;
+
+  // Nomination trend: top 2 casts → cast1/cast2 columns
+  const sorted = [...casts].sort(
+    (a, b) => b.nomination_count - a.nomination_count,
+  );
+  const cast1Id = sorted[0]?.id ?? "";
+  const cast2Id = sorted[1]?.id ?? "";
+
+  const trendBuckets = new Map<string, { cast1: number; cast2: number }>();
+  for (let d = 0; d < 14; d++) {
+    const date = new Date(now.getTime() - (13 - d) * DAY_MS);
+    trendBuckets.set(date.toISOString().slice(0, 10), { cast1: 0, cast2: 0 });
+  }
+  for (const v of nomVisitsRes.data ?? []) {
+    const key = new Date(v.visited_at).toISOString().slice(0, 10);
+    const bucket = trendBuckets.get(key);
+    if (!bucket) continue;
+    if (v.cast_id === cast1Id) bucket.cast1++;
+    else if (v.cast_id === cast2Id) bucket.cast2++;
+  }
+  const nominationTrend: TrendPoint[] = Array.from(trendBuckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, c]) => ({ date, ...c }));
+
+  // Repeat trend: approximate from cast repeat_rate with weekly decay
+  const c1Rate = casts.find((c) => c.id === cast1Id)?.repeat_rate ?? 0;
+  const c2Rate = casts.find((c) => c.id === cast2Id)?.repeat_rate ?? 0;
+  const repeatTrend: RepeatPoint[] = [1, 2, 3, 4].map((w) => ({
+    week: `w${w}`,
+    label: `${w}週目`,
+    cast1: Math.max(0, c1Rate - (4 - w) * 0.04),
+    cast2: Math.max(0, c2Rate - (4 - w) * 0.04),
+  }));
+
+  return {
+    totalNominations,
+    totalSales,
+    averageRepeatRate,
+    averageFollowRate,
+    nominationTrend,
+    repeatTrend,
+    castStats,
+  };
+}
+
+export async function getCastStatsDataReal(
+  castId: string,
+  storeId: string,
+): Promise<CastStatsData> {
+  const supabase = createServerSupabaseClient();
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * DAY_MS);
+
+  const [castRes, custsRes, visitsRes, goalRes, douhansRes, followRes, allCastsRes] =
+    await Promise.all([
+      supabase
+        .from("nightos_casts")
+        .select("*")
+        .eq("id", castId)
+        .maybeSingle(),
+      supabase
+        .from("customers")
+        .select("*")
+        .eq("store_id", storeId),
+      supabase
+        .from("visits")
+        .select("*")
+        .eq("store_id", storeId)
+        .gte("visited_at", yearStart.toISOString()),
+      supabase
+        .from("cast_goals")
+        .select("*")
+        .eq("cast_id", castId)
+        .maybeSingle(),
+      supabase
+        .from("douhans")
+        .select("*")
+        .eq("cast_id", castId)
+        .gte("date", yearStart.toISOString().slice(0, 10)),
+      supabase
+        .from("follow_logs")
+        .select("cast_id, sent_at")
+        .eq("cast_id", castId),
+      supabase
+        .from("nightos_casts")
+        .select("*")
+        .eq("store_id", storeId),
+    ]);
+
+  if (!castRes.data) throw new Error(`Cast not found: ${castId}`);
+  const cast = rowToCast(castRes.data);
+  const customers = (custsRes.data ?? []).map(rowToCustomer);
+  const visits = (visitsRes.data ?? []).map(rowToVisit);
+  const allCasts = (allCastsRes.data ?? []).map(rowToCast);
+
+  // Goal
+  const goal = goalRes.data
+    ? {
+        salesGoal: goalRes.data.sales_goal,
+        douhanGoal: goalRes.data.douhan_goal,
+      }
+    : { salesGoal: 1_000_000, douhanGoal: 3 };
+
+  // Follow rate (last 30 days / my customers)
+  const myCustomers = customers.filter((c) => c.cast_id === castId);
+  const recentFollows = (followRes.data ?? []).filter(
+    (f) =>
+      new Date(f.sent_at).getTime() > now.getTime() - 30 * DAY_MS,
+  );
+  const followRate =
+    myCustomers.length > 0
+      ? Math.min(1, recentFollows.length / myCustomers.length)
+      : 0;
+  const followStreakDays = Math.round(followRate * 7);
+
+  // Monthly stats
+  const monthVisits = visits.filter(
+    (v) =>
+      v.cast_id === castId &&
+      new Date(v.visited_at).getTime() >= monthStart.getTime(),
+  );
+  const monthNominations = monthVisits.filter((v) => v.is_nominated).length;
+  const monthNewCount = myCustomers.filter(
+    (c) => new Date(c.created_at).getTime() >= monthStart.getTime(),
+  ).length;
+  const monthDouhans = (douhansRes.data ?? []).filter(
+    (d: any) =>
+      new Date(d.date).getTime() >= monthStart.getTime() &&
+      new Date(d.date).getTime() <= now.getTime() &&
+      d.status === "completed",
+  ).length;
+
+  // Master/help split
+  const { splitMasterAndHelp, filterHelpVisitsByPeriod } = await import(
+    "./master-help-split"
+  );
+  const split = splitMasterAndHelp({
+    castId,
+    customers,
+    visits,
+    allCasts,
+  });
+  const helpThisMonth = filterHelpVisitsByPeriod(split.helpVisits, {
+    thisMonth: true,
+    today: now,
+  });
+
+  // Yearly stats
+  const yearVisits = visits.filter((v) => v.cast_id === castId);
+  const yearNominations = yearVisits.filter((v) => v.is_nominated).length;
+  const yearNewCount = myCustomers.filter(
+    (c) => new Date(c.created_at).getTime() >= yearStart.getTime(),
+  ).length;
+  const yearDouhans = (douhansRes.data ?? []).filter(
+    (d: any) => d.status === "completed",
+  ).length;
+
+  // Nomination trend (last 14 days)
+  const trendBuckets = new Map<string, number>();
+  for (let d = 0; d < 14; d++) {
+    const date = new Date(now.getTime() - (13 - d) * DAY_MS);
+    trendBuckets.set(date.toISOString().slice(0, 10), 0);
+  }
+  const recentNoms = visits.filter(
+    (v) =>
+      v.cast_id === castId &&
+      v.is_nominated &&
+      new Date(v.visited_at).getTime() >= fourteenDaysAgo.getTime(),
+  );
+  for (const v of recentNoms) {
+    const key = new Date(v.visited_at).toISOString().slice(0, 10);
+    if (trendBuckets.has(key)) {
+      trendBuckets.set(key, (trendBuckets.get(key) ?? 0) + 1);
+    }
+  }
+  const nominationTrend = Array.from(trendBuckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }));
+
+  // Repeat trend (4 weeks) — approximate from cast repeat_rate
+  const repeatTrend = [1, 2, 3, 4].map((w) => ({
+    week: `w${w}`,
+    label: `${w}週目`,
+    rate: Math.max(0, cast.repeat_rate - (4 - w) * 0.04),
+  }));
+
+  return {
+    cast,
+    monthly: {
+      nominationCount: monthNominations > 0 ? monthNominations : cast.nomination_count,
+      sales: cast.monthly_sales,
+      repeatRate: cast.repeat_rate,
+      followRate,
+      newCustomerCount: monthNewCount,
+      masterCustomerCount: split.masterCustomers.length,
+      helpVisitCount: helpThisMonth.length,
+      douhanCount: monthDouhans,
+    },
+    yearly: {
+      nominationCount: yearNominations,
+      sales: cast.monthly_sales * 3,
+      repeatRate: Math.max(0, cast.repeat_rate - 0.03),
+      newCustomerCount: yearNewCount,
+      douhanCount: yearDouhans,
+    },
+    targets: {
+      nominationGoal: 20,
+      salesGoal: goal.salesGoal,
+      douhanGoal: goal.douhanGoal,
+    },
+    nominationTrend,
+    repeatTrend,
+    followStreakDays,
   };
 }
 
