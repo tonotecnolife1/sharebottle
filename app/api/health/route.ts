@@ -17,6 +17,7 @@ export async function GET() {
   const anthropicConfigured = Boolean(process.env.ANTHROPIC_API_KEY);
 
   let supabaseOk = false;
+  let supabaseError: string | null = null;
   if (supabaseConfigured) {
     try {
       const { createServerSupabaseClient } = await import(
@@ -28,8 +29,12 @@ export async function GET() {
         .select("id")
         .limit(1);
       supabaseOk = !error;
-    } catch {
+      if (error) {
+        supabaseError = `${error.code ?? ""} ${error.message}`.trim();
+      }
+    } catch (e: any) {
       supabaseOk = false;
+      supabaseError = e?.message ?? "unknown error";
     }
   }
 
@@ -40,5 +45,9 @@ export async function GET() {
         : "error"
       : "mock",
     ai: anthropicConfigured ? "configured" : "stub",
+    ...(supabaseError ? { supabaseError } : {}),
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+      : null,
   });
 }
