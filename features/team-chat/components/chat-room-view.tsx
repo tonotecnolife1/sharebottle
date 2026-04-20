@@ -4,10 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
+  Check,
+  Copy,
   MessageCircle,
+  MoreHorizontal,
+  Pencil,
   Search,
   Send,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,7 +40,70 @@ export function ChatRoomView({
   const [threadOpen, setThreadOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const patchMessage = (id: string, patch: Partial<ChatMessage>) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  };
+
+  const startEdit = (msg: ChatMessage) => {
+    setEditingId(msg.id);
+    setEditDraft(msg.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft("");
+  };
+
+  const commitEdit = async (id: string) => {
+    const next = editDraft.trim();
+    if (!next) return;
+    const original = messages.find((m) => m.id === id);
+    if (!original || next === original.content) {
+      cancelEdit();
+      return;
+    }
+    // Optimistic
+    patchMessage(id, { content: next, edited_at: new Date().toISOString() });
+    cancelEdit();
+    try {
+      const res = await fetch(`/api/team-chat/messages/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: next }),
+      });
+      if (!res.ok) throw new Error(`PATCH ${res.status}`);
+    } catch {
+      // Rollback on failure
+      patchMessage(id, {
+        content: original.content,
+        edited_at: original.edited_at ?? null,
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("このメッセージを取り消しますか？")) return;
+    const original = messages.find((m) => m.id === id);
+    if (!original) return;
+    patchMessage(id, { deleted_at: new Date().toISOString() });
+    try {
+      const res = await fetch(`/api/team-chat/messages/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(`DELETE ${res.status}`);
+    } catch {
+      patchMessage(id, { deleted_at: original.deleted_at ?? null });
+    }
+  };
+
+  const handleCopy = (msg: ChatMessage) => {
+    if (typeof navigator === "undefined" || !navigator.clipboard) return;
+    navigator.clipboard.writeText(msg.content).catch(() => {});
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -87,9 +155,10 @@ export function ChatRoomView({
 
     const mentionsAi = text.includes("@さくらママ");
     const targetId = threadOpen ?? null;
+    const tempId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
     const newMsg: ChatMessage = {
-      id: `msg_${Date.now()}`,
+      id: tempId,
       room_id: room.id,
       sender_id: currentCastId,
       sender_name: currentCastName,
@@ -111,6 +180,34 @@ export function ChatRoomView({
       }
       return updated;
     });
+
+    // Try to persist to Supabase. On failure, keep the optimistic row so
+    // the conversation still reads naturally in mock/offline mode.
+    try {
+      const res = await fetch("/api/team-chat/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomId: room.id,
+          content: text,
+          threadParentId: targetId ?? undefined,
+        }),
+      });
+      if (res.ok) {
+        const { message } = await res.json();
+        if (message?.id) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempId
+                ? { ...m, id: message.id, created_at: message.created_at }
+                : m,
+            ),
+          );
+        }
+      }
+    } catch {
+      // keep optimistic row
+    }
 
     // If @さくらママ is mentioned, get AI response
     if (mentionsAi) {
@@ -258,14 +355,39 @@ export function ChatRoomView({
 
           {/* Thread messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-            <MessageRow msg={activeThread} currentCastId={currentCastId} isCoaching={isCoaching} />
+            <MessageRow
+              msg={activeThread}
+              currentCastId={currentCastId}
+              isCoaching={isCoaching}
+              editingId={editingId}
+              editDraft={editDraft}
+              setEditDraft={setEditDraft}
+              onStartEdit={startEdit}
+              onCancelEdit={cancelEdit}
+              onCommitEdit={commitEdit}
+              onDelete={handleDelete}
+              onCopy={handleCopy}
+            />
             {activeThreadReplies.length > 0 && (
               <div className="text-label-sm text-ink-muted pl-2">
                 {activeThreadReplies.length} replies
               </div>
             )}
             {activeThreadReplies.map((m) => (
-              <MessageRow key={m.id} msg={m} currentCastId={currentCastId} isCoaching={isCoaching} />
+              <MessageRow
+                key={m.id}
+                msg={m}
+                currentCastId={currentCastId}
+                isCoaching={isCoaching}
+                editingId={editingId}
+                editDraft={editDraft}
+                setEditDraft={setEditDraft}
+                onStartEdit={startEdit}
+                onCancelEdit={cancelEdit}
+                onCommitEdit={commitEdit}
+                onDelete={handleDelete}
+                onCopy={handleCopy}
+              />
             ))}
           </div>
 
@@ -338,6 +460,14 @@ export function ChatRoomView({
                 isCoaching={isCoaching}
                 onOpenThread={() => setThreadOpen(msg.id)}
                 highlight={isSearching ? normalizedQuery : undefined}
+                editingId={editingId}
+                editDraft={editDraft}
+                setEditDraft={setEditDraft}
+                onStartEdit={startEdit}
+                onCancelEdit={cancelEdit}
+                onCommitEdit={commitEdit}
+                onDelete={handleDelete}
+                onCopy={handleCopy}
               />
               {/* Thread preview */}
               {(msg.reply_count > 0 || replies.length > 0) && (
@@ -437,26 +567,61 @@ export function ChatRoomView({
 
 // ═══════════════ Message Row ═══════════════
 
-function MessageRow({
-  msg,
-  currentCastId,
-  isCoaching,
-  onOpenThread,
-  highlight,
-}: {
+interface MessageRowProps {
   msg: ChatMessage;
   currentCastId: string;
   isCoaching?: boolean;
   onOpenThread?: () => void;
   /** Lowercased search query to highlight; if set, matching substrings get wrapped. */
   highlight?: string;
-}) {
+  editingId: string | null;
+  editDraft: string;
+  setEditDraft: (v: string) => void;
+  onStartEdit: (msg: ChatMessage) => void;
+  onCancelEdit: () => void;
+  onCommitEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onCopy: (msg: ChatMessage) => void;
+}
+
+function MessageRow({
+  msg,
+  currentCastId,
+  isCoaching,
+  onOpenThread,
+  highlight,
+  editingId,
+  editDraft,
+  setEditDraft,
+  onStartEdit,
+  onCancelEdit,
+  onCommitEdit,
+  onDelete,
+  onCopy,
+}: MessageRowProps) {
   const isMe = msg.sender_id === currentCastId;
   const time = new Date(msg.created_at);
   const timeStr = `${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
+  const isEditing = editingId === msg.id;
+  const isDeleted = !!msg.deleted_at;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [menuOpen]);
+
+  const canEdit = isMe && !msg.is_bot && !isDeleted;
 
   return (
-    <div className="flex items-start gap-3 py-2">
+    <div className="flex items-start gap-3 py-2 group">
       {/* Avatar */}
       {msg.is_bot ? (
         <RuriMamaAvatar size={40} />
@@ -499,24 +664,131 @@ function MessageRow({
             </span>
           )}
           <span className="text-label-sm text-ink-muted">{timeStr}</span>
-        </div>
-        <div className="text-body-md text-ink mt-0.5 leading-relaxed whitespace-pre-wrap">
-          {renderContentParts(msg.content, highlight)}
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-3 mt-1.5">
-          {onOpenThread && (
-            <button
-              type="button"
-              onClick={onOpenThread}
-              className="flex items-center gap-1 text-label-sm text-ink-muted hover:text-ink-secondary"
-            >
-              <MessageCircle size={12} />
-              返信
-            </button>
+          {msg.edited_at && !isDeleted && (
+            <span className="text-[10px] text-ink-muted">（編集済み）</span>
           )}
         </div>
+
+        {isDeleted ? (
+          <div className="text-body-sm text-ink-muted italic mt-0.5">
+            （メッセージは取り消されました）
+          </div>
+        ) : isEditing ? (
+          <div className="mt-1 space-y-1.5">
+            <textarea
+              value={editDraft}
+              onChange={(e) => setEditDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  onCommitEdit(msg.id);
+                }
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  onCancelEdit();
+                }
+              }}
+              autoFocus
+              rows={2}
+              className="w-full resize-none rounded-btn border border-amethyst-border bg-pearl-warm px-3 py-2 text-body-md text-ink focus:outline-none"
+              style={{ fontSize: "16px" }}
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onCommitEdit(msg.id)}
+                disabled={!editDraft.trim()}
+                className={cn(
+                  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-label-sm font-medium",
+                  editDraft.trim()
+                    ? "bg-amethyst text-pearl"
+                    : "bg-pearl-soft text-ink-muted",
+                )}
+              >
+                <Check size={12} />
+                保存
+              </button>
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-label-sm text-ink-secondary hover:bg-pearl-soft"
+              >
+                <X size={12} />
+                キャンセル
+              </button>
+              <span className="text-[10px] text-ink-muted ml-1">
+                ⌘/Ctrl+Enter で保存、Esc でキャンセル
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="text-body-md text-ink mt-0.5 leading-relaxed whitespace-pre-wrap">
+            {renderContentParts(msg.content, highlight)}
+          </div>
+        )}
+
+        {/* Action buttons */}
+        {!isEditing && !isDeleted && (
+          <div className="flex items-center gap-3 mt-1.5 relative">
+            {onOpenThread && (
+              <button
+                type="button"
+                onClick={onOpenThread}
+                className="flex items-center gap-1 text-label-sm text-ink-muted hover:text-ink-secondary"
+              >
+                <MessageCircle size={12} />
+                返信
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => onCopy(msg)}
+              className="flex items-center gap-1 text-label-sm text-ink-muted hover:text-ink-secondary"
+              aria-label="コピー"
+            >
+              <Copy size={12} />
+              コピー
+            </button>
+            {canEdit && (
+              <div ref={menuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex items-center gap-1 text-label-sm text-ink-muted hover:text-ink-secondary"
+                  aria-label="その他の操作"
+                >
+                  <MoreHorizontal size={14} />
+                </button>
+                {menuOpen && (
+                  <div className="absolute z-30 left-0 top-full mt-1 min-w-[140px] rounded-btn border border-pearl-soft bg-pearl shadow-soft-card overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onStartEdit(msg);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-body-sm text-ink hover:bg-pearl-soft"
+                    >
+                      <Pencil size={13} />
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onDelete(msg.id);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-body-sm text-rose hover:bg-rose/5"
+                    >
+                      <Trash2 size={13} />
+                      取り消し
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

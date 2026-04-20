@@ -15,6 +15,10 @@ import {
   mockFollowLogs,
   mockAiChats,
 } from "@/lib/nightos/mock-data";
+import {
+  mockChatRooms,
+  mockChatMessages,
+} from "@/features/team-chat/lib/mock-chat-data";
 
 /**
  * POST /api/setup
@@ -276,6 +280,64 @@ export async function POST(request: Request) {
       .upsert(couponRows, { onConflict: "id" });
     log.push(cpErr ? `Coupons: ${cpErr.message}` : `Coupons: ${couponRows.length} upserted`);
 
+    // 15. Seed team chat rooms / members / messages
+    const teamRoomRows = mockChatRooms.map((r) => ({
+      id: r.id,
+      store_id: r.store_id,
+      type: r.type,
+      name: r.name,
+      visible_to_seniors: r.visible_to_seniors,
+      created_at: r.created_at,
+    }));
+    const { error: tcRoomErr } = await supabase
+      .from("team_chat_rooms")
+      .upsert(teamRoomRows, { onConflict: "id" });
+    log.push(
+      tcRoomErr
+        ? `Team chat rooms: ${tcRoomErr.message}`
+        : `Team chat rooms: ${teamRoomRows.length} upserted`,
+    );
+
+    const teamMemberRows = mockChatRooms.flatMap((r) =>
+      r.member_ids.map((castId) => ({ room_id: r.id, cast_id: castId })),
+    );
+    const { error: tcMemErr } = await supabase
+      .from("team_chat_room_members")
+      .upsert(teamMemberRows, { onConflict: "room_id,cast_id" });
+    log.push(
+      tcMemErr
+        ? `Team chat members: ${tcMemErr.message}`
+        : `Team chat members: ${teamMemberRows.length} upserted`,
+    );
+
+    const teamMsgRows = mockChatMessages.map((m) => ({
+      id: m.id,
+      room_id: m.room_id,
+      sender_id: m.sender_id,
+      sender_name: m.sender_name,
+      sender_role: m.sender_role ?? null,
+      content: m.content,
+      thread_parent_id: m.thread_parent_id,
+      mentions_ai: m.mentions_ai,
+      is_bot: m.is_bot,
+      created_at: m.created_at,
+    }));
+    // Parents first so thread_parent_id FK resolves
+    const parents = teamMsgRows.filter((m) => !m.thread_parent_id);
+    const replies = teamMsgRows.filter((m) => m.thread_parent_id);
+    const { error: tcParentErr } = await supabase
+      .from("team_chat_messages")
+      .upsert(parents, { onConflict: "id" });
+    const { error: tcReplyErr } = await supabase
+      .from("team_chat_messages")
+      .upsert(replies, { onConflict: "id" });
+    const tcMsgErr = tcParentErr ?? tcReplyErr;
+    log.push(
+      tcMsgErr
+        ? `Team chat messages: ${tcMsgErr.message}`
+        : `Team chat messages: ${teamMsgRows.length} upserted`,
+    );
+
     return NextResponse.json({
       success: true,
       log,
@@ -293,6 +355,9 @@ export async function POST(request: Request) {
         cast_messages: castMsgRows.length,
         cast_requests: castReqRows.length,
         coupons: couponRows.length,
+        team_chat_rooms: teamRoomRows.length,
+        team_chat_members: teamMemberRows.length,
+        team_chat_messages: teamMsgRows.length,
       },
     });
   } catch (err: any) {
@@ -460,5 +525,37 @@ CREATE TABLE IF NOT EXISTS feedback (
   text TEXT NOT NULL,
   page TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── Team chat (Phase 2) ───
+CREATE TABLE IF NOT EXISTS team_chat_rooms (
+  id TEXT PRIMARY KEY,
+  store_id TEXT REFERENCES nightos_stores(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('channel', 'dm', 'coaching')),
+  name TEXT,
+  visible_to_seniors BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS team_chat_room_members (
+  room_id TEXT REFERENCES team_chat_rooms(id) ON DELETE CASCADE,
+  cast_id TEXT REFERENCES nightos_casts(id) ON DELETE CASCADE,
+  joined_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (room_id, cast_id)
+);
+
+CREATE TABLE IF NOT EXISTS team_chat_messages (
+  id TEXT PRIMARY KEY,
+  room_id TEXT REFERENCES team_chat_rooms(id) ON DELETE CASCADE,
+  sender_id TEXT,
+  sender_name TEXT NOT NULL,
+  sender_role TEXT,
+  content TEXT NOT NULL,
+  thread_parent_id TEXT REFERENCES team_chat_messages(id) ON DELETE CASCADE,
+  mentions_ai BOOLEAN DEFAULT FALSE,
+  is_bot BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  edited_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 `;

@@ -79,6 +79,20 @@ export const chatAiSchema = z.object({
   castId,
 });
 
+// Team chat room messages ─ CRUD payloads ───────────────────────────
+
+const roomId = z.string().min(1).max(64);
+
+export const teamChatCreateSchema = z.object({
+  roomId,
+  content: shortText,
+  threadParentId: z.string().min(1).max(64).optional(),
+});
+
+export const teamChatUpdateSchema = z.object({
+  content: shortText,
+});
+
 export const generateTemplateSchema = z.object({
   customerId,
   castId,

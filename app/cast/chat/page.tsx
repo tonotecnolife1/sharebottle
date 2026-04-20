@@ -1,16 +1,20 @@
 import { Plus } from "lucide-react";
-import { PageHeader } from "@/components/nightos/page-header";
 import { ChatRoomList } from "@/features/team-chat/components/chat-room-list";
-import { mockChatRooms } from "@/features/team-chat/lib/mock-chat-data";
+import {
+  mockChatMessages,
+  mockChatRooms,
+} from "@/features/team-chat/lib/mock-chat-data";
+import { loadChatRoomsForCast } from "@/features/team-chat/lib/supabase-queries";
 import { getCurrentCastId } from "@/lib/nightos/auth";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { ChatRoom } from "@/features/team-chat/types";
+
+export const dynamic = "force-dynamic";
 
 export default async function ChatListPage() {
   const castId = await getCurrentCastId();
 
-  // Filter rooms that include the current cast
-  const myRooms = mockChatRooms.filter((r) =>
-    r.member_ids.includes(castId),
-  );
+  const rooms = await resolveRooms(castId);
 
   return (
     <div className="animate-fade-in">
@@ -30,7 +34,45 @@ export default async function ChatListPage() {
           <Plus size={20} />
         </button>
       </div>
-      <ChatRoomList rooms={myRooms} currentCastId={castId} />
+      <ChatRoomList rooms={rooms} currentCastId={castId} />
     </div>
   );
+}
+
+async function resolveRooms(castId: string): Promise<ChatRoom[]> {
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    try {
+      const supabase = createServerSupabaseClient();
+      const fromDb = await loadChatRoomsForCast(supabase, castId);
+      if (fromDb && fromDb.length > 0) return fromDb;
+    } catch {
+      // fall through to mock
+    }
+  }
+  return mockChatRooms
+    .filter((r) => r.member_ids.includes(castId))
+    .map((r) => attachLastMockMessage(r));
+}
+
+/** Re-compute last_message from the (mock) messages so the preview stays fresh. */
+function attachLastMockMessage(room: ChatRoom): ChatRoom {
+  const roomMsgs = mockChatMessages
+    .filter((m) => m.room_id === room.id)
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+  const last = roomMsgs[0];
+  if (!last) return room;
+  return {
+    ...room,
+    last_message: {
+      content: last.deleted_at ? "(削除されたメッセージ)" : last.content,
+      sender_name: last.sender_name,
+      sent_at: last.created_at,
+    },
+  };
 }

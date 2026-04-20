@@ -43,6 +43,10 @@ export interface ChatMessage {
   /** Whether this message is from the AI bot */
   is_bot: boolean;
   created_at: string;
+  /** Set when the author edits the message after sending. */
+  edited_at?: string | null;
+  /** Set when the author soft-deletes (retracts) the message. */
+  deleted_at?: string | null;
 }
 
 export interface ChatThread {
