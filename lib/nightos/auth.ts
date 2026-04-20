@@ -32,10 +32,13 @@ export async function getCurrentCast(): Promise<Cast | null> {
     const { createServerSupabaseClient } = await import("@/lib/supabase/server");
     const supabase = createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { getCastByAuthUserId } = await import("./supabase-real");
-    return getCastByAuthUserId(user.id);
+    if (user) {
+      const { getCastByAuthUserId } = await import("./supabase-real");
+      const cast = await getCastByAuthUserId(user.id);
+      if (cast) return cast;
+    }
+    // Supabase configured but no session: fall back to mock cookie if allowed
+    return getMockCast();
   } catch {
     return getMockCast();
   }
