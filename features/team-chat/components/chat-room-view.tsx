@@ -392,48 +392,64 @@ export function ChatRoomView({
           </div>
 
           {/* Thread input */}
-          <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
-            <div className="flex items-end gap-2">
+          {/* Thread input — hidden while editing to avoid double composer. */}
+          {editingId ? (
+            <div className="shrink-0 border-t border-pearl-soft bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
+              <p className="text-label-sm text-ink-secondary">
+                メッセージを編集中...
+              </p>
               <button
                 type="button"
-                onClick={() => {
-                  setInput((prev) =>
-                    prev.includes("@さくらママ") ? prev : "@さくらママ " + prev,
-                  );
-                }}
-                className="shrink-0 mb-1 p-1.5 rounded-full text-amethyst-dark hover:bg-amethyst-muted"
-                title="@さくらママ"
+                onClick={cancelEdit}
+                className="text-[11px] text-amethyst-dark underline mt-0.5"
               >
-                <Sparkles size={18} />
-              </button>
-              <div className="flex-1">
-                <ChatTextarea
-                  value={input}
-                  onChange={setInput}
-                  onSend={handleSend}
-                  placeholder="メッセージを入力..."
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={!input.trim() || sending}
-                className={cn(
-                  "shrink-0 mb-1 p-2 rounded-full transition-colors",
-                  input.trim() && !sending
-                    ? "bg-amethyst text-pearl"
-                    : "bg-pearl-soft text-ink-muted",
-                )}
-                aria-label="送信"
-                title="送信（⌘/Ctrl+Enter）"
-              >
-                <Send size={16} />
+                編集をやめる
               </button>
             </div>
-            <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
-              Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
-            </p>
-          </div>
+          ) : (
+            <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
+              <div className="flex items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInput((prev) =>
+                      prev.includes("@さくらママ") ? prev : "@さくらママ " + prev,
+                    );
+                  }}
+                  className="shrink-0 mb-1 p-1.5 rounded-full text-amethyst-dark hover:bg-amethyst-muted"
+                  title="@さくらママ"
+                >
+                  <Sparkles size={18} />
+                </button>
+                <div className="flex-1">
+                  <ChatTextarea
+                    value={input}
+                    onChange={setInput}
+                    onSend={handleSend}
+                    placeholder="メッセージを入力..."
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!input.trim() || sending}
+                  className={cn(
+                    "shrink-0 mb-1 p-2 rounded-full transition-colors",
+                    input.trim() && !sending
+                      ? "bg-amethyst text-pearl"
+                      : "bg-pearl-soft text-ink-muted",
+                  )}
+                  aria-label="送信"
+                  title="送信（⌘/Ctrl+Enter）"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
+              <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
+                Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -518,49 +534,65 @@ export function ChatRoomView({
         </div>
       )}
 
-      {/* Input bar */}
-      <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
-        <div className="flex items-end gap-2">
+      {/* Input bar — hidden while editing so the inline edit box isn't
+          competing with a live composer. */}
+      {editingId ? (
+        <div className="shrink-0 border-t border-pearl-soft bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
+          <p className="text-label-sm text-ink-secondary">
+            メッセージを編集中...
+          </p>
           <button
             type="button"
-            onClick={() => {
-              setInput((prev) =>
-                prev.includes("@さくらママ") ? prev : "@さくらママ " + prev,
-              );
-            }}
-            className="shrink-0 mb-1 p-1.5 rounded-full text-amethyst-dark hover:bg-amethyst-muted"
-            title="@さくらママ"
+            onClick={cancelEdit}
+            className="text-[11px] text-amethyst-dark underline mt-0.5"
           >
-            <Sparkles size={18} />
-          </button>
-          <div className="flex-1">
-            <ChatTextarea
-              value={input}
-              onChange={setInput}
-              onSend={handleSend}
-              placeholder="メッセージを入力..."
-            />
-          </div>
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!input.trim() || sending}
-            className={cn(
-              "shrink-0 mb-1 p-2 rounded-full transition-colors",
-              input.trim() && !sending
-                ? "bg-amethyst text-pearl"
-                : "bg-pearl-soft text-ink-muted",
-            )}
-            aria-label="送信"
-            title="送信（⌘/Ctrl+Enter）"
-          >
-            <Send size={16} />
+            編集をやめる
           </button>
         </div>
-        <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
-          Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
-        </p>
-      </div>
+      ) : (
+        <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
+          <div className="flex items-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setInput((prev) =>
+                  prev.includes("@さくらママ") ? prev : "@さくらママ " + prev,
+                );
+              }}
+              className="shrink-0 mb-1 p-1.5 rounded-full text-amethyst-dark hover:bg-amethyst-muted"
+              title="@さくらママ"
+            >
+              <Sparkles size={18} />
+            </button>
+            <div className="flex-1">
+              <ChatTextarea
+                value={input}
+                onChange={setInput}
+                onSend={handleSend}
+                placeholder="メッセージを入力..."
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!input.trim() || sending}
+              className={cn(
+                "shrink-0 mb-1 p-2 rounded-full transition-colors",
+                input.trim() && !sending
+                  ? "bg-amethyst text-pearl"
+                  : "bg-pearl-soft text-ink-muted",
+              )}
+              aria-label="送信"
+              title="送信（⌘/Ctrl+Enter）"
+            >
+              <Send size={16} />
+            </button>
+          </div>
+          <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
+            Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
+          </p>
+        </div>
+      )}
     </div>
   );
 }
