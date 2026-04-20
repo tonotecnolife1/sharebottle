@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { BookOpen, Hash, MessageCircle, Users } from "lucide-react";
+import { BookOpen, Hash, MessageCircle, Search, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/nightos/empty-state";
 import type { ChatRoom } from "../types";
@@ -16,6 +16,7 @@ type FilterTab = "all" | "channels" | "dm" | "coaching";
 
 export function ChatRoomList({ rooms, currentCastId }: Props) {
   const [tab, setTab] = useState<FilterTab>("all");
+  const [query, setQuery] = useState("");
 
   const sorted = [...rooms].sort((a, b) => {
     const aTime = a.last_message?.sent_at ?? a.created_at;
@@ -23,7 +24,7 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
     return new Date(bTime).getTime() - new Date(aTime).getTime();
   });
 
-  const filtered =
+  const tabFiltered =
     tab === "all"
       ? sorted
       : tab === "channels"
@@ -32,8 +33,50 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
           ? sorted.filter((r) => r.type === "coaching")
           : sorted.filter((r) => r.type === "dm");
 
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? tabFiltered.filter((r) => {
+        const otherNames = r.member_names
+          .filter((_, i) => r.member_ids[i] !== currentCastId)
+          .join(" ");
+        const haystack = [
+          r.name ?? "",
+          otherNames,
+          r.last_message?.content ?? "",
+          r.last_message?.sender_name ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      })
+    : tabFiltered;
+
   return (
     <div>
+      {/* Search bar */}
+      <div className="px-5 pt-3">
+        <label className="flex items-center gap-2 rounded-btn border border-pearl-soft bg-pearl-warm px-3 py-2">
+          <Search size={14} className="text-ink-muted shrink-0" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="トーク・相手を検索..."
+            className="flex-1 bg-transparent text-body-sm text-ink placeholder:text-ink-muted focus:outline-none"
+            style={{ fontSize: "16px" }}
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="text-ink-muted shrink-0"
+              aria-label="検索をクリア"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </label>
+      </div>
+
       {/* Filter tabs */}
       <div className="flex gap-1 px-5 py-3 border-b border-pearl-soft">
         {(["all", "channels", "dm", "coaching"] as FilterTab[]).map((t) => (
@@ -76,8 +119,12 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
         <div className="p-5">
           <EmptyState
             icon={<MessageCircle size={22} />}
-            title="まだメッセージがありません"
-            description="みんなとのやり取りや、@さくらママ(AI) への相談を始めるとここに表示されます。"
+            title={q ? "一致するトークはありません" : "まだメッセージがありません"}
+            description={
+              q
+                ? "別のキーワードをお試しください。"
+                : "みんなとのやり取りや、@さくらママ(AI) への相談を始めるとここに表示されます。"
+            }
             tone="amethyst"
           />
         </div>

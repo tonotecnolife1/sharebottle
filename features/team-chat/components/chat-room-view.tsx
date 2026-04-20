@@ -5,8 +5,10 @@ import {
   ArrowLeft,
   BookOpen,
   MessageCircle,
+  Search,
   Send,
   Sparkles,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,8 @@ export function ChatRoomView({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [threadOpen, setThreadOpen] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom
@@ -61,6 +65,18 @@ export function ChatRoomView({
   const topMessages = messages.filter((m) => !m.thread_parent_id);
   const threadReplies = (parentId: string) =>
     messages.filter((m) => m.thread_parent_id === parentId);
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const isSearching = searchOpen && normalizedQuery.length > 0;
+  const visibleTopMessages = isSearching
+    ? topMessages.filter((m) =>
+        m.content.toLowerCase().includes(normalizedQuery) ||
+        m.sender_name.toLowerCase().includes(normalizedQuery) ||
+        threadReplies(m.id).some((r) =>
+          r.content.toLowerCase().includes(normalizedQuery),
+        ),
+      )
+    : topMessages;
 
   const handleSend = async () => {
     const text = input.trim();
@@ -161,8 +177,55 @@ export function ChatRoomView({
           </div>
           <div className="text-label-sm text-ink-muted">{memberCount}人</div>
         </div>
-        <div className="w-14" /> {/* spacer for centering */}
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen((v) => {
+              const next = !v;
+              if (!next) setSearchQuery("");
+              return next;
+            });
+          }}
+          aria-label={searchOpen ? "検索を閉じる" : "検索"}
+          className={cn(
+            "w-14 shrink-0 flex items-center justify-end text-ink-secondary",
+            searchOpen && "text-amethyst-dark",
+          )}
+        >
+          {searchOpen ? <X size={18} /> : <Search size={18} />}
+        </button>
       </header>
+
+      {searchOpen && (
+        <div className="shrink-0 px-4 py-2 border-b border-pearl-soft bg-pearl-soft/40">
+          <label className="flex items-center gap-2 rounded-btn border border-pearl-soft bg-pearl px-3 py-2">
+            <Search size={14} className="text-ink-muted shrink-0" />
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="メッセージを検索..."
+              className="flex-1 bg-transparent text-body-sm text-ink placeholder:text-ink-muted focus:outline-none"
+              style={{ fontSize: "16px" }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-ink-muted shrink-0"
+                aria-label="検索をクリア"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </label>
+          {isSearching && (
+            <div className="mt-1.5 text-[11px] text-ink-muted">
+              {visibleTopMessages.length}件のスレッドが一致
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Coaching banner */}
       {isCoaching && (
@@ -235,25 +298,37 @@ export function ChatRoomView({
                 disabled={!input.trim() || sending}
                 className={cn(
                   "shrink-0 mb-1 p-2 rounded-full transition-colors",
-                  input.trim()
+                  input.trim() && !sending
                     ? "bg-amethyst text-pearl"
                     : "bg-pearl-soft text-ink-muted",
                 )}
+                aria-label="送信"
+                title="送信（⌘/Ctrl+Enter）"
               >
                 <Send size={16} />
               </button>
             </div>
+            <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
+              Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
+            </p>
           </div>
         </div>
       )}
 
       {/* Main message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-        <div className="text-center text-label-sm text-ink-muted py-4">
-          これ以上メッセージはありません
-        </div>
+        {!isSearching && (
+          <div className="text-center text-label-sm text-ink-muted py-4">
+            これ以上メッセージはありません
+          </div>
+        )}
+        {isSearching && visibleTopMessages.length === 0 && (
+          <div className="text-center text-label-sm text-ink-muted py-8">
+            一致するメッセージはありません
+          </div>
+        )}
 
-        {topMessages.map((msg) => {
+        {visibleTopMessages.map((msg) => {
           const replies = threadReplies(msg.id);
           return (
             <div key={msg.id}>
@@ -262,6 +337,7 @@ export function ChatRoomView({
                 currentCastId={currentCastId}
                 isCoaching={isCoaching}
                 onOpenThread={() => setThreadOpen(msg.id)}
+                highlight={isSearching ? normalizedQuery : undefined}
               />
               {/* Thread preview */}
               {(msg.reply_count > 0 || replies.length > 0) && (
@@ -341,14 +417,19 @@ export function ChatRoomView({
             disabled={!input.trim() || sending}
             className={cn(
               "shrink-0 mb-1 p-2 rounded-full transition-colors",
-              input.trim()
+              input.trim() && !sending
                 ? "bg-amethyst text-pearl"
                 : "bg-pearl-soft text-ink-muted",
             )}
+            aria-label="送信"
+            title="送信（⌘/Ctrl+Enter）"
           >
             <Send size={16} />
           </button>
         </div>
+        <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
+          Enter で改行 / 送信ボタン または ⌘/Ctrl+Enter で送信
+        </p>
       </div>
     </div>
   );
@@ -361,21 +442,18 @@ function MessageRow({
   currentCastId,
   isCoaching,
   onOpenThread,
+  highlight,
 }: {
   msg: ChatMessage;
   currentCastId: string;
   isCoaching?: boolean;
   onOpenThread?: () => void;
+  /** Lowercased search query to highlight; if set, matching substrings get wrapped. */
+  highlight?: string;
 }) {
   const isMe = msg.sender_id === currentCastId;
   const time = new Date(msg.created_at);
   const timeStr = `${time.getHours()}:${String(time.getMinutes()).padStart(2, "0")}`;
-
-  // Highlight @さくらママ in content
-  const highlightedContent = msg.content.replace(
-    /@さくらママ/g,
-    "**@さくらママ**",
-  );
 
   return (
     <div className="flex items-start gap-3 py-2">
@@ -423,18 +501,7 @@ function MessageRow({
           <span className="text-label-sm text-ink-muted">{timeStr}</span>
         </div>
         <div className="text-body-md text-ink mt-0.5 leading-relaxed whitespace-pre-wrap">
-          {msg.content.split(/(@さくらママ)/g).map((part, i) =>
-            part === "@さくらママ" ? (
-              <span
-                key={i}
-                className="px-1 py-0.5 rounded bg-amethyst-muted text-amethyst-dark font-semibold text-body-sm"
-              >
-                @さくらママ
-              </span>
-            ) : (
-              <span key={i}>{part}</span>
-            ),
-          )}
+          {renderContentParts(msg.content, highlight)}
         </div>
 
         {/* Action buttons */}
@@ -455,6 +522,61 @@ function MessageRow({
   );
 }
 
+// ═══════════════ Content renderer ═══════════════
+
+/**
+ * Split content into renderable pieces, giving the `@さくらママ` mention
+ * its chip styling and (optionally) wrapping search matches in a
+ * highlight <mark>.
+ */
+function renderContentParts(content: string, highlight?: string) {
+  const mentionRe = /(@さくらママ)/g;
+  const chunks = content.split(mentionRe);
+  return chunks.map((chunk, i) => {
+    if (chunk === "@さくらママ") {
+      return (
+        <span
+          key={i}
+          className="px-1 py-0.5 rounded bg-amethyst-muted text-amethyst-dark font-semibold text-body-sm"
+        >
+          @さくらママ
+        </span>
+      );
+    }
+    if (!highlight) return <span key={i}>{chunk}</span>;
+    return <HighlightedText key={i} text={chunk} query={highlight} />;
+  });
+}
+
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const q = query.toLowerCase();
+  const out: React.ReactNode[] = [];
+  let cursor = 0;
+  let key = 0;
+  while (cursor < text.length) {
+    const idx = lower.indexOf(q, cursor);
+    if (idx === -1) {
+      out.push(<span key={key++}>{text.slice(cursor)}</span>);
+      break;
+    }
+    if (idx > cursor) {
+      out.push(<span key={key++}>{text.slice(cursor, idx)}</span>);
+    }
+    out.push(
+      <mark
+        key={key++}
+        className="bg-champagne-dark/40 text-ink rounded-sm px-0.5"
+      >
+        {text.slice(idx, idx + q.length)}
+      </mark>,
+    );
+    cursor = idx + q.length;
+  }
+  return <>{out}</>;
+}
+
 // ═══════════════ Simple Chat Textarea ═══════════════
 
 function ChatTextarea({
@@ -473,7 +595,9 @@ function ChatTextarea({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        // Cmd/Ctrl+Enter sends; plain Enter creates a newline so users
+        // can compose multi-line messages without premature submission.
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
           onSend();
         }
@@ -481,7 +605,7 @@ function ChatTextarea({
       placeholder={placeholder}
       rows={1}
       className="w-full resize-none rounded-btn border border-pearl-soft bg-pearl-warm px-3 py-2 text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-border"
-      style={{ fontSize: "16px", maxHeight: "100px" }}
+      style={{ fontSize: "16px", maxHeight: "160px" }}
     />
   );
 }
