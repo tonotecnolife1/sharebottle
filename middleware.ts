@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/auth/", "/api/", "/docs/", "/pitch"];
+const PUBLIC_PATHS = ["/auth/", "/api/", "/docs/", "/pitch", "/setup"];
 
 function mockAuthDisabled(): boolean {
   const v = process.env.NIGHTOS_DISABLE_MOCK_AUTH;
