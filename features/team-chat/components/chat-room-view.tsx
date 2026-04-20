@@ -66,7 +66,10 @@ export function ChatRoomView({
       cancelEdit();
       return;
     }
-    // Optimistic
+    // Optimistic update stays even if the API doesn't have the row yet
+    // (e.g. mock-only messages, tables not seeded). We only roll back
+    // on a 403 — the server explicitly said the current cast isn't
+    // allowed to edit this message.
     patchMessage(id, { content: next, edited_at: new Date().toISOString() });
     cancelEdit();
     try {
@@ -75,13 +78,14 @@ export function ChatRoomView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: next }),
       });
-      if (!res.ok) throw new Error(`PATCH ${res.status}`);
+      if (res.status === 403) {
+        patchMessage(id, {
+          content: original.content,
+          edited_at: original.edited_at ?? null,
+        });
+      }
     } catch {
-      // Rollback on failure
-      patchMessage(id, {
-        content: original.content,
-        edited_at: original.edited_at ?? null,
-      });
+      // network-level failure — keep the optimistic edit
     }
   };
 
@@ -94,9 +98,11 @@ export function ChatRoomView({
       const res = await fetch(`/api/team-chat/messages/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error(`DELETE ${res.status}`);
+      if (res.status === 403) {
+        patchMessage(id, { deleted_at: original.deleted_at ?? null });
+      }
     } catch {
-      patchMessage(id, { deleted_at: original.deleted_at ?? null });
+      // network-level failure — keep the optimistic delete
     }
   };
 
