@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Crown, Mail, Sparkles, User } from "lucide-react";
 import { Card } from "@/components/nightos/card";
@@ -102,6 +103,16 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                 : "メールアドレスでログイン"}
             </button>
           )}
+
+          <div className="text-center text-[11px] text-ink-muted">
+            初めてご利用の方は
+            <Link
+              href="/auth/signup"
+              className="text-amethyst-dark underline ml-1"
+            >
+              新規登録
+            </Link>
+          </div>
 
           {!mockAuthEnabled && (
             <div className="flex items-center justify-center gap-2 text-body-sm text-ink font-medium">

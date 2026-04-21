@@ -93,6 +93,29 @@ export const teamChatUpdateSchema = z.object({
   content: shortText,
 });
 
+// Signup / onboarding ─────────────────────────────────────────────
+
+const displayName = z
+  .string()
+  .min(1, "名前を入力してください")
+  .max(40, "40文字以内で入力してください");
+
+export const signupSchema = z.object({
+  email: z.string().email("メールアドレスの形式が正しくありません").max(200),
+  password: z.string().min(8, "パスワードは8文字以上").max(200),
+  name: displayName,
+});
+
+export const onboardingSchema = z.object({
+  name: displayName,
+  /** Optional — pick an existing store. */
+  storeId: z.string().min(1).max(64).optional(),
+  /** Optional — create a new store with this name. */
+  newStoreName: z.string().min(1).max(80).optional(),
+  venueType: z.enum(["club", "cabaret"]),
+  clubRole: z.enum(["mama", "oneesan", "help"]).optional(),
+});
+
 export const generateTemplateSchema = z.object({
   customerId,
   castId,
