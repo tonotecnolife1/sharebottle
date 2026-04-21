@@ -18,6 +18,12 @@ interface Props {
   casts: Cast[];
   existingCustomers?: Customer[];
   initialReferrerId?: string;
+  /** If set, hide the cast picker and always submit with this cast id. */
+  lockedCastId?: string;
+  /** Label used on the submit button — defaults to the store-side text. */
+  submitLabel?: string;
+  /** Success toast template — substitute %name% for the customer's name. */
+  successTemplate?: string;
 }
 
 const CATEGORY_OPTIONS: { value: CustomerCategory; label: string }[] = [
@@ -46,24 +52,35 @@ const FUNNEL_OPTIONS: { value: FunnelStage; label: string; hint: string }[] = [
   },
 ];
 
-export function CustomerForm({ casts, existingCustomers = [], initialReferrerId }: Props) {
+export function CustomerForm({
+  casts,
+  existingCustomers = [],
+  initialReferrerId,
+  lockedCastId,
+  submitLabel,
+  successTemplate,
+}: Props) {
   const [pending, startTransition] = useTransition();
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const defaultCastId = lockedCastId ?? casts[0]?.id ?? "";
 
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [job, setJob] = useState("");
   const [favoriteDrink, setFavoriteDrink] = useState("");
   const [category, setCategory] = useState<CustomerCategory>("new");
-  const [castId, setCastId] = useState(casts[0]?.id ?? "");
+  const [castId, setCastId] = useState(defaultCastId);
   const [storeMemo, setStoreMemo] = useState("");
   const [referrerId, setReferrerId] = useState<string>(initialReferrerId ?? "");
-  const [funnelStage, setFunnelStage] = useState<FunnelStage>("store_only");
+  const [funnelStage, setFunnelStage] = useState<FunnelStage>(
+    lockedCastId ? "assigned" : "store_only",
+  );
 
   // Manager: auto-inferred from cast selection, but user can override
   const [managerId, setManagerId] = useState<string>(() =>
-    inferManagerCastId(casts[0]?.id ?? "", casts) ?? "",
+    inferManagerCastId(defaultCastId, casts) ?? "",
   );
   const [managerOverridden, setManagerOverridden] = useState(false);
 
@@ -85,11 +102,11 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
     setJob("");
     setFavoriteDrink("");
     setCategory("new");
-    setCastId(casts[0]?.id ?? "");
+    setCastId(defaultCastId);
     setStoreMemo("");
     setReferrerId("");
-    setFunnelStage("store_only");
-    setManagerId(inferManagerCastId(casts[0]?.id ?? "", casts) ?? "");
+    setFunnelStage(lockedCastId ? "assigned" : "store_only");
+    setManagerId(inferManagerCastId(defaultCastId, casts) ?? "");
     setManagerOverridden(false);
   };
 
@@ -124,7 +141,10 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         setError(res.error);
         return;
       }
-      setSuccess(`${res.customer.name}さまを登録しました。キャストに共有されます。`);
+      const template =
+        successTemplate ??
+        "%name%さまを登録しました。キャストに共有されます。";
+      setSuccess(template.replace("%name%", res.customer.name));
       reset();
       setTimeout(() => setSuccess(null), 3500);
     });
@@ -186,74 +206,82 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
         options={CATEGORY_OPTIONS}
       />
 
-      <SelectInput
-        label="担当キャスト"
-        name="cast_id"
-        value={castId}
-        onChange={(e) => setCastId(e.target.value)}
-        options={casts.map((c) => ({ value: c.id, label: c.name }))}
-        hint="この顧客はタップ1回でキャストに紐づきます"
-      />
+      {lockedCastId ? (
+        <input type="hidden" name="cast_id" value={lockedCastId} />
+      ) : (
+        <SelectInput
+          label="担当キャスト"
+          name="cast_id"
+          value={castId}
+          onChange={(e) => setCastId(e.target.value)}
+          options={casts.map((c) => ({ value: c.id, label: c.name }))}
+          hint="この顧客はタップ1回でキャストに紐づきます"
+        />
+      )}
 
-      {/* ── 管理者 ── */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-1.5">
-          <Crown size={13} className="text-roseGold-dark" />
-          <label className="text-label-md text-ink font-medium">
-            管理者
-          </label>
-          {!managerOverridden && managerId && (
-            <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-badge">
-              自動選択
-            </span>
-          )}
+      {/* ── 管理者 ── Only shown when the picker has multiple options. */}
+      {managerOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Crown size={13} className="text-roseGold-dark" />
+            <label className="text-label-md text-ink font-medium">
+              管理者
+            </label>
+            {!managerOverridden && managerId && (
+              <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-badge">
+                自動選択
+              </span>
+            )}
+          </div>
+          <select
+            value={managerId}
+            onChange={(e) => {
+              setManagerId(e.target.value);
+              setManagerOverridden(true);
+            }}
+            className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
+            style={{ fontSize: "16px" }}
+          >
+            <option value="">管理者なし</option>
+            {managerOptions.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}さん
+              </option>
+            ))}
+          </select>
+          <p className="text-label-sm text-ink-muted">
+            担当者から自動で選ばれます。変更する場合はここから上書きできます。
+          </p>
         </div>
-        <select
-          value={managerId}
-          onChange={(e) => {
-            setManagerId(e.target.value);
-            setManagerOverridden(true);
-          }}
-          className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
-          style={{ fontSize: "16px" }}
-        >
-          <option value="">管理者なし</option>
-          {managerOptions.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}さん
-            </option>
-          ))}
-        </select>
-        <p className="text-label-sm text-ink-muted">
-          担当者から自動で選ばれます。変更する場合はここから上書きできます。
-        </p>
-      </div>
+      )}
 
       {/* ── お連れ様の場合のご本人 ── */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-1.5">
-          <Users size={13} className="text-amethyst-dark" />
-          <label className="text-label-md text-ink font-medium">
-            どなたのお連れ様？（任意）
-          </label>
+      {referrerOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Users size={13} className="text-amethyst-dark" />
+            <label className="text-label-md text-ink font-medium">
+              どなたのお連れ様？（任意）
+            </label>
+          </div>
+          <select
+            value={referrerId}
+            onChange={(e) => setReferrerId(e.target.value)}
+            className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
+            style={{ fontSize: "16px" }}
+          >
+            <option value="">自己来店・お連れ様ではない</option>
+            {referrerOptions.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-label-sm text-ink-muted">
+            ご本人を選ぶと相関図で繋がりが見えるようになります
+          </p>
         </div>
-        <select
-          value={referrerId}
-          onChange={(e) => setReferrerId(e.target.value)}
-          className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
-          style={{ fontSize: "16px" }}
-        >
-          <option value="">自己来店・お連れ様ではない</option>
-          {referrerOptions.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-        <p className="text-label-sm text-ink-muted">
-          ご本人を選ぶと相関図で繋がりが見えるようになります
-        </p>
-      </div>
+      )}
 
       {/* ── ファネルステージ ── */}
       <div className="space-y-1.5">
@@ -317,7 +345,7 @@ export function CustomerForm({ casts, existingCustomers = [], initialReferrerId 
 
       <Button type="submit" variant="primary" fullWidth size="lg" disabled={pending}>
         <UserPlus size={16} />
-        {pending ? "登録中…" : "登録してキャストに共有"}
+        {pending ? "登録中…" : submitLabel ?? "登録してキャストに共有"}
       </Button>
     </form>
   );

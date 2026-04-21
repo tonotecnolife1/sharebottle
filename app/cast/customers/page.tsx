@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { CustomerPageShell } from "@/features/cast-customers/components/customer-page-shell";
 import { getCurrentCastId } from "@/lib/nightos/auth";
@@ -28,6 +30,15 @@ export default async function CastCustomerListPage() {
         title="顧客リスト"
         subtitle={`${allMyCustomers.length}人の顧客を管理`}
         showBack
+        right={
+          <Link
+            href="/cast/customers/new"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amethyst-muted text-amethyst-dark text-label-sm font-medium border border-amethyst-border hover:bg-amethyst hover:text-pearl transition-colors"
+          >
+            <UserPlus size={14} />
+            新規
+          </Link>
+        }
       />
       <div className="px-5 pt-3 pb-6">
         <CustomerPageShell

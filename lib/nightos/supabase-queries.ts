@@ -679,23 +679,55 @@ export interface CreateCustomerInput {
   line_exchanged_at?: string | null;
   /** 管理者キャスト id（ママor姉さん）。未指定なら null。 */
   manager_cast_id?: string | null;
+  /** 所属店舗 id。未指定ならログイン中のキャストの店舗を引く。 */
+  store_id?: string;
 }
 
 export async function createCustomer(
   input: CreateCustomerInput,
 ): Promise<Customer> {
+  const storeId = input.store_id ?? (await resolveStoreIdForCast(input.cast_id));
   return withFallback(
     "createCustomer",
-    () => createCustomerReal({ ...input, storeId: CURRENT_STORE_ID }),
-    () => createCustomerMock(input),
+    () => createCustomerReal({ ...input, storeId }),
+    () => createCustomerMock({ ...input, store_id: storeId }),
   );
+}
+
+/**
+ * Look up the store_id of the given cast so newly created customers
+ * land in the right store. Falls back to CURRENT_STORE_ID for legacy
+ * mock mode.
+ */
+async function resolveStoreIdForCast(castId: string): Promise<string> {
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    try {
+      const { createServerSupabaseClient } = await import(
+        "@/lib/supabase/server"
+      );
+      const supabase = createServerSupabaseClient();
+      const { data } = await supabase
+        .from("nightos_casts")
+        .select("store_id")
+        .eq("id", castId)
+        .maybeSingle();
+      const storeId = (data?.store_id as string | undefined) ?? null;
+      if (storeId) return storeId;
+    } catch {
+      // fall through
+    }
+  }
+  return CURRENT_STORE_ID;
 }
 
 function createCustomerMock(input: CreateCustomerInput): Customer {
   const stage = input.funnel_stage ?? "store_only";
   const customer: Customer = {
     id: `cust_${Date.now()}`,
-    store_id: CURRENT_STORE_ID,
+    store_id: input.store_id ?? CURRENT_STORE_ID,
     cast_id: input.cast_id,
     name: input.name,
     birthday: input.birthday,

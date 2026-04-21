@@ -14,5 +14,6 @@ export async function createCustomerAction(input: CreateCustomerInput) {
   revalidatePath("/store");
   revalidatePath("/store/dashboard");
   revalidatePath("/cast/home");
+  revalidatePath("/cast/customers");
   return { ok: true as const, customer };
 }
