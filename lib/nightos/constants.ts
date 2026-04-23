@@ -8,6 +8,21 @@ export const CURRENT_MAMA_ID = "cast_oneesan2";
 
 export const CURRENT_CUSTOMER_ID = "cust1"; // 田中太郎（来店客モード用）
 
+/**
+ * Demo tenancy IDs. Anything in this list is treated as shared demo
+ * content: seeded data, visible when someone taps 「デモを見る」, and
+ * hidden from the real-signup onboarding store picker so new testers
+ * can't accidentally land in the demo sandbox and collide with it.
+ */
+export const DEMO_STORE_IDS: readonly string[] = ["store1"];
+export const DEMO_CAST_IDS: readonly string[] = [
+  "cast1",
+  "cast_oneesan2",
+  "cast_help2",
+  "cast_oneesan3",
+  "cast_oneesan4",
+];
+
 export const ROLE_STORAGE_KEY = "nightos.role";
 export const VENUE_TYPE_STORAGE_KEY = "nightos.venue-type";
 

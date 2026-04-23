@@ -3,6 +3,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { DEMO_STORE_IDS } from "@/lib/nightos/constants";
 import { isMockAuthDisabled } from "@/lib/nightos/env";
 import { mockCasts } from "@/lib/nightos/mock-data";
 import { onboardingSchema, signupSchema } from "@/lib/nightos/validation";
@@ -152,6 +153,12 @@ export async function completeOnboarding(
 
   if (!input.storeId && !input.newStoreName) {
     return { error: "店舗を選ぶか、新しい店舗名を入力してください" };
+  }
+  if (input.storeId && DEMO_STORE_IDS.includes(input.storeId)) {
+    return {
+      error:
+        "デモ用の店舗には参加できません。別の店舗を選ぶか、新しい店舗を作成してください。",
+    };
   }
 
   if (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Crown, Mail, Sparkles, User } from "lucide-react";
+import { Crown, Mail, Play, Sparkles, User, UserPlus } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { Button } from "@/components/nightos/button";
 import { cn } from "@/lib/utils";
@@ -90,46 +90,46 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
           <p className="text-body-md text-ink-secondary">ログイン</p>
         </div>
 
+        {/* ── 本番利用: 新規登録 / ログイン ────────────── */}
         <Card className="p-4 space-y-3 animate-fade-in">
-          {mockAuthEnabled && (
-            <button
-              type="button"
-              onClick={() => setShowEmailForm((v) => !v)}
-              className="w-full flex items-center justify-center gap-2 text-body-sm text-amethyst-dark font-medium"
-            >
-              <Mail size={14} />
-              {showEmailForm
-                ? "メールログインを閉じる"
-                : "メールアドレスでログイン"}
-            </button>
-          )}
-
-          <div className="text-center text-[11px] text-ink-muted">
-            初めてご利用の方は
-            <Link
-              href="/auth/signup"
-              className="text-amethyst-dark underline ml-1"
-            >
-              新規登録
-            </Link>
+          <div className="flex items-center gap-2">
+            <UserPlus size={14} className="text-amethyst-dark" />
+            <span className="text-body-md font-semibold text-ink">
+              自分のアカウントで使う
+            </span>
           </div>
+          <p className="text-[11px] text-ink-muted">
+            自分の顧客・ボトル・メモを管理します。データは自分だけのものです。
+          </p>
 
-          {!mockAuthEnabled && (
-            <div className="flex items-center justify-center gap-2 text-body-sm text-ink font-medium">
-              <Mail size={14} className="text-amethyst-dark" />
-              メールアドレスでログイン
-            </div>
-          )}
+          <Link
+            href="/auth/signup"
+            className="block w-full text-center px-4 py-2.5 rounded-btn bg-amethyst text-pearl text-body-md font-semibold"
+          >
+            新規登録
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowEmailForm((v) => !v)}
+            className="w-full flex items-center justify-center gap-2 text-body-sm text-amethyst-dark font-medium"
+          >
+            <Mail size={14} />
+            {showEmailForm
+              ? "メールログインを閉じる"
+              : "すでに登録済みの方はこちら"}
+          </button>
 
           {showEmailForm && (
             <form action={handleEmailLogin} className="space-y-2">
               <input
                 type="email"
                 name="email"
-                placeholder="email@test.nightos"
+                placeholder="email@example.com"
                 required
                 disabled={pending}
                 className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+                style={{ fontSize: "16px" }}
               />
               <input
                 type="password"
@@ -138,6 +138,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                 required
                 disabled={pending}
                 className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+                style={{ fontSize: "16px" }}
               />
               <Button
                 type="submit"
@@ -150,79 +151,84 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
               {emailError && (
                 <p className="text-[11px] text-rose">{emailError}</p>
               )}
-              {mockAuthEnabled && (
-                <p className="text-[10px] text-ink-muted text-center pt-1">
-                  テスト用: akari@test.nightos / nightos2026
-                </p>
-              )}
             </form>
           )}
         </Card>
 
+        {/* ── デモ閲覧 ──────────────────────────── */}
         {mockAuthEnabled && (
-          <div className="space-y-3 animate-fade-in">
-            <p className="text-body-sm text-ink-secondary text-center">
-              またはキャストを選択してログイン（デモ）
-            </p>
-
-            {MOCK_CASTS.map((cast) => (
-              <button
-                key={cast.id}
-                type="button"
-                disabled={selectedCast !== null}
-                onClick={() => handleMockLogin(cast.id)}
-                className="w-full text-left transition-transform active:scale-[0.98] disabled:opacity-60"
-              >
-                <Card
-                  className={cn(
-                    "p-4",
-                    selectedCast === cast.id &&
-                      "!border-amethyst-border !bg-amethyst-muted",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
+          <div className="animate-fade-in">
+            <div className="flex items-center gap-2 px-1 mb-2">
+              <Play size={12} className="text-ink-muted" />
+              <span className="text-label-sm text-ink-muted uppercase tracking-wider">
+                デモを見る
+              </span>
+            </div>
+            <Card className="p-3 space-y-2 bg-pearl-soft/40">
+              <p className="text-[11px] text-ink-muted">
+                サンプルデータで画面を体験するだけならこちら。
+                下のキャストを選ぶと即ログインします。
+                <span className="block text-rose-dark/80 mt-1">
+                  ※ デモ用データは他の閲覧者と共有されます
+                </span>
+              </p>
+              <div className="space-y-2">
+                {MOCK_CASTS.map((cast) => (
+                  <button
+                    key={cast.id}
+                    type="button"
+                    disabled={selectedCast !== null}
+                    onClick={() => handleMockLogin(cast.id)}
+                    className="w-full text-left transition-transform active:scale-[0.98] disabled:opacity-60"
+                  >
+                    <Card
                       className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                        cast.role.includes("お姉さん") ||
-                          cast.role.includes("トップ")
-                          ? "ruri-gradient"
-                          : "rose-gradient",
+                        "p-3",
+                        selectedCast === cast.id &&
+                          "!border-amethyst-border !bg-amethyst-muted",
                       )}
                     >
-                      {cast.role.includes("お姉さん") ||
-                      cast.role.includes("トップ") ? (
-                        <Crown size={18} className="text-pearl" />
-                      ) : (
-                        <User size={18} className="text-pearl" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-body-md font-semibold text-ink">
-                          {cast.name}
-                        </span>
-                        <span className="text-[10px] text-ink-muted px-1.5 py-0.5 rounded-badge bg-pearl-soft">
-                          {cast.role}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
+                            cast.role.includes("お姉さん") ||
+                              cast.role.includes("トップ")
+                              ? "ruri-gradient"
+                              : "rose-gradient",
+                          )}
+                        >
+                          {cast.role.includes("お姉さん") ||
+                          cast.role.includes("トップ") ? (
+                            <Crown size={16} className="text-pearl" />
+                          ) : (
+                            <User size={16} className="text-pearl" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-body-sm font-semibold text-ink">
+                              {cast.name}
+                            </span>
+                            <span className="text-[10px] text-ink-muted px-1.5 py-0.5 rounded-badge bg-pearl-soft">
+                              {cast.role}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-ink-muted mt-0.5 truncate">
+                            {cast.description}
+                          </p>
+                        </div>
+                        {selectedCast === cast.id && (
+                          <div className="text-[10px] text-amethyst-dark font-medium">
+                            ログイン中...
+                          </div>
+                        )}
                       </div>
-                      <p className="text-[11px] text-ink-muted mt-0.5 truncate">
-                        {cast.description}
-                      </p>
-                    </div>
-                    {selectedCast === cast.id && (
-                      <div className="text-[11px] text-amethyst-dark font-medium">
-                        ログイン中...
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              </button>
-            ))}
-
-            <p className="text-[10px] text-ink-muted text-center pt-2">
-              デモ用のキャストを選択してください
-            </p>
+                    </Card>
+                  </button>
+                ))}
+              </div>
+            </Card>
           </div>
         )}
       </div>

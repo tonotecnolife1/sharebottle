@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import {
+  DEMO_CAST_IDS,
+  DEMO_STORE_IDS,
+} from "@/lib/nightos/constants";
 
 export const dynamic = "force-dynamic";
+
+interface SubmitterInfo {
+  /** Short human label for Slack, e.g. "tester (akari@foo.com)". */
+  label: string;
+  /** Stable tag for filtering: "demo" | "tester" | "anonymous". */
+  kind: "demo" | "tester" | "anonymous";
+}
 
 /**
  * POST /api/feedback
@@ -25,6 +37,8 @@ export async function POST(req: Request) {
   if (!body.text || body.text.length > 1000) {
     return NextResponse.json({ error: "invalid_text" }, { status: 400 });
   }
+
+  const submitter = await identifySubmitter();
 
   let persisted = false;
   if (
@@ -51,32 +65,94 @@ export async function POST(req: Request) {
   }
 
   if (!persisted) {
-    console.log("[feedback]", JSON.stringify(body));
+    console.log("[feedback]", JSON.stringify({ ...body, submitter }));
   }
 
   // Fire-and-forget Slack notification. Never blocks the response.
-  await notifySlack(body).catch(() => {});
+  await notifySlack(body, submitter).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }
 
-async function notifySlack(body: {
-  text: string;
-  page: string;
-  timestamp: string;
-}): Promise<void> {
+/**
+ * Figure out whether this feedback is coming from a demo viewer (mock
+ * cookie as one of the seeded personas) or a signed-up tester (real
+ * Supabase auth session). Falls back to "anonymous" so the pipeline
+ * never hard-fails if a browser clears cookies.
+ */
+async function identifySubmitter(): Promise<SubmitterInfo> {
+  const mockCastId = cookies().get("nightos.mock-cast-id")?.value;
+  if (mockCastId && DEMO_CAST_IDS.includes(mockCastId)) {
+    return { label: `demo (${mockCastId})`, kind: "demo" };
+  }
+
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    try {
+      const { createServerSupabaseClient } = await import(
+        "@/lib/supabase/server"
+      );
+      const supabase = createServerSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: cast } = await supabase
+          .from("nightos_casts")
+          .select("name, store_id")
+          .eq("auth_user_id", user.id)
+          .maybeSingle();
+        const storeId = cast?.store_id as string | undefined;
+        const kind: SubmitterInfo["kind"] =
+          storeId && DEMO_STORE_IDS.includes(storeId) ? "demo" : "tester";
+        const label = cast?.name
+          ? `${kind} (${cast.name} / ${user.email ?? "no-email"})`
+          : `${kind} (${user.email ?? "no-email"})`;
+        return { label, kind };
+      }
+    } catch {
+      // fall through to anonymous
+    }
+  }
+
+  return { label: "anonymous", kind: "anonymous" };
+}
+
+async function notifySlack(
+  body: {
+    text: string;
+    page: string;
+    timestamp: string;
+  },
+  submitter: SubmitterInfo,
+): Promise<void> {
   const webhook = process.env.SLACK_FEEDBACK_WEBHOOK_URL;
   if (!webhook) return;
 
   const when = formatJst(body.timestamp);
+  const kindEmoji =
+    submitter.kind === "tester"
+      ? ":bust_in_silhouette:"
+      : submitter.kind === "demo"
+        ? ":movie_camera:"
+        : ":question:";
+  const headerTag =
+    submitter.kind === "tester"
+      ? "(テスター)"
+      : submitter.kind === "demo"
+        ? "(デモ)"
+        : "";
+
   const payload = {
-    text: `:speech_balloon: 新しいフィードバック`,
+    text: `:speech_balloon: 新しいフィードバック ${headerTag}`.trim(),
     blocks: [
       {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*:speech_balloon: 新しいフィードバックが届きました*`,
+          text: `*:speech_balloon: 新しいフィードバック ${headerTag}*`.trim(),
         },
       },
       {
@@ -88,7 +164,7 @@ async function notifySlack(body: {
         elements: [
           {
             type: "mrkdwn",
-            text: `:page_facing_up: \`${body.page || "(unknown)"}\`  •  :clock3: ${when}`,
+            text: `${kindEmoji} ${escapeForSlack(submitter.label)}  •  :page_facing_up: \`${body.page || "(unknown)"}\`  •  :clock3: ${when}`,
           },
         ],
       },
