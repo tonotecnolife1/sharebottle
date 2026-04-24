@@ -118,6 +118,22 @@ export function ChatRoomView({
     }
   }, [messages]);
 
+  // When the user starts editing, scroll the edit textarea into view —
+  // otherwise the mobile keyboard can cover the inline editor and the
+  // screen only shows the "メッセージを編集中" notice.
+  useEffect(() => {
+    if (!editingId) return;
+    // Wait a tick so the textarea has rendered and React DOM is flushed.
+    const t = setTimeout(() => {
+      const el = document.getElementById(`msg-${editingId}`);
+      if (!el) return;
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      const textarea = el.querySelector("textarea");
+      if (textarea instanceof HTMLTextAreaElement) textarea.focus();
+    }, 60);
+    return () => clearTimeout(t);
+  }, [editingId]);
+
   const displayName =
     room.type === "channel"
       ? room.name!
@@ -659,7 +675,7 @@ function MessageRow({
   const canEdit = isMe && !msg.is_bot && !isDeleted;
 
   return (
-    <div className="flex items-start gap-3 py-2 group">
+    <div id={`msg-${msg.id}`} className="flex items-start gap-3 py-2 group">
       {/* Avatar */}
       {msg.is_bot ? (
         <RuriMamaAvatar size={40} />
