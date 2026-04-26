@@ -35,7 +35,7 @@ import {
   type RepeatPoint,
   type TrendPoint,
 } from "./store-mock-data";
-import { CURRENT_STORE_ID } from "./constants";
+import { CURRENT_STORE_ID, DEMO_CAST_IDS } from "./constants";
 import {
   consumeBottleReal,
   createBottleReal,
@@ -118,22 +118,48 @@ export async function getCastHomeData(castId: string): Promise<CastHomeData> {
 export async function getCustomersForCast(
   castId: string,
 ): Promise<Customer[]> {
-  return withFallback(
-    "getCustomersForCast",
-    () => getCustomersForCastReal(castId),
-    () => mockCustomers.filter((c) => c.cast_id === castId),
-  );
+  // Demo personas (akari etc.) should always look rich. If the DB is
+  // empty for them — most often because Production hasn't been seeded
+  // yet — fall back to mock. Real testers always get DB results so an
+  // empty DB stays empty (we render a CTA).
+  const mockFor = () => mockCustomers.filter((c) => c.cast_id === castId);
+  if (!isSupabaseConfigured()) return mockFor();
+  try {
+    const real = await getCustomersForCastReal(castId);
+    if (real.length === 0 && DEMO_CAST_IDS.includes(castId)) return mockFor();
+    return real;
+  } catch (err) {
+    console.error(
+      "[supabase] getCustomersForCast failed, falling back to mock:",
+      err,
+    );
+    return mockFor();
+  }
 }
 
 export async function getCustomerContext(
   castId: string,
   customerId: string,
 ): Promise<CustomerContext | null> {
-  return withFallback(
-    "getCustomerContext",
-    () => getCustomerContextReal(castId, customerId),
-    () => getCustomerContextMock(castId, customerId),
-  );
+  // Same demo-aware contract as getCustomersForCast: mock fallback for
+  // seeded personas when the DB has nothing to serve.
+  if (!isSupabaseConfigured()) {
+    return getCustomerContextMock(castId, customerId);
+  }
+  try {
+    const real = await getCustomerContextReal(castId, customerId);
+    if (real) return real;
+    if (DEMO_CAST_IDS.includes(castId)) {
+      return getCustomerContextMock(castId, customerId);
+    }
+    return null;
+  } catch (err) {
+    console.error(
+      "[supabase] getCustomerContext failed, falling back to mock:",
+      err,
+    );
+    return getCustomerContextMock(castId, customerId);
+  }
 }
 
 export async function getCastById(castId: string): Promise<Cast | null> {

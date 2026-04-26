@@ -1,28 +1,22 @@
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
+import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { CustomerPageShell } from "@/features/cast-customers/components/customer-page-shell";
 import { getCurrentCastId } from "@/lib/nightos/auth";
-import { mockCustomers, mockVisits } from "@/lib/nightos/mock-data";
-import { getAllCasts } from "@/lib/nightos/supabase-queries";
-import { splitMasterAndHelp } from "@/lib/nightos/master-help-split";
+import {
+  getAllCasts,
+  getCustomersForCast,
+} from "@/lib/nightos/supabase-queries";
+
+export const dynamic = "force-dynamic";
 
 export default async function CastCustomerListPage() {
   const castId = await getCurrentCastId();
-  const allCasts = await getAllCasts();
-
-  const { masterCustomers, assignedByOtherMaster } = splitMasterAndHelp({
-    castId,
-    customers: mockCustomers,
-    visits: mockVisits,
-    allCasts,
-  });
-
-  // 相関図で使う顧客: マスター + 担当
-  const allMyCustomers = [
-    ...masterCustomers,
-    ...assignedByOtherMaster.map((a) => a.customer),
-  ];
+  const [allCasts, allMyCustomers] = await Promise.all([
+    getAllCasts(),
+    getCustomersForCast(castId),
+  ]);
 
   return (
     <div className="animate-fade-in">
@@ -41,10 +35,28 @@ export default async function CastCustomerListPage() {
         }
       />
       <div className="px-5 pt-3 pb-6">
-        <CustomerPageShell
-          allCasts={allCasts}
-          allMyCustomers={allMyCustomers}
-        />
+        {allMyCustomers.length === 0 ? (
+          <Card className="p-8 text-center space-y-3">
+            <p className="text-body-md text-ink">
+              まだ顧客が登録されていません
+            </p>
+            <p className="text-body-sm text-ink-secondary">
+              担当のお客様を追加すると、ここから来店履歴やボトル、メモを管理できます。
+            </p>
+            <Link
+              href="/cast/customers/new"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-btn bg-amethyst text-pearl text-body-sm font-semibold"
+            >
+              <UserPlus size={14} />
+              最初の顧客を追加
+            </Link>
+          </Card>
+        ) : (
+          <CustomerPageShell
+            allCasts={allCasts}
+            allMyCustomers={allMyCustomers}
+          />
+        )}
       </div>
     </div>
   );
