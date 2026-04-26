@@ -1,5 +1,7 @@
+import { MapPin } from "lucide-react";
 import { Badge } from "@/components/nightos/badge";
 import { formatCustomerName } from "@/lib/utils";
+import { findRegion } from "@/lib/nightos/regions";
 import type { Customer } from "@/types/nightos";
 
 const categoryLabel: Record<Customer["category"], string> = {
@@ -25,12 +27,26 @@ export function CustomerHeader({ customer }: { customer: Customer }) {
           {categoryLabel[customer.category]}
         </Badge>
       </div>
-      <div className="flex items-center gap-3 text-body-sm text-ink-secondary">
+      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-body-sm text-ink-secondary">
         {customer.job && <span>{customer.job}</span>}
         {customer.birthday && (
           <>
             <span className="text-ink-muted">•</span>
             <span>誕生日 {formatBirthday(customer.birthday)}</span>
+          </>
+        )}
+        {customer.region && (
+          <>
+            <span className="text-ink-muted">•</span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin size={11} className="text-amethyst-dark" />
+              {customer.region}
+              {findRegion(customer.region) && (
+                <span className="text-ink-muted text-[10px]">
+                  （{findRegion(customer.region)?.label}）
+                </span>
+              )}
+            </span>
           </>
         )}
       </div>

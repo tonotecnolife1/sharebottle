@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
+import { buildRegionContextLine } from "@/lib/nightos/regions";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import {
   mockBottles,
@@ -137,6 +138,10 @@ function buildPrompt(args: {
     `カテゴリ: ${customer.category === "vip" ? "VIP" : customer.category === "new" ? "新規" : "常連"}`,
   );
   if (customer.favorite_drink) lines.push(`好きなお酒: ${customer.favorite_drink}`);
+  if (customer.region) {
+    const regionLine = buildRegionContextLine(customer.region);
+    if (regionLine) lines.push(regionLine);
+  }
   if (customer.store_memo) lines.push(`店舗メモ: ${customer.store_memo}`);
   if (referrerName) lines.push(`紹介元: ${referrerName}さま`);
   if (customer.funnel_stage) {

@@ -113,6 +113,7 @@ export async function POST(request: Request) {
         line_exchanged_cast_id: c.line_exchanged_cast_id ?? null,
         line_exchanged_at: c.line_exchanged_at ?? null,
         manager_cast_id: c.manager_cast_id ?? null,
+        region: c.region ?? null,
       }));
     const { error: custErr } = await supabase
       .from("customers")
@@ -405,8 +406,11 @@ CREATE TABLE IF NOT EXISTS customers (
   line_exchanged_cast_id TEXT REFERENCES nightos_casts(id) ON DELETE SET NULL,
   line_exchanged_at TIMESTAMPTZ,
   manager_cast_id TEXT REFERENCES nightos_casts(id) ON DELETE SET NULL,
+  region TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS region TEXT;
 
 CREATE TABLE IF NOT EXISTS cast_memos (
   id TEXT PRIMARY KEY,

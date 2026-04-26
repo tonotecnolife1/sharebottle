@@ -452,6 +452,7 @@ export const mockCustomers: Customer[] = [
     favorite_drink: "山崎12年ロック",
     category: "vip",
     store_memo: "息子さんの大学受験の話題はNG（落ちた）",
+    region: "東京都",
     created_at: "2025-04-01T19:00:00+09:00",
     referred_by_customer_id: null, // 自己来店（ルート）
     funnel_stage: "line_exchanged",
@@ -468,6 +469,7 @@ export const mockCustomers: Customer[] = [
     favorite_drink: "白州ハイボール",
     category: "new",
     store_memo: null,
+    region: "大阪府",
     created_at: "2026-02-20T20:00:00+09:00",
     referred_by_customer_id: "cust1", // 田中さまの紹介
     funnel_stage: "line_exchanged",
@@ -483,6 +485,7 @@ export const mockCustomers: Customer[] = [
     job: "不動産会社役員",
     favorite_drink: "マッカラン12年ロック",
     category: "vip",
+    region: "北海道",
     store_memo: "有馬記念はお気に入りの話題",
     created_at: "2024-11-10T19:30:00+09:00",
     referred_by_customer_id: null,

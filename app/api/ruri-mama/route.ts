@@ -13,6 +13,7 @@ import {
   generateStubRefinedOptions,
 } from "@/features/ruri-mama/data/stub-responses";
 import { MOCK_TODAY } from "@/lib/nightos/mock-data";
+import { buildRegionContextLine } from "@/lib/nightos/regions";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import { parseBody, ruriMamaSchema } from "@/lib/nightos/validation";
 import type {
@@ -405,6 +406,11 @@ function buildContextPrefix(opts: {
 
     if (customer.favorite_drink)
       lines.push(`好きなお酒: ${customer.favorite_drink}`);
+
+    if (customer.region) {
+      const regionLine = buildRegionContextLine(customer.region);
+      if (regionLine) lines.push(regionLine);
+    }
 
     // Visit stats — lets Ruri-Mama gauge customer temperature
     if (visits.length > 0) {

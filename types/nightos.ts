@@ -84,6 +84,13 @@ export interface Customer {
    * 担当者がキャスト(help)なら、管理者はその上の姉さんかママ。
    */
   manager_cast_id?: string | null;
+
+  /**
+   * 顧客が普段活動しているエリア（都道府県名）。
+   * AI が気候や季節を踏まえた提案をするために使う。null の場合は
+   * 地域コンテキストを抜きで応答する。
+   */
+  region?: string | null;
 }
 
 // ═══════════════ Customer referral map types ═══════════════

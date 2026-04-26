@@ -1,12 +1,13 @@
 "use client";
 
-import { Check, Crown, MessageCircle, UserPlus, Users } from "lucide-react";
+import { Check, Crown, MapPin, MessageCircle, UserPlus, Users } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
 import { inferManagerCastId } from "@/lib/nightos/manager-assignment";
+import { REGIONS } from "@/lib/nightos/regions";
 import type { Cast, Customer, CustomerCategory } from "@/types/nightos";
 import { createCustomerAction } from "../actions";
 import {
@@ -73,6 +74,7 @@ export function CustomerForm({
   const [category, setCategory] = useState<CustomerCategory>("new");
   const [castId, setCastId] = useState(defaultCastId);
   const [storeMemo, setStoreMemo] = useState("");
+  const [region, setRegion] = useState<string>("");
   const [referrerId, setReferrerId] = useState<string>(initialReferrerId ?? "");
   const [funnelStage, setFunnelStage] = useState<FunnelStage>(
     lockedCastId ? "assigned" : "store_only",
@@ -104,6 +106,7 @@ export function CustomerForm({
     setCategory("new");
     setCastId(defaultCastId);
     setStoreMemo("");
+    setRegion("");
     setReferrerId("");
     setFunnelStage(lockedCastId ? "assigned" : "store_only");
     setManagerId(inferManagerCastId(defaultCastId, casts) ?? "");
@@ -136,6 +139,7 @@ export function CustomerForm({
         referred_by_customer_id: referrerId || null,
         funnel_stage: funnelStage,
         manager_cast_id: managerId || null,
+        region: region || null,
       });
       if (!res.ok) {
         setError(res.error);
@@ -197,6 +201,36 @@ export function CustomerForm({
         onChange={(e) => setFavoriteDrink(e.target.value)}
         placeholder="例: 山崎12年ロック"
       />
+
+      {/* ── 活動エリア（都道府県）── */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <MapPin size={13} className="text-amethyst-dark" />
+          <label className="text-label-md text-ink font-medium">
+            普段の活動エリア
+          </label>
+        </div>
+        <select
+          value={region}
+          onChange={(e) => setRegion(e.target.value)}
+          className="w-full h-11 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-md text-ink"
+          style={{ fontSize: "16px" }}
+        >
+          <option value="">選択しない</option>
+          {REGIONS.map((r) => (
+            <optgroup key={r.key} label={r.label}>
+              {r.prefectures.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <p className="text-label-sm text-ink-muted">
+          選ぶと、AI からの提案で天気や季節を踏まえた話題を出せます
+        </p>
+      </div>
 
       <SelectInput
         label="顧客カテゴリ"

@@ -301,6 +301,7 @@ export async function createCustomerReal(input: {
   funnel_stage?: "store_only" | "assigned" | "line_exchanged";
   line_exchanged_at?: string | null;
   manager_cast_id?: string | null;
+  region?: string | null;
 }): Promise<Customer> {
   const supabase = createServerSupabaseClient();
   const id = `cust_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -326,6 +327,7 @@ export async function createCustomerReal(input: {
           ? input.line_exchanged_at ?? new Date().toISOString()
           : null,
       manager_cast_id: input.manager_cast_id ?? null,
+      region: input.region ?? null,
     })
     .select()
     .single();
@@ -1012,6 +1014,7 @@ function rowToCustomer(row: any): Customer {
     line_exchanged_cast_id: row.line_exchanged_cast_id ?? null,
     line_exchanged_at: row.line_exchanged_at ?? null,
     manager_cast_id: row.manager_cast_id ?? null,
+    region: row.region ?? null,
   };
 }
 

@@ -707,6 +707,8 @@ export interface CreateCustomerInput {
   manager_cast_id?: string | null;
   /** 所属店舗 id。未指定ならログイン中のキャストの店舗を引く。 */
   store_id?: string;
+  /** 普段の活動エリア（都道府県）。AI が天気・気候を推論するのに使う。 */
+  region?: string | null;
 }
 
 export async function createCustomer(
@@ -772,6 +774,7 @@ function createCustomerMock(input: CreateCustomerInput): Customer {
         : null,
     manager_cast_id:
       input.manager_cast_id ?? inferManagerCastId(input.cast_id, mockCasts),
+    region: input.region ?? null,
   };
   mockCustomers.push(customer);
   return customer;

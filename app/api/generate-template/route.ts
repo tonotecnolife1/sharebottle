@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SAKURA_MAMA_MODEL } from "@/lib/nightos/constants";
+import { buildRegionContextLine } from "@/lib/nightos/regions";
 import { getCustomerContext } from "@/lib/nightos/supabase-queries";
 import { generateTemplateSchema, parseBody } from "@/lib/nightos/validation";
 import type { CustomerContext } from "@/types/nightos";
@@ -106,6 +107,10 @@ function buildUserMessage(
   );
   if (customer.favorite_drink)
     lines.push(`好きなお酒: ${customer.favorite_drink}`);
+  if (customer.region) {
+    const regionLine = buildRegionContextLine(customer.region);
+    if (regionLine) lines.push(regionLine);
+  }
   if (bottles.length > 0) {
     const b = bottles[0];
     lines.push(`キープボトル: ${b.brand}`);
