@@ -16,14 +16,24 @@ export function BottleListClient({ bottles: initial }: Props) {
   const [bottles, setBottles] = useState(initial);
   const [pending, startTransition] = useTransition();
 
+  // remaining_glasses is now interpreted as a percentage (0-100). Each
+  // tap here drops the remaining amount by 10 percentage points so the
+  // operator can quickly track usage during a visit.
+  const CONSUME_STEP = 10;
   const handleConsume = (id: string) => {
     startTransition(async () => {
-      const res = await consumeBottleAction(id, 1);
+      const res = await consumeBottleAction(id, CONSUME_STEP);
       if (res.ok) {
         setBottles((prev) =>
           prev.map((b) =>
             b.id === id
-              ? { ...b, remaining_glasses: Math.max(0, b.remaining_glasses - 1) }
+              ? {
+                  ...b,
+                  remaining_glasses: Math.max(
+                    0,
+                    b.remaining_glasses - CONSUME_STEP,
+                  ),
+                }
               : b,
           ),
         );
@@ -61,7 +71,8 @@ export function BottleListClient({ bottles: initial }: Props) {
       ) : (
         <div className="space-y-2">
           {bottles.map((b) => {
-            const isLow = b.remaining_glasses <= 5;
+            // 25% を「残りわずか」、0% を「空」とみなす。
+            const isLow = b.remaining_glasses <= 25;
             const isEmpty = b.remaining_glasses === 0;
             const pct =
               b.total_glasses > 0
@@ -125,7 +136,7 @@ export function BottleListClient({ bottles: initial }: Props) {
                     className="flex items-center gap-1 h-9 px-3 rounded-btn bg-champagne border border-champagne-dark text-ink text-label-sm active:scale-95 disabled:opacity-40"
                   >
                     <Minus size={12} />
-                    1杯消費
+                    10%消費
                   </button>
                   <button
                     type="button"

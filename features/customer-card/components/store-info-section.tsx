@@ -4,7 +4,9 @@ import { cn, formatBottleRemainingPct } from "@/lib/utils";
 import type { Bottle, CustomerContext } from "@/types/nightos";
 import { BottleSuggestion } from "./bottle-suggestion";
 
-const LOW_THRESHOLD = 5;
+// remaining_glasses is now interpreted as a percentage (0-100). 25%
+// or less surfaces the "残りわずか" warning.
+const LOW_THRESHOLD = 25;
 
 export function StoreInfoSection({ context }: { context: CustomerContext }) {
   const { customer, bottles } = context;

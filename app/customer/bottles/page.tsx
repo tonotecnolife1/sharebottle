@@ -57,7 +57,8 @@ export default async function CustomerBottlesPage() {
 
 function BottleCard({ bv }: { bv: CustomerBottleView }) {
   const b = bv.bottle;
-  const isLow = b.remaining_glasses <= 5;
+  // remaining_glasses is treated as percent (0-100); 25%以下 = 残りわずか
+  const isLow = b.remaining_glasses <= 25;
   const isEmpty = b.remaining_glasses === 0;
   const pct =
     b.total_glasses > 0

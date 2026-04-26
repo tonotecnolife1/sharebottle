@@ -18,13 +18,13 @@ export function BottleForm({ customers, initialCustomerId }: Props) {
   const [pending, startTransition] = useTransition();
   const [brand, setBrand] = useState("");
   const [customerId, setCustomerId] = useState(initialCustomerId ?? customers[0]?.id ?? "");
-  const [glasses, setGlasses] = useState(20);
+  const [remainingPct, setRemainingPct] = useState(100);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setBrand("");
-    setGlasses(20);
+    setRemainingPct(100);
   };
 
   const submit = () => {
@@ -34,7 +34,7 @@ export function BottleForm({ customers, initialCustomerId }: Props) {
       const res = await createBottleAction({
         brand: brand.trim(),
         customer_id: customerId,
-        total_glasses: glasses,
+        total_glasses: remainingPct,
       });
       if (!res.ok) {
         setError(res.error);
@@ -42,7 +42,7 @@ export function BottleForm({ customers, initialCustomerId }: Props) {
       }
       const cust = customers.find((c) => c.id === customerId);
       setSuccess(
-        `${cust?.name ?? "顧客"}さんの${res.bottle.brand}（${glasses}杯）を登録しました`,
+        `${cust?.name ?? "顧客"}さんの${res.bottle.brand}（残 約${remainingPct}%）を登録しました`,
       );
       reset();
       setTimeout(() => setSuccess(null), 3500);
@@ -71,13 +71,17 @@ export function BottleForm({ customers, initialCustomerId }: Props) {
       />
 
       <Stepper
-        label="杯数"
-        value={glasses}
-        min={1}
-        max={60}
-        unit="杯"
-        onChange={setGlasses}
+        label="残量（%）"
+        value={remainingPct}
+        min={0}
+        max={100}
+        step={10}
+        unit="%"
+        onChange={setRemainingPct}
       />
+      <p className="text-[10px] text-ink-muted -mt-3">
+        新ボトル = 100% / 半分 = 50% / 残りわずか = 10〜20%
+      </p>
 
       <div className="text-label-sm text-ink-muted">
         キープ日: 今日（{new Date().toLocaleDateString("ja-JP")}）

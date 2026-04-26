@@ -1158,14 +1158,17 @@ for (const c of mockCustomers) {
   if (override) c.manager_cast_id = override;
 }
 
+// total_glasses / remaining_glasses are now interpreted as a percentage
+// (0–100). Schema columns kept the historical names to avoid a
+// migration. New bottles default to 100; consume drops by 10.
 export const mockBottles: Bottle[] = [
   {
     id: "btl1",
     store_id: CURRENT_STORE_ID,
     customer_id: "cust1",
     brand: "山崎12年",
-    total_glasses: 20,
-    remaining_glasses: 8,
+    total_glasses: 100,
+    remaining_glasses: 40,
     kept_at: "2026-01-10T20:00:00+09:00",
   },
   {
@@ -1173,8 +1176,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust3",
     brand: "マッカラン12年",
-    total_glasses: 20,
-    remaining_glasses: 3,
+    total_glasses: 100,
+    remaining_glasses: 15,
     kept_at: "2025-12-20T20:30:00+09:00",
   },
   {
@@ -1182,8 +1185,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust1",
     brand: "白州12年",
-    total_glasses: 20,
-    remaining_glasses: 6,
+    total_glasses: 100,
+    remaining_glasses: 30,
     kept_at: "2026-02-01T20:30:00+09:00",
   },
   {
@@ -1191,8 +1194,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust4",
     brand: "響 JH",
-    total_glasses: 20,
-    remaining_glasses: 12,
+    total_glasses: 100,
+    remaining_glasses: 60,
     kept_at: "2026-02-14T20:00:00+09:00",
   },
   // ── 追加顧客のボトル ──
@@ -1201,8 +1204,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust5",
     brand: "森伊蔵",
-    total_glasses: 20,
-    remaining_glasses: 5,
+    total_glasses: 100,
+    remaining_glasses: 25,
     kept_at: "2026-01-20T20:00:00+09:00",
   },
   {
@@ -1210,8 +1213,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust8",
     brand: "響21年",
-    total_glasses: 20,
-    remaining_glasses: 4,
+    total_glasses: 100,
+    remaining_glasses: 20,
     kept_at: "2025-12-10T19:30:00+09:00",
   },
   {
@@ -1219,8 +1222,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust10",
     brand: "魔王",
-    total_glasses: 20,
-    remaining_glasses: 16,
+    total_glasses: 100,
+    remaining_glasses: 80,
     kept_at: "2026-03-01T20:00:00+09:00",
   },
   {
@@ -1228,8 +1231,8 @@ export const mockBottles: Bottle[] = [
     store_id: CURRENT_STORE_ID,
     customer_id: "cust11",
     brand: "マッカラン18年",
-    total_glasses: 20,
-    remaining_glasses: 12,
+    total_glasses: 100,
+    remaining_glasses: 60,
     kept_at: "2026-02-01T19:30:00+09:00",
   },
   // ── 田中太郎が Lounge ÉTOILE 六本木 でキープ ──
@@ -1238,8 +1241,8 @@ export const mockBottles: Bottle[] = [
     store_id: "store2",
     customer_id: "cust1",
     brand: "村尾",
-    total_glasses: 20,
-    remaining_glasses: 12,
+    total_glasses: 100,
+    remaining_glasses: 60,
     kept_at: "2026-02-20T21:00:00+09:00",
   },
   {
@@ -1247,8 +1250,8 @@ export const mockBottles: Bottle[] = [
     store_id: "store2",
     customer_id: "cust1",
     brand: "グレンリベット12年",
-    total_glasses: 20,
-    remaining_glasses: 14,
+    total_glasses: 100,
+    remaining_glasses: 70,
     kept_at: "2026-01-30T20:30:00+09:00",
   },
   // ── 田中太郎が BAR VELVET 赤坂 でキープ ──
@@ -1257,8 +1260,8 @@ export const mockBottles: Bottle[] = [
     store_id: "store3",
     customer_id: "cust1",
     brand: "竹鶴17年",
-    total_glasses: 20,
-    remaining_glasses: 18,
+    total_glasses: 100,
+    remaining_glasses: 90,
     kept_at: "2026-03-01T21:00:00+09:00",
   },
 ];
