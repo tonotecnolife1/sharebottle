@@ -114,10 +114,20 @@ export async function getCustomerContextReal(
     .from("customers")
     .select("*")
     .eq("id", customerId)
-    .eq("cast_id", castId)
     .maybeSingle();
   if (cErr) throw cErr;
   if (!customer) return null;
+
+  // Same-store check: a cast can read any customer in their store, but
+  // not customers from another tenant.
+  const { data: castRow } = await supabase
+    .from("nightos_casts")
+    .select("store_id")
+    .eq("id", castId)
+    .maybeSingle();
+  if (castRow && castRow.store_id && customer.store_id !== castRow.store_id) {
+    return null;
+  }
 
   const [{ data: memo }, { data: bottles }, { data: visits }] = await Promise.all([
     supabase

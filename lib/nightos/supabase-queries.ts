@@ -1105,11 +1105,15 @@ function getCustomerContextMock(
   castId: string,
   customerId: string,
 ): CustomerContext | null {
-  const customer = mockCustomers.find(
-    (c) => c.id === customerId && c.cast_id === castId,
-  );
+  // Cast can read any customer they share visibility with — not just
+  // direct cast_id matches. The customer list shows master + assigned
+  // customers, so detail must allow both.
+  const customer = mockCustomers.find((c) => c.id === customerId);
   if (!customer) return null;
-  const memo = mockCastMemos.find((m) => m.customer_id === customerId) ?? null;
+  const memo =
+    mockCastMemos.find(
+      (m) => m.customer_id === customerId && m.cast_id === castId,
+    ) ?? null;
   const bottles: Bottle[] = mockBottles.filter(
     (b) => b.customer_id === customerId,
   );
