@@ -198,7 +198,19 @@ export async function completeOnboarding(
       .from("nightos_stores")
       .insert({ id: storeId, name: input.newStoreName });
     if (storeErr) {
-      return { error: `店舗の作成に失敗しました: ${storeErr.message}` };
+      console.error("[onboarding] store insert failed", {
+        userId: user.id,
+        storeId,
+        code: storeErr.code,
+        message: storeErr.message,
+        details: storeErr.details,
+        hint: storeErr.hint,
+      });
+      return {
+        error: `店舗の作成に失敗しました: ${storeErr.message}${
+          storeErr.hint ? `（ヒント: ${storeErr.hint}）` : ""
+        }`,
+      };
     }
   }
 
@@ -211,7 +223,43 @@ export async function completeOnboarding(
     auth_user_id: user.id,
   });
   if (castErr) {
-    return { error: `キャスト登録に失敗しました: ${castErr.message}` };
+    console.error("[onboarding] cast insert failed", {
+      userId: user.id,
+      castId,
+      storeId,
+      code: castErr.code,
+      message: castErr.message,
+      details: castErr.details,
+      hint: castErr.hint,
+    });
+    return {
+      error: `キャスト登録に失敗しました: ${castErr.message}${
+        castErr.hint ? `（ヒント: ${castErr.hint}）` : ""
+      }`,
+    };
+  }
+
+  // Sanity check: the row we just inserted must be readable back via the
+  // same auth session. If it isn't, RLS or a missing migration is silently
+  // dropping the row, and redirecting to "/" will bounce the user right
+  // back to /onboarding (looks like "nothing happened" to the user).
+  const { data: verify, error: verifyErr } = await supabase
+    .from("nightos_casts")
+    .select("id")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (verifyErr || !verify) {
+    console.error("[onboarding] post-insert read-back failed", {
+      userId: user.id,
+      castId,
+      storeId,
+      verifyErr,
+      verify,
+    });
+    return {
+      error:
+        "登録は試行できましたが、データを保存できませんでした。Supabase の RLS 設定またはマイグレーション (003_schema_additions.sql) を確認してください。",
+    };
   }
 
   redirect("/");
