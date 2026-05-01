@@ -15,11 +15,23 @@ const config: Config = {
           soft: "#f5efe6",
           warm: "#fdfcf9",
         },
+        // ── v2 palette (design.md §1.2) ──
+        // blush は warm peach 寄りの主強調色。light/dark は v2 soft/deep のエイリアス。
+        blush: {
+          soft: "#f4d4cf",
+          DEFAULT: "#e8b9a5",
+          deep: "#c98d80",
+          light: "#f4d4cf",
+          dark: "#c98d80",
+        },
         champagne: {
-          DEFAULT: "#f1e7d0",
-          light: "#f7f0de",
+          soft: "#f3e6c8",
+          DEFAULT: "#e6cda5",
+          deep: "#b89455",
+          light: "#f3e6c8",
           dark: "#e6d6b0",
         },
+        // ── 既存パレット（v2 では装飾用としては使わない）──
         roseGold: {
           DEFAULT: "#c98d80",
           light: "#d9a99e",
@@ -33,11 +45,6 @@ const config: Config = {
           dark: "#6e4f8f",
           muted: "rgba(154, 123, 187, 0.1)",
           border: "rgba(154, 123, 187, 0.35)",
-        },
-        blush: {
-          DEFAULT: "#e4a3b0",
-          light: "#f2c9d1",
-          dark: "#c57786",
         },
         ink: {
           DEFAULT: "#2b232a",
@@ -58,12 +65,16 @@ const config: Config = {
           sheet: "#14141c",
           hover: "#1e1e28",
         },
+        // ── v2 brass gold (design.md §1.2) ──
+        // 細線・小アイコン・「VIP」マーク専用。塗りには使わない。
         gold: {
-          DEFAULT: "#c9a84c",
-          light: "#d4b962",
-          dark: "#b8963f",
-          muted: "rgba(201, 168, 76, 0.12)",
-          border: "rgba(201, 168, 76, 0.25)",
+          soft: "#d8be86",
+          DEFAULT: "#b89455",
+          deep: "#8a6e3d",
+          light: "#d8be86",
+          dark: "#8a6e3d",
+          muted: "rgba(184, 148, 85, 0.12)",
+          border: "rgba(184, 148, 85, 0.30)",
         },
         text: {
           primary: "#eeeef0",
@@ -79,22 +90,42 @@ const config: Config = {
         },
       },
       borderRadius: {
-        card: "14px",
-        btn: "10px",
-        badge: "20px",
-        sheet: "20px 20px 0 0",
+        // ── v2 (design.md §3.2) ──
+        // 「迷ったら 1 段大きい方」が基調。
+        pill: "999px",   // ボタン全般・アバター・タブ（v2 推奨）
+        sheet: "28px 28px 0 0",
+        // ── 互換 ──
+        card: "22px",    // 既存「rounded-card」を v2 lg(22px) に合わせて拡大
+        btn: "16px",     // 既存「rounded-btn」(=入力欄等にも使われている)。v2 では rounded-pill / rounded-full / rounded-2xl を優先
+        badge: "999px",
       },
       boxShadow: {
+        // ── v2 floating shadows (design.md §3.3) ──
+        // 「机から少し浮いた」質感を 2 層シャドウで作る。
+        soft:
+          "0 2px 4px rgba(184, 148, 85, 0.04), 0 8px 24px rgba(184, 148, 85, 0.08)",
+        float:
+          "0 4px 12px rgba(201, 141, 128, 0.14), 0 16px 32px rgba(201, 141, 128, 0.10)",
+        warm:
+          "0 8px 24px rgba(201, 141, 128, 0.10), 0 24px 48px rgba(184, 148, 85, 0.08)",
+
+        // ── 既存（v1 / 互換）。v2 では使わない ──
         card: "0 1px 4px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)",
         elevated: "0 8px 32px rgba(0,0,0,0.5)",
         "glow-gold": "0 0 24px rgba(201,168,76,0.08)",
-        // NIGHTOS light shadows
-        "soft-card": "0 2px 8px rgba(60, 40, 50, 0.06), 0 1px 2px rgba(60, 40, 50, 0.04)",
+        "soft-card":
+          "0 2px 8px rgba(60, 40, 50, 0.06), 0 1px 2px rgba(60, 40, 50, 0.04)",
         "elevated-light": "0 12px 40px rgba(60, 40, 50, 0.12)",
         "glow-amethyst": "0 0 32px rgba(154, 123, 187, 0.2)",
         "glow-rose": "0 0 24px rgba(201, 141, 128, 0.18)",
       },
       backgroundImage: {
+        // ── v2 gradients (design.md §1, §4) ──
+        "gradient-blush":
+          "linear-gradient(135deg, #f4d4cf 0%, #e8b9a5 100%)",
+        "gradient-hero":
+          "linear-gradient(180deg, #f4d4cf 0%, #faf0e8 40%, #faf6f1 100%)",
+        // ── 既存 / 互換 ──
         "gradient-rose-gold":
           "linear-gradient(135deg, #d9a99e 0%, #c98d80 50%, #a6695c 100%)",
         "gradient-amethyst":
