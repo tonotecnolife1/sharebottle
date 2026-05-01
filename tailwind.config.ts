@@ -83,7 +83,8 @@ const config: Config = {
           secondary: "#85858f",
           muted: "#55555f",
         },
-        emerald: "#4ade80",
+        // v2 success: dusty sage (design.md §1.3) — 派手な明るい緑を avoid
+        emerald: "#6b8e6f",
         rose: "#ef4444",
         amber: "#f59e0b",
         line: {
