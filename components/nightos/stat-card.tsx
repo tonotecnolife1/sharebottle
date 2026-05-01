@@ -11,10 +11,11 @@ interface Props {
   className?: string;
 }
 
+// v2: 派手なアクセント色は最小限。"rose" は blush-deep、"amethyst" は gold-deep に置換。
 const toneAccent: Record<NonNullable<Props["tone"]>, string> = {
   default: "text-ink",
-  rose: "text-roseGold-dark",
-  amethyst: "text-amethyst-dark",
+  rose: "text-blush-deep",
+  amethyst: "text-gold-deep",
 };
 
 export function StatCard({
@@ -29,28 +30,28 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-card bg-pearl-warm border border-pearl-soft shadow-soft-card px-4 py-3.5 flex flex-col gap-1.5",
+        "rounded-card bg-pearl-warm border border-ink/[0.06] shadow-soft px-4 py-3.5 flex flex-col gap-1.5",
         className,
       )}
     >
-      <div className="flex items-center gap-1.5 text-label-sm text-ink-secondary">
+      <div className="flex items-center gap-1.5 text-[11px] text-ink-muted">
         {icon}
         <span>{label}</span>
       </div>
       <div className="flex items-baseline gap-1">
         <span
           className={cn(
-            "font-display text-[2rem] leading-none font-semibold",
+            "font-display text-[2rem] leading-none font-light",
             toneAccent[tone],
           )}
         >
           {value}
         </span>
         {unit && (
-          <span className="text-body-sm text-ink-secondary pb-0.5">{unit}</span>
+          <span className="text-body-sm text-ink-muted pb-0.5">{unit}</span>
         )}
       </div>
-      {hint && <div className="text-label-sm text-ink-muted">{hint}</div>}
+      {hint && <div className="text-[11px] text-ink-muted">{hint}</div>}
     </div>
   );
 }

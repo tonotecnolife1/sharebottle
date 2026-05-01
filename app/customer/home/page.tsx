@@ -86,24 +86,24 @@ export default async function CustomerHomePage() {
           <GemCard className="p-4">
             <div
               aria-hidden
-              className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.35),transparent_60%)]"
+              className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.4),transparent_60%)]"
             />
             <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-pearl-warm/40 backdrop-blur-sm flex items-center justify-center">
                 {isDiamond ? (
-                  <Diamond size={28} className="text-pearl" />
+                  <Diamond size={28} className="text-ink" />
                 ) : (
-                  <Crown size={28} className="text-pearl" />
+                  <Crown size={28} className="text-ink" />
                 )}
               </div>
               <div className="flex-1">
-                <div className="text-[11px] text-pearl/80">
+                <div className="text-[11px] text-ink-secondary">
                   {isDiamond ? "ダイヤモンド会員" : "プラチナ会員"}
                 </div>
-                <div className="font-display text-[20px] leading-tight text-pearl">
+                <div className="font-display text-[20px] leading-tight text-ink">
                   {highestRank.rank.emoji} {highestRank.rank.label}
                 </div>
-                <div className="text-body-sm text-pearl/70 mt-0.5">
+                <div className="text-body-sm text-ink-secondary mt-0.5">
                   全{overviews.length}店舗で特別なおもてなしを受けられます
                 </div>
               </div>

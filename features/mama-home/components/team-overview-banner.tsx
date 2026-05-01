@@ -20,28 +20,28 @@ export function TeamOverviewBanner({ teamCasts, teamCustomerCount }: Props) {
           className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.35),transparent_60%)]"
         />
         <div className="relative">
-          <div className="flex items-center gap-2 mb-2 text-label-sm text-pearl/90 uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-2 text-[11px] text-ink-secondary">
             <Crown size={12} />
-            Member Overview
+            メンバーの状況
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-display-sm font-display text-pearl">
+              <div className="text-display-sm font-display text-ink">
                 メンバー {teamCasts.length}人
               </div>
-              <div className="text-body-sm text-pearl/80 mt-0.5">
+              <div className="text-body-sm text-ink-secondary mt-0.5">
                 {teamCustomerCount}人のお客様を担当
               </div>
             </div>
-            <ChevronRight size={18} className="text-pearl/70" />
+            <ChevronRight size={18} className="text-ink-muted" />
           </div>
 
-          <div className="mt-3 pt-3 border-t border-pearl/20">
-            <div className="text-[10px] text-pearl/70 flex items-center gap-1">
+          <div className="mt-3 pt-3 border-t border-ink/[0.08]">
+            <div className="text-[10px] text-ink-muted flex items-center gap-1">
               <TrendingUp size={10} />
               今月の売上合計
             </div>
-            <div className="text-body-md font-display text-pearl mt-0.5">
+            <div className="text-body-md font-display text-ink mt-0.5">
               {formatCurrency(totalSales)}
             </div>
           </div>

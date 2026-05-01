@@ -39,12 +39,14 @@ const config: Config = {
           muted: "rgba(201, 141, 128, 0.12)",
           border: "rgba(201, 141, 128, 0.3)",
         },
+        // v2: 旧 amethyst (purple) を gold 系に振り直し（class 名は互換のため温存）。
+        // 既存の text-amethyst-dark / bg-amethyst-muted などが全て gold-deep 寄りに切り替わる。
         amethyst: {
-          DEFAULT: "#9a7bbb",
-          light: "#b89cd3",
-          dark: "#6e4f8f",
-          muted: "rgba(154, 123, 187, 0.1)",
-          border: "rgba(154, 123, 187, 0.35)",
+          DEFAULT: "#b89455",
+          light: "#d8be86",
+          dark: "#8a6e3d",
+          muted: "rgba(184, 148, 85, 0.10)",
+          border: "rgba(184, 148, 85, 0.30)",
         },
         ink: {
           DEFAULT: "#2b232a",
@@ -125,15 +127,17 @@ const config: Config = {
           "linear-gradient(135deg, #f4d4cf 0%, #e8b9a5 100%)",
         "gradient-hero":
           "linear-gradient(180deg, #f4d4cf 0%, #faf0e8 40%, #faf6f1 100%)",
-        // ── 既存 / 互換 ──
+        // v2: 旧 rose-gold / amethyst を blush + gold の深色系に振り直し。
+        // text-pearl（白）でも読める明度を維持しつつ、purple/legacy rose を排除。
         "gradient-rose-gold":
-          "linear-gradient(135deg, #d9a99e 0%, #c98d80 50%, #a6695c 100%)",
+          "linear-gradient(135deg, #c98d80 0%, #b08070 50%, #a6695c 100%)",
         "gradient-amethyst":
-          "linear-gradient(135deg, #b89cd3 0%, #9a7bbb 50%, #6e4f8f 100%)",
+          "linear-gradient(135deg, #c98d80 0%, #a6845e 50%, #8a6e3d 100%)",
+        // ── 互換（v1 の backdrop 用に残す） ──
         "gradient-pearl":
           "linear-gradient(180deg, #fdfcf9 0%, #faf7f2 50%, #f5efe6 100%)",
         "gradient-champagne":
-          "linear-gradient(135deg, #f7f0de 0%, #f1e7d0 100%)",
+          "linear-gradient(135deg, #f3e6c8 0%, #e6cda5 100%)",
       },
       fontFamily: {
         sans: [

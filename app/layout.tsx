@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#9a7bbb",
+  themeColor: "#e8b9a5",
   viewportFit: "cover",
 };
 
