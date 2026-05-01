@@ -2,20 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import {
-  ChevronRight,
-  ClipboardList,
-  Crown,
-  KeyRound,
-  Mail,
-  Play,
-  Sparkles,
-  Ticket,
-  User,
-  UserPlus,
-} from "lucide-react";
-import { Card } from "@/components/nightos/card";
-import { Button } from "@/components/nightos/button";
+import { ChevronRight } from "lucide-react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { setRole, setVenueType } from "@/lib/nightos/role-store";
@@ -64,9 +51,6 @@ const MOCK_CASTS: MockCast[] = [
 
 type DemoRole = "cast" | "store-staff" | "store-owner" | "customer";
 
-// Default cast used as the auth "session holder" for non-cast demo roles.
-// The cookie just establishes a session; the actual screen (店舗/来店客) is
-// chosen via localStorage role + permission.
 const DEFAULT_DEMO_CAST_ID = "cast1";
 
 interface Props {
@@ -89,7 +73,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
   };
 
   const closeDemo = () => {
-    if (busyKey) return; // do not close mid-login
+    if (busyKey) return;
     setDemoOpen(false);
   };
 
@@ -97,8 +81,6 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
     setBusyKey(key);
     setDemoError(null);
     try {
-      // Pre-seed localStorage so the role-selector on `/` redirects directly
-      // to the chosen screen instead of asking again.
       setVenueType("club");
       if (role === "cast") {
         setRole("cast");
@@ -127,326 +109,202 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
   };
 
   return (
-    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-12">
-      <div className="max-w-md w-full flex flex-col gap-6">
-        <div className="text-center space-y-2 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-badge bg-amethyst-muted text-amethyst-dark text-label-sm border border-amethyst-border">
-            <Sparkles size={14} />
-            MVP
-          </div>
-          <h1 className="font-display text-[3rem] leading-none font-semibold text-ink tracking-wide">
-            NIGHTOS
-          </h1>
-          <p className="text-body-md text-ink-secondary">ログイン</p>
+    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-10">
+      <div className="max-w-sm w-full flex flex-col gap-5">
+        {/* タイトル — 装飾なし、機能名だけ */}
+        <div className="space-y-1">
+          <h1 className="text-display-sm text-ink">ログイン</h1>
+          <p className="text-body-sm text-ink-secondary">
+            NIGHTOS にサインインしてください
+          </p>
         </div>
 
-        {/* ── 本番利用: 新規登録 / ログイン ────────────── */}
-        <Card className="p-4 space-y-3 animate-fade-in">
-          <div className="flex items-center gap-2">
-            <UserPlus size={14} className="text-amethyst-dark" />
-            <span className="text-body-md font-semibold text-ink">
-              自分のアカウントで使う
-            </span>
-          </div>
-          <p className="text-[11px] text-ink-muted">
-            自分の顧客・ボトル・メモを管理します。データは自分だけのものです。
-          </p>
-
+        {/* 本番アカウント */}
+        <section className="space-y-2.5">
           <Link
             href="/auth/signup"
-            className="block w-full text-center px-4 py-2.5 rounded-btn bg-amethyst text-pearl text-body-md font-semibold"
+            className="block w-full text-center px-4 py-2.5 rounded-btn bg-ink text-pearl text-body-md font-medium hover:opacity-90 transition-opacity"
           >
             新規登録
           </Link>
 
-          <button
-            type="button"
-            onClick={() => setShowEmailForm((v) => !v)}
-            className="w-full flex items-center justify-center gap-2 text-body-sm text-amethyst-dark font-medium"
-          >
-            <Mail size={14} />
-            {showEmailForm
-              ? "メールログインを閉じる"
-              : "すでに登録済みの方はこちら"}
-          </button>
+          {!showEmailForm && (
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(true)}
+              className="w-full text-body-sm text-ink-secondary hover:text-ink"
+            >
+              既にアカウントをお持ちの方
+            </button>
+          )}
 
           {showEmailForm && (
-            <form action={handleEmailLogin} className="space-y-2">
+            <form action={handleEmailLogin} className="space-y-2 pt-1">
               <input
                 type="email"
                 name="email"
-                placeholder="email@example.com"
+                placeholder="メールアドレス"
+                aria-label="メールアドレス"
                 required
                 disabled={pending}
-                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+                className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
                 style={{ fontSize: "16px" }}
               />
               <input
                 type="password"
                 name="password"
                 placeholder="パスワード"
+                aria-label="パスワード"
                 required
                 disabled={pending}
-                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
+                className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
                 style={{ fontSize: "16px" }}
               />
-              <Button
+              <button
                 type="submit"
-                variant="primary"
                 disabled={pending}
-                className="w-full"
+                className="w-full px-4 py-2.5 rounded-btn border border-ink/15 bg-pearl-soft text-body-md text-ink font-medium hover:bg-pearl-warm disabled:opacity-50"
               >
                 {pending ? "ログイン中..." : "ログイン"}
-              </Button>
+              </button>
               {emailError && (
-                <p className="text-[11px] text-rose">{emailError}</p>
+                <p className="text-[12px] text-rose">{emailError}</p>
               )}
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(false)}
+                className="text-[12px] text-ink-muted hover:text-ink-secondary"
+              >
+                閉じる
+              </button>
             </form>
           )}
-        </Card>
+        </section>
 
-        {/* ── デモを試す ──────────────────────────── */}
+        {/* 区切り */}
         {mockAuthEnabled && (
-          <div className="animate-fade-in space-y-2">
-            <div className="flex items-center gap-2 px-1">
-              <Play size={12} className="text-ink-muted" />
-              <span className="text-label-sm text-ink-muted uppercase tracking-wider">
-                まずは試したい方へ
-              </span>
+          <>
+            <div className="flex items-center gap-3 text-[11px] text-ink-muted">
+              <span className="flex-1 h-px bg-ink/10" />
+              または
+              <span className="flex-1 h-px bg-ink/10" />
             </div>
-            <Card className="p-4 space-y-3 bg-pearl-soft/40">
-              <p className="text-[11px] text-ink-muted">
-                サンプルデータで各画面を体験できます。
-                どの立場（キャスト・店舗・来店客）でデモするか選べます。
-                <span className="block text-rose-dark/80 mt-1">
-                  ※ デモ用データは他の閲覧者と共有されます
-                </span>
-              </p>
-              <Button
+
+            {/* デモ */}
+            <section className="space-y-2">
+              <button
                 type="button"
-                variant="ruri"
-                fullWidth
                 onClick={openDemo}
+                className="w-full px-4 py-2.5 rounded-btn border border-ink/15 bg-transparent text-body-md text-ink hover:bg-pearl-warm"
               >
-                <Play size={16} />
                 デモを試す
-              </Button>
+              </button>
+              <p className="text-[11px] text-ink-muted leading-relaxed">
+                サンプルデータでキャスト・店舗・来店客の各画面を体験できます。デモ用データは他の閲覧者と共有されます。
+              </p>
               {demoError && (
-                <p className="text-[11px] text-rose">{demoError}</p>
+                <p className="text-[12px] text-rose">{demoError}</p>
               )}
-            </Card>
-          </div>
+            </section>
+          </>
         )}
       </div>
 
-      {/* ── デモ役割選択シート ───────────────────── */}
+      {/* デモ役割選択シート */}
       <BottomSheet
         isOpen={demoOpen}
         onClose={closeDemo}
         title={
-          demoStep === "role" ? "デモする役割を選択" : "キャストを選択"
+          demoStep === "role" ? "どの立場でデモしますか" : "キャストを選択"
         }
         subtitle={
           demoStep === "role"
-            ? "どの立場でデモを体験しますか？"
+            ? "選んだ役割の画面に直接ログインします"
             : "ログインするキャストを選んでください"
         }
       >
         {demoStep === "role" ? (
-          <div className="grid gap-3">
-            {/* キャスト → 次の画面でペルソナ選択 */}
-            <button
-              type="button"
-              disabled={busyKey !== null}
+          <div className="grid gap-2">
+            <RoleRow
+              title="キャスト"
+              description="接客・顧客・成績管理（5名から選択）"
               onClick={() => setDemoStep("cast")}
-              className="text-left transition-transform active:scale-[0.98] disabled:opacity-60"
-            >
-              <Card className="!border-roseGold-border p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full rose-gradient flex items-center justify-center shrink-0 shadow-soft-card">
-                    <User size={20} className="text-pearl" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-label-sm text-roseGold-dark uppercase tracking-wider mb-0.5">
-                      For Cast
-                    </div>
-                    <div className="text-body-md font-semibold text-ink">
-                      キャスト
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-0.5">
-                      接客・顧客・成績などのキャスト画面（5名から選択）
-                    </p>
-                  </div>
-                  <ChevronRight size={16} className="text-ink-muted shrink-0" />
-                </div>
-              </Card>
-            </button>
-
-            {/* 店舗スタッフ */}
-            <button
-              type="button"
+              hasArrow
               disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="店舗スタッフ（入力担当）"
+              description="顧客・来店・ボトルの入力業務"
               onClick={() =>
                 startDemo("store-staff", DEFAULT_DEMO_CAST_ID, "store-staff")
               }
-              className="text-left transition-transform active:scale-[0.98] disabled:opacity-60"
-            >
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-champagne flex items-center justify-center shrink-0 shadow-soft-card">
-                    <ClipboardList size={20} className="text-ink-secondary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-label-sm text-ink-secondary uppercase tracking-wider mb-0.5">
-                      For Staff
-                    </div>
-                    <div className="text-body-md font-semibold text-ink">
-                      店舗スタッフ（入力担当）
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-0.5">
-                      顧客・来店・ボトルの入力業務
-                    </p>
-                  </div>
-                  {busyKey === "store-staff" && (
-                    <div className="text-[10px] text-amethyst-dark font-medium shrink-0">
-                      接続中...
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </button>
-
-            {/* 店舗オーナー */}
-            <button
-              type="button"
+              busy={busyKey === "store-staff"}
               disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="店舗オーナー"
+              description="全機能・ダッシュボード・ファネル・AI"
               onClick={() =>
                 startDemo("store-owner", DEFAULT_DEMO_CAST_ID, "store-owner")
               }
-              className="text-left transition-transform active:scale-[0.98] disabled:opacity-60"
-            >
-              <Card className="!border-champagne-dark p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-champagne-dark flex items-center justify-center shrink-0 shadow-soft-card">
-                    <KeyRound size={20} className="text-ink" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-label-sm text-ink-secondary uppercase tracking-wider mb-0.5">
-                      For Owner
-                    </div>
-                    <div className="text-body-md font-semibold text-ink">
-                      店舗オーナー
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-0.5">
-                      全機能 + ダッシュボード・ファネル・AI
-                    </p>
-                  </div>
-                  {busyKey === "store-owner" && (
-                    <div className="text-[10px] text-amethyst-dark font-medium shrink-0">
-                      接続中...
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </button>
-
-            {/* 来店客 */}
-            <button
-              type="button"
+              busy={busyKey === "store-owner"}
               disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="来店客（田中太郎）"
+              description="ボトル管理・クーポン・会員ステータス"
               onClick={() =>
                 startDemo("customer", DEFAULT_DEMO_CAST_ID, "customer")
               }
-              className="text-left transition-transform active:scale-[0.98] disabled:opacity-60"
-            >
-              <Card className="!border-amethyst-border p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full ruri-gradient flex items-center justify-center shrink-0 shadow-soft-card">
-                    <Ticket size={20} className="text-pearl" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-label-sm text-amethyst-dark uppercase tracking-wider mb-0.5">
-                      For Guest
-                    </div>
-                    <div className="text-body-md font-semibold text-ink">
-                      来店客（田中太郎）
-                    </div>
-                    <p className="text-[11px] text-ink-muted mt-0.5">
-                      ボトル管理・クーポン・会員ステータス
-                    </p>
-                  </div>
-                  {busyKey === "customer" && (
-                    <div className="text-[10px] text-amethyst-dark font-medium shrink-0">
-                      接続中...
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </button>
+              busy={busyKey === "customer"}
+              disabled={busyKey !== null}
+            />
           </div>
         ) : (
-          /* ── キャストペルソナ選択 ─────────────── */
           <div className="space-y-2">
             <button
               type="button"
               disabled={busyKey !== null}
               onClick={() => setDemoStep("role")}
-              className="text-label-sm text-ink-muted hover:text-ink-secondary disabled:opacity-60 mb-1"
+              className="text-[12px] text-ink-muted hover:text-ink-secondary disabled:opacity-60 mb-1"
             >
               ← 役割選択に戻る
             </button>
             {MOCK_CASTS.map((cast) => {
               const key = `cast:${cast.id}`;
-              const isOneesan =
-                cast.role.includes("お姉さん") || cast.role.includes("トップ");
               return (
                 <button
                   key={cast.id}
                   type="button"
                   disabled={busyKey !== null}
                   onClick={() => startDemo("cast", cast.id, key)}
-                  className="w-full text-left transition-transform active:scale-[0.98] disabled:opacity-60"
+                  className={cn(
+                    "w-full text-left px-4 py-3 rounded-btn border transition-colors disabled:opacity-60",
+                    busyKey === key
+                      ? "border-amethyst-dark bg-amethyst-muted"
+                      : "border-ink/10 bg-pearl-warm hover:border-ink/20",
+                  )}
                 >
-                  <Card
-                    className={cn(
-                      "p-3",
-                      busyKey === key &&
-                        "!border-amethyst-border !bg-amethyst-muted",
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
-                          isOneesan ? "ruri-gradient" : "rose-gradient",
-                        )}
-                      >
-                        {isOneesan ? (
-                          <Crown size={16} className="text-pearl" />
-                        ) : (
-                          <User size={16} className="text-pearl" />
-                        )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-body-md font-medium text-ink">
+                          {cast.name}
+                        </span>
+                        <span className="text-[11px] text-ink-muted">
+                          {cast.role}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-body-sm font-semibold text-ink">
-                            {cast.name}
-                          </span>
-                          <span className="text-[10px] text-ink-muted px-1.5 py-0.5 rounded-badge bg-pearl-soft">
-                            {cast.role}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-ink-muted mt-0.5 truncate">
-                          {cast.description}
-                        </p>
-                      </div>
-                      {busyKey === key && (
-                        <div className="text-[10px] text-amethyst-dark font-medium shrink-0">
-                          ログイン中...
-                        </div>
-                      )}
+                      <p className="text-[11px] text-ink-muted mt-0.5 truncate">
+                        {cast.description}
+                      </p>
                     </div>
-                  </Card>
+                    {busyKey === key && (
+                      <span className="text-[11px] text-amethyst-dark shrink-0">
+                        ログイン中...
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -454,5 +312,46 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
         )}
       </BottomSheet>
     </main>
+  );
+}
+
+interface RoleRowProps {
+  title: string;
+  description: string;
+  onClick: () => void;
+  hasArrow?: boolean;
+  busy?: boolean;
+  disabled?: boolean;
+}
+
+function RoleRow({
+  title,
+  description,
+  onClick,
+  hasArrow,
+  busy,
+  disabled,
+}: RoleRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full text-left px-4 py-3 rounded-btn border border-ink/10 bg-pearl-warm hover:border-ink/20 transition-colors disabled:opacity-60"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="text-body-md font-medium text-ink">{title}</div>
+          <p className="text-[11px] text-ink-muted mt-0.5">{description}</p>
+        </div>
+        {busy ? (
+          <span className="text-[11px] text-amethyst-dark shrink-0">
+            接続中...
+          </span>
+        ) : hasArrow ? (
+          <ChevronRight size={16} className="text-ink-muted shrink-0" />
+        ) : null}
+      </div>
+    </button>
   );
 }

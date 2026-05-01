@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Crown, Sparkles, Store as StoreIcon, Wine } from "lucide-react";
-import { Button } from "@/components/nightos/button";
-import { Card } from "@/components/nightos/card";
 import { cn } from "@/lib/utils";
 import { completeOnboarding } from "../auth/actions";
 
@@ -50,52 +47,42 @@ export default function OnboardingForm({
   };
 
   return (
-    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-12">
-      <div className="max-w-md w-full flex flex-col gap-6">
-        <div className="text-center space-y-2 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-badge bg-amethyst-muted text-amethyst-dark text-label-sm border border-amethyst-border">
-            <Sparkles size={14} />
-            プロフィール設定
-          </div>
-          <h1 className="font-display text-[2rem] leading-tight font-semibold text-ink">
-            はじめまして
-          </h1>
+    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-10">
+      <div className="max-w-sm w-full flex flex-col gap-5">
+        <div className="space-y-1">
+          <h1 className="text-display-sm text-ink">プロフィール設定</h1>
           <p className="text-body-sm text-ink-secondary">
             {email} でログイン中
           </p>
         </div>
 
-        <form action={handleSubmit} className="space-y-4 animate-fade-in">
-          {/* Venue type */}
-          <Card className="p-4 space-y-3">
-            <div className="text-label-sm text-ink-secondary">業態</div>
+        <form action={handleSubmit} className="space-y-5">
+          {/* 業態 */}
+          <Section label="業態">
             <div className="grid grid-cols-2 gap-2">
-              <VenueOption
+              <Choice
                 active={venueType === "cabaret"}
                 onClick={() => setVenueType("cabaret")}
                 label="キャバクラ"
-                icon={<Wine size={18} />}
               />
-              <VenueOption
+              <Choice
                 active={venueType === "club"}
                 onClick={() => setVenueType("club")}
                 label="クラブ"
-                icon={<Crown size={18} />}
               />
             </div>
-          </Card>
+          </Section>
 
-          {/* Store */}
-          <Card className="p-4 space-y-3">
-            <div className="text-label-sm text-ink-secondary">所属店舗</div>
+          {/* 所属店舗 */}
+          <Section label="所属店舗">
             {stores.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
-                <TabButton
+                <Choice
                   active={storeMode === "existing"}
                   onClick={() => setStoreMode("existing")}
                   label="既存の店舗に入る"
                 />
-                <TabButton
+                <Choice
                   active={storeMode === "new"}
                   onClick={() => setStoreMode("new")}
                   label="新規店舗を作る"
@@ -104,120 +91,107 @@ export default function OnboardingForm({
             )}
 
             {storeMode === "existing" && stores.length > 0 && (
-              <label className="block">
-                <span className="text-label-sm text-ink-muted">店舗を選択</span>
-                <select
-                  value={storeId}
-                  onChange={(e) => setStoreId(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-md text-ink focus:outline-none focus:border-amethyst"
-                  style={{ fontSize: "16px" }}
-                >
-                  {stores.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <select
+                value={storeId}
+                onChange={(e) => setStoreId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink focus:outline-none focus:border-amethyst-dark"
+                style={{ fontSize: "16px" }}
+              >
+                {stores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
             )}
 
             {storeMode === "new" && (
-              <label className="block">
-                <span className="text-label-sm text-ink-muted">店舗名</span>
+              <div className="space-y-1">
                 <input
                   type="text"
                   name="newStoreName"
-                  placeholder="例: Club 夜桜"
-                  required={storeMode === "new"}
+                  placeholder="店舗名（例: Club 夜桜）"
+                  aria-label="店舗名"
+                  required
                   disabled={pending}
-                  className="mt-1 w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-md text-ink focus:outline-none focus:border-amethyst"
+                  className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
                   style={{ fontSize: "16px" }}
                 />
-                <p className="mt-1 flex items-center gap-1 text-[10px] text-ink-muted">
-                  <StoreIcon size={10} />
+                <p className="text-[11px] text-ink-muted">
                   あとから変更できます
                 </p>
-              </label>
+              </div>
             )}
-          </Card>
+          </Section>
 
-          {/* Cast profile */}
-          <Card className="p-4 space-y-3">
-            <div className="text-label-sm text-ink-secondary">プロフィール</div>
-            <label className="block">
-              <span className="text-label-sm text-ink-muted">源氏名</span>
-              <input
-                type="text"
-                name="name"
-                defaultValue={defaultName}
-                placeholder="例: あかり"
-                required
-                maxLength={40}
-                disabled={pending}
-                className="mt-1 w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-md text-ink focus:outline-none focus:border-amethyst"
-                style={{ fontSize: "16px" }}
-              />
-            </label>
-            <label className="block">
-              <span className="text-label-sm text-ink-muted">役割</span>
-              <select
-                name="clubRole"
-                defaultValue="help"
-                disabled={pending}
-                className="mt-1 w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-md text-ink focus:outline-none focus:border-amethyst"
-                style={{ fontSize: "16px" }}
-              >
-                <option value="help">キャスト（ヘルプ / 新人）</option>
-                <option value="oneesan">お姉さん</option>
-                <option value="mama">ママ / 店長</option>
-              </select>
-            </label>
-          </Card>
+          {/* プロフィール */}
+          <Section label="プロフィール">
+            <div className="space-y-2">
+              <label className="block">
+                <span className="text-body-sm text-ink-secondary mb-1 block">
+                  源氏名
+                </span>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={defaultName}
+                  placeholder="例: あかり"
+                  required
+                  maxLength={40}
+                  disabled={pending}
+                  className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
+                  style={{ fontSize: "16px" }}
+                />
+              </label>
+              <label className="block">
+                <span className="text-body-sm text-ink-secondary mb-1 block">
+                  役割
+                </span>
+                <select
+                  name="clubRole"
+                  defaultValue="help"
+                  disabled={pending}
+                  className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink focus:outline-none focus:border-amethyst-dark"
+                  style={{ fontSize: "16px" }}
+                >
+                  <option value="help">キャスト（ヘルプ / 新人）</option>
+                  <option value="oneesan">お姉さん</option>
+                  <option value="mama">ママ / 店長</option>
+                </select>
+              </label>
+            </div>
+          </Section>
 
-          <Button
+          <button
             type="submit"
-            variant="primary"
             disabled={pending}
-            className="w-full"
+            className="w-full px-4 py-2.5 rounded-btn bg-ink text-pearl text-body-md font-medium hover:opacity-90 disabled:opacity-50"
           >
             {pending ? "登録中..." : "はじめる"}
-          </Button>
-          {error && <p className="text-[11px] text-rose text-center">{error}</p>}
+          </button>
+          {error && <p className="text-[12px] text-rose">{error}</p>}
         </form>
       </div>
     </main>
   );
 }
 
-function VenueOption({
-  active,
-  onClick,
+function Section({
   label,
-  icon,
+  children,
 }: {
-  active: boolean;
-  onClick: () => void;
   label: string;
-  icon: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex items-center justify-center gap-2 py-3 rounded-btn border transition-colors",
-        active
-          ? "border-amethyst-border bg-amethyst-muted text-amethyst-dark"
-          : "border-pearl-soft bg-pearl-soft text-ink-secondary",
-      )}
-    >
-      {icon}
-      <span className="text-body-md font-medium">{label}</span>
-    </button>
+    <section className="space-y-2">
+      <div className="text-body-sm text-ink-secondary">{label}</div>
+      {children}
+    </section>
   );
 }
 
-function TabButton({
+function Choice({
   active,
   onClick,
   label,
@@ -231,10 +205,10 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "py-2 rounded-btn text-label-sm font-medium border transition-colors",
+        "py-2.5 rounded-btn text-body-sm font-medium border transition-colors",
         active
-          ? "border-amethyst-border bg-amethyst-muted text-amethyst-dark"
-          : "border-pearl-soft bg-pearl text-ink-secondary",
+          ? "border-amethyst-dark bg-amethyst-muted text-amethyst-dark"
+          : "border-ink/10 bg-pearl-warm text-ink-secondary hover:border-ink/20",
       )}
     >
       {label}
