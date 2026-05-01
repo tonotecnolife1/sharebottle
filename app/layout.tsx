@@ -40,7 +40,7 @@ export default function RootLayout({
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
         {/* Apple touch icon for "Add to Home Screen" */}

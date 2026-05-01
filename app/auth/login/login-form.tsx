@@ -109,108 +109,116 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
   };
 
   return (
-    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-10">
-      <div className="max-w-sm w-full flex flex-col gap-5">
-        {/* タイトル — 装飾なし、機能名だけ */}
-        <div className="space-y-1">
-          <h1 className="text-display-sm text-ink">ログイン</h1>
-          <p className="text-body-sm text-ink-secondary">
+    <main className="min-h-dvh bg-[#faf6f1] flex flex-col">
+      {/* ── Hero: blush-soft → pearl の縦グラデ ── */}
+      <div className="bg-gradient-to-b from-[#f4d4cf] via-[#faf0e8] to-[#faf6f1] px-6 pt-14 pb-10">
+        <div className="max-w-sm mx-auto">
+          <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-[#2b232a]">
+            ログイン
+          </h1>
+          <p className="mt-1.5 text-body-sm text-[#675d66]">
             NIGHTOS にサインインしてください
           </p>
         </div>
-
-        {/* 本番アカウント */}
-        <section className="space-y-2.5">
-          <Link
-            href="/auth/signup"
-            className="block w-full text-center px-4 py-2.5 rounded-btn bg-ink text-pearl text-body-md font-medium hover:opacity-90 transition-opacity"
-          >
-            新規登録
-          </Link>
-
-          {!showEmailForm && (
-            <button
-              type="button"
-              onClick={() => setShowEmailForm(true)}
-              className="w-full text-body-sm text-ink-secondary hover:text-ink"
-            >
-              既にアカウントをお持ちの方
-            </button>
-          )}
-
-          {showEmailForm && (
-            <form action={handleEmailLogin} className="space-y-2 pt-1">
-              <input
-                type="email"
-                name="email"
-                placeholder="メールアドレス"
-                aria-label="メールアドレス"
-                required
-                disabled={pending}
-                className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
-                style={{ fontSize: "16px" }}
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="パスワード"
-                aria-label="パスワード"
-                required
-                disabled={pending}
-                className="w-full px-3 py-2.5 rounded-btn border border-ink/10 bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-dark"
-                style={{ fontSize: "16px" }}
-              />
-              <button
-                type="submit"
-                disabled={pending}
-                className="w-full px-4 py-2.5 rounded-btn border border-ink/15 bg-pearl-soft text-body-md text-ink font-medium hover:bg-pearl-warm disabled:opacity-50"
-              >
-                {pending ? "ログイン中..." : "ログイン"}
-              </button>
-              {emailError && (
-                <p className="text-[12px] text-rose">{emailError}</p>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowEmailForm(false)}
-                className="text-[12px] text-ink-muted hover:text-ink-secondary"
-              >
-                閉じる
-              </button>
-            </form>
-          )}
-        </section>
-
-        {/* 区切り */}
-        {mockAuthEnabled && (
-          <>
-            <div className="flex items-center gap-3 text-[11px] text-ink-muted">
-              <span className="flex-1 h-px bg-ink/10" />
-              または
-              <span className="flex-1 h-px bg-ink/10" />
-            </div>
-
-            {/* デモ */}
-            <section className="space-y-2">
-              <button
-                type="button"
-                onClick={openDemo}
-                className="w-full px-4 py-2.5 rounded-btn border border-ink/15 bg-transparent text-body-md text-ink hover:bg-pearl-warm"
-              >
-                デモを試す
-              </button>
-              <p className="text-[11px] text-ink-muted leading-relaxed">
-                サンプルデータでキャスト・店舗・来店客の各画面を体験できます。デモ用データは他の閲覧者と共有されます。
-              </p>
-              {demoError && (
-                <p className="text-[12px] text-rose">{demoError}</p>
-              )}
-            </section>
-          </>
-        )}
       </div>
 
-      {/* デモ役割選択シート */}
+      {/* ── 本体 ── */}
+      <div className="flex-1 px-6 pt-6 pb-12">
+        <div className="max-w-sm mx-auto flex flex-col gap-5">
+          {/* 本番アカウント */}
+          <section className="space-y-2.5">
+            <Link
+              href="/auth/signup"
+              className="block w-full text-center px-5 py-3 rounded-md bg-gradient-to-br from-[#f4d4cf] to-[#e8b9a5] text-[#2b232a] text-body-md font-medium tracking-wide hover:brightness-[1.02] transition"
+              style={{ boxShadow: "0 4px 16px rgba(184, 148, 85, 0.10)" }}
+            >
+              新規登録
+            </Link>
+
+            {!showEmailForm && (
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(true)}
+                className="w-full text-body-sm text-[#675d66] hover:text-[#2b232a]"
+              >
+                既にアカウントをお持ちの方
+              </button>
+            )}
+
+            {showEmailForm && (
+              <form action={handleEmailLogin} className="space-y-2 pt-1">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="メールアドレス"
+                  aria-label="メールアドレス"
+                  required
+                  disabled={pending}
+                  className="w-full px-3 py-2.5 rounded-md border border-[#2b232a]/10 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                  style={{ fontSize: "16px" }}
+                />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="パスワード"
+                  aria-label="パスワード"
+                  required
+                  disabled={pending}
+                  className="w-full px-3 py-2.5 rounded-md border border-[#2b232a]/10 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                  style={{ fontSize: "16px" }}
+                />
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="w-full px-5 py-3 rounded-md border border-[#2b232a]/15 bg-[#fffefb] text-body-md text-[#2b232a] font-medium hover:bg-[#f5ede2] disabled:opacity-50"
+                >
+                  {pending ? "ログイン中..." : "ログイン"}
+                </button>
+                {emailError && (
+                  <p className="text-[12px] text-[#c2575b]">{emailError}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowEmailForm(false)}
+                  className="text-[12px] text-[#a39ba1] hover:text-[#675d66]"
+                >
+                  閉じる
+                </button>
+              </form>
+            )}
+          </section>
+
+          {mockAuthEnabled && (
+            <>
+              {/* 区切り — gold極細 */}
+              <div className="flex items-center gap-3 text-[11px] text-[#a39ba1]">
+                <span className="flex-1 h-px bg-[#b89455]/20" />
+                または
+                <span className="flex-1 h-px bg-[#b89455]/20" />
+              </div>
+
+              {/* デモ */}
+              <section className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={openDemo}
+                  className="w-full px-5 py-3 rounded-md border border-[#b89455]/30 bg-[#fffefb]/80 text-body-md text-[#2b232a] hover:border-[#b89455]/50 hover:bg-[#fffefb] transition"
+                >
+                  デモを試す
+                </button>
+                <p className="text-[11px] text-[#a39ba1] leading-relaxed">
+                  サンプルデータでキャスト・店舗・来店客の各画面を体験できます。デモ用データは他の閲覧者と共有されます。
+                </p>
+                {demoError && (
+                  <p className="text-[12px] text-[#c2575b]">{demoError}</p>
+                )}
+              </section>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── デモ役割選択シート ── */}
       <BottomSheet
         isOpen={demoOpen}
         onClose={closeDemo}
@@ -266,7 +274,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
               type="button"
               disabled={busyKey !== null}
               onClick={() => setDemoStep("role")}
-              className="text-[12px] text-ink-muted hover:text-ink-secondary disabled:opacity-60 mb-1"
+              className="text-[12px] text-[#a39ba1] hover:text-[#675d66] disabled:opacity-60 mb-1"
             >
               ← 役割選択に戻る
             </button>
@@ -279,28 +287,31 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                   disabled={busyKey !== null}
                   onClick={() => startDemo("cast", cast.id, key)}
                   className={cn(
-                    "w-full text-left px-4 py-3 rounded-btn border transition-colors disabled:opacity-60",
+                    "w-full text-left px-4 py-3 rounded-lg border transition disabled:opacity-60",
                     busyKey === key
-                      ? "border-amethyst-dark bg-amethyst-muted"
-                      : "border-ink/10 bg-pearl-warm hover:border-ink/20",
+                      ? "border-[#c98d80] bg-[#f4d4cf]/40"
+                      : "border-[#2b232a]/8 bg-[#fffefb] hover:border-[#b89455]/40 hover:bg-[#fffefb]",
                   )}
                 >
                   <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-full border border-[#b89455]/40 bg-[#fffefb] flex items-center justify-center text-[#675d66] text-body-sm font-medium shrink-0">
+                      {cast.name.slice(0, 1)}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-body-md font-medium text-ink">
+                        <span className="text-body-md font-medium text-[#2b232a]">
                           {cast.name}
                         </span>
-                        <span className="text-[11px] text-ink-muted">
+                        <span className="text-[11px] text-[#a39ba1]">
                           {cast.role}
                         </span>
                       </div>
-                      <p className="text-[11px] text-ink-muted mt-0.5 truncate">
+                      <p className="text-[11px] text-[#a39ba1] mt-0.5 truncate">
                         {cast.description}
                       </p>
                     </div>
                     {busyKey === key && (
-                      <span className="text-[11px] text-amethyst-dark shrink-0">
+                      <span className="text-[11px] text-[#c98d80] shrink-0">
                         ログイン中...
                       </span>
                     )}
@@ -337,19 +348,21 @@ function RoleRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full text-left px-4 py-3 rounded-btn border border-ink/10 bg-pearl-warm hover:border-ink/20 transition-colors disabled:opacity-60"
+      className="w-full text-left px-4 py-3 rounded-lg border border-[#2b232a]/8 bg-[#fffefb] hover:border-[#b89455]/40 transition disabled:opacity-60"
     >
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
-          <div className="text-body-md font-medium text-ink">{title}</div>
-          <p className="text-[11px] text-ink-muted mt-0.5">{description}</p>
+          <div className="text-body-md font-medium text-[#2b232a]">
+            {title}
+          </div>
+          <p className="text-[11px] text-[#a39ba1] mt-0.5">{description}</p>
         </div>
         {busy ? (
-          <span className="text-[11px] text-amethyst-dark shrink-0">
+          <span className="text-[11px] text-[#c98d80] shrink-0">
             接続中...
           </span>
         ) : hasArrow ? (
-          <ChevronRight size={16} className="text-ink-muted shrink-0" />
+          <ChevronRight size={16} className="text-[#a39ba1] shrink-0" />
         ) : null}
       </div>
     </button>

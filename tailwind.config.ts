@@ -113,7 +113,15 @@ const config: Config = {
           "sans-serif",
         ],
         mono: ['"Geist Mono"', "monospace"],
-        display: ['"Cormorant Garamond"', "Georgia", "serif"],
+        // Mixed-script display: Latin/numerals fall on Cormorant Garamond,
+        // Japanese glyphs fall through to Noto Serif JP. Order matters —
+        // Cormorant has no JP coverage, so JP automatically uses the next.
+        display: [
+          '"Cormorant Garamond"',
+          '"Noto Serif JP"',
+          "Georgia",
+          "serif",
+        ],
       },
       fontSize: {
         "display-lg": ["2rem", { lineHeight: "1.2", fontWeight: "700" }],
