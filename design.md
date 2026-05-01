@@ -120,21 +120,40 @@ xl  24px    セクション間
 
 ### 3.2 角丸
 
+「角丸を大胆に」がブランドの基調。迷ったら**1段大きい方**を選ぶ。
+
 | トークン | 値 | 用途 |
 |----------|---|------|
-| `sm` | 8px | 入力欄、極小バッジ |
-| `md` | 14px | ボタン |
-| `lg` | 18px | カード（標準）|
-| `xl` | 24px | シート上端 |
-| `pill` | 999px | 円形ボタン・アバター |
+| `sm` | 12px | 入力欄、極小バッジ |
+| `md` | 16px | （非常用）矩形カード |
+| `lg` | 22px | カード（標準）・リスト行 |
+| `xl` | 28px | シート上端、大ヒーロー |
+| `pill` | 999px | **ボタン全般・アバター・タブ** |
 
-### 3.3 影
+ボタンは **すべて pill** が原則。矩形ボタンは使わない（参考画像準拠）。
 
+### 3.3 影（フローティング）
+
+カードもボタンも「机の上から少し浮いている」質感を出す。**2 段重ねの影**で実現する。
+
+```css
+/* shadow-soft — リスト行・カード */
+box-shadow:
+  0 2px 4px rgba(184, 148, 85, 0.04),
+  0 8px 24px rgba(184, 148, 85, 0.08);
+
+/* shadow-float — 主要ボタン・アクティブカード */
+box-shadow:
+  0 4px 12px rgba(201, 141, 128, 0.14),
+  0 16px 32px rgba(201, 141, 128, 0.10);
+
+/* shadow-warm — ヒーロー、BottomSheet */
+box-shadow:
+  0 8px 24px rgba(201, 141, 128, 0.10),
+  0 24px 48px rgba(184, 148, 85, 0.08);
 ```
-shadow-soft  0 4px 16px rgba(184, 148, 85, 0.08)   カードのデフォルト
-shadow-warm  0 12px 32px rgba(201, 141, 128, 0.12) ヒーロー、シート
-（影なし）   背景 + 1px line                       強調しない場合
-```
+
+ホバー / 押下時はわずかに `translate-y-[-1px]` してフロート感を強調。
 
 `shadow-glow-*` `shadow-elevated` は **使用禁止**。
 
@@ -154,22 +173,28 @@ shadow-warm  0 12px 32px rgba(201, 141, 128, 0.12) ヒーロー、シート
 
 ### 4.2 Button
 
-3 バリアント：
+**全て pill 形状**（角丸フル）。3 バリアント：
 
 ```jsx
-// Primary（主要操作）— blush ソフトグラデ
-<button className="rounded-md bg-gradient-blush text-pearl px-5 py-3 font-medium tracking-wide">
+// Primary — blush ソフトグラデ + フロート影
+<button className="rounded-pill bg-gradient-blush text-text px-6 py-3.5 font-medium tracking-wide
+                   shadow-float hover:translate-y-[-1px] active:translate-y-[1px] transition">
 
-// Secondary（副次）— 線だけ
-<button className="rounded-md border border-line bg-bg-elevated text-text px-5 py-3">
+// Secondary — 半透明白 + gold 細線
+<button className="rounded-pill border border-gold/30 bg-bg-elevated/80 text-text px-6 py-3.5
+                   shadow-soft hover:border-gold/50 hover:translate-y-[-1px] transition">
 
-// Quiet（テキストリンク的）
+// Quiet — テキストリンク的
 <button className="text-blush-deep hover:underline underline-offset-2">
 ```
 
 `bg-gradient-blush` = `linear-gradient(135deg, #f4d4cf 0%, #e8b9a5 100%)`
 
-v1 で導入していた **bg-ink ベタ黒は廃止**。冷たすぎる。
+ルール：
+- 角丸は **pill 一択**。`rounded-md` (16px) ボタンは使わない
+- 主要ボタンの **paddingは大きめ** (`px-6 py-3.5`)。タップ面積と余白で上品さを出す
+- v1 の **bg-ink ベタ黒は廃止**（冷たすぎる）
+- ホバーで `translate-y-[-1px]` を必ず付ける（フローティング感）
 
 ### 4.3 Input
 

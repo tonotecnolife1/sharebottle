@@ -53,6 +53,12 @@ type DemoRole = "cast" | "store-staff" | "store-owner" | "customer";
 
 const DEFAULT_DEMO_CAST_ID = "cast1";
 
+// design.md §3.3 shadows — inline so they don't depend on tailwind tokens yet
+const SHADOW_FLOAT =
+  "0 4px 12px rgba(201, 141, 128, 0.14), 0 16px 32px rgba(201, 141, 128, 0.10)";
+const SHADOW_SOFT =
+  "0 2px 4px rgba(184, 148, 85, 0.04), 0 8px 24px rgba(184, 148, 85, 0.08)";
+
 interface Props {
   mockAuthEnabled: boolean;
 }
@@ -111,7 +117,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
   return (
     <main className="min-h-dvh bg-[#faf6f1] flex flex-col">
       {/* ── Hero: blush-soft → pearl の縦グラデ ── */}
-      <div className="bg-gradient-to-b from-[#f4d4cf] via-[#faf0e8] to-[#faf6f1] px-6 pt-14 pb-10">
+      <div className="bg-gradient-to-b from-[#f4d4cf] via-[#faf0e8] to-[#faf6f1] px-6 pt-14 pb-12">
         <div className="max-w-sm mx-auto">
           <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-[#2b232a]">
             ログイン
@@ -123,14 +129,14 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
       </div>
 
       {/* ── 本体 ── */}
-      <div className="flex-1 px-6 pt-6 pb-12">
+      <div className="flex-1 px-6 pt-8 pb-12">
         <div className="max-w-sm mx-auto flex flex-col gap-5">
           {/* 本番アカウント */}
-          <section className="space-y-2.5">
+          <section className="space-y-3">
             <Link
               href="/auth/signup"
-              className="block w-full text-center px-5 py-3 rounded-md bg-gradient-to-br from-[#f4d4cf] to-[#e8b9a5] text-[#2b232a] text-body-md font-medium tracking-wide hover:brightness-[1.02] transition"
-              style={{ boxShadow: "0 4px 16px rgba(184, 148, 85, 0.10)" }}
+              className="block w-full text-center px-6 py-3.5 rounded-full bg-gradient-to-br from-[#f4d4cf] to-[#e8b9a5] text-[#2b232a] text-body-md font-medium tracking-wide hover:brightness-[1.02] hover:-translate-y-px active:translate-y-px transition will-change-transform"
+              style={{ boxShadow: SHADOW_FLOAT }}
             >
               新規登録
             </Link>
@@ -146,37 +152,40 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
             )}
 
             {showEmailForm && (
-              <form action={handleEmailLogin} className="space-y-2 pt-1">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="メールアドレス"
-                  aria-label="メールアドレス"
-                  required
-                  disabled={pending}
-                  className="w-full px-3 py-2.5 rounded-md border border-[#2b232a]/10 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
-                  style={{ fontSize: "16px" }}
-                />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="パスワード"
-                  aria-label="パスワード"
-                  required
-                  disabled={pending}
-                  className="w-full px-3 py-2.5 rounded-md border border-[#2b232a]/10 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
-                  style={{ fontSize: "16px" }}
-                />
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="w-full px-5 py-3 rounded-md border border-[#2b232a]/15 bg-[#fffefb] text-body-md text-[#2b232a] font-medium hover:bg-[#f5ede2] disabled:opacity-50"
-                >
-                  {pending ? "ログイン中..." : "ログイン"}
-                </button>
-                {emailError && (
-                  <p className="text-[12px] text-[#c2575b]">{emailError}</p>
-                )}
+              <div className="space-y-2.5 pt-1">
+                <form action={handleEmailLogin} className="space-y-2.5">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="メールアドレス"
+                    aria-label="メールアドレス"
+                    required
+                    disabled={pending}
+                    className="w-full px-4 py-3 rounded-2xl border border-[#2b232a]/8 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                    style={{ fontSize: "16px", boxShadow: SHADOW_SOFT }}
+                  />
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="パスワード"
+                    aria-label="パスワード"
+                    required
+                    disabled={pending}
+                    className="w-full px-4 py-3 rounded-2xl border border-[#2b232a]/8 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                    style={{ fontSize: "16px", boxShadow: SHADOW_SOFT }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    className="w-full px-6 py-3.5 rounded-full border border-[#b89455]/30 bg-[#fffefb]/90 text-body-md text-[#2b232a] font-medium hover:border-[#b89455]/50 hover:-translate-y-px active:translate-y-px transition disabled:opacity-50 will-change-transform"
+                    style={{ boxShadow: SHADOW_SOFT }}
+                  >
+                    {pending ? "ログイン中..." : "ログイン"}
+                  </button>
+                  {emailError && (
+                    <p className="text-[12px] text-[#c2575b]">{emailError}</p>
+                  )}
+                </form>
                 <button
                   type="button"
                   onClick={() => setShowEmailForm(false)}
@@ -184,33 +193,36 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                 >
                   閉じる
                 </button>
-              </form>
+              </div>
             )}
           </section>
 
           {mockAuthEnabled && (
             <>
               {/* 区切り — gold極細 */}
-              <div className="flex items-center gap-3 text-[11px] text-[#a39ba1]">
+              <div className="flex items-center gap-3 text-[11px] text-[#a39ba1] py-1">
                 <span className="flex-1 h-px bg-[#b89455]/20" />
                 または
                 <span className="flex-1 h-px bg-[#b89455]/20" />
               </div>
 
               {/* デモ */}
-              <section className="space-y-2.5">
+              <section className="space-y-3">
                 <button
                   type="button"
                   onClick={openDemo}
-                  className="w-full px-5 py-3 rounded-md border border-[#b89455]/30 bg-[#fffefb]/80 text-body-md text-[#2b232a] hover:border-[#b89455]/50 hover:bg-[#fffefb] transition"
+                  className="w-full px-6 py-3.5 rounded-full border border-[#b89455]/30 bg-[#fffefb]/80 text-body-md text-[#2b232a] hover:border-[#b89455]/50 hover:-translate-y-px active:translate-y-px transition will-change-transform"
+                  style={{ boxShadow: SHADOW_SOFT }}
                 >
                   デモを試す
                 </button>
-                <p className="text-[11px] text-[#a39ba1] leading-relaxed">
-                  サンプルデータでキャスト・店舗・来店客の各画面を体験できます。デモ用データは他の閲覧者と共有されます。
+                <p className="text-[11px] text-[#a39ba1] leading-relaxed text-center px-2">
+                  サンプルデータで各画面を体験できます。デモ用データは他の閲覧者と共有されます。
                 </p>
                 {demoError && (
-                  <p className="text-[12px] text-[#c2575b]">{demoError}</p>
+                  <p className="text-[12px] text-[#c2575b] text-center">
+                    {demoError}
+                  </p>
                 )}
               </section>
             </>
@@ -232,7 +244,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
         }
       >
         {demoStep === "role" ? (
-          <div className="grid gap-2">
+          <div className="grid gap-3">
             <RoleRow
               title="キャスト"
               description="接客・顧客・成績管理（5名から選択）"
@@ -269,7 +281,7 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
             />
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <button
               type="button"
               disabled={busyKey !== null}
@@ -287,14 +299,15 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                   disabled={busyKey !== null}
                   onClick={() => startDemo("cast", cast.id, key)}
                   className={cn(
-                    "w-full text-left px-4 py-3 rounded-lg border transition disabled:opacity-60",
+                    "w-full text-left px-4 py-3.5 rounded-3xl border transition disabled:opacity-60 will-change-transform",
                     busyKey === key
                       ? "border-[#c98d80] bg-[#f4d4cf]/40"
-                      : "border-[#2b232a]/8 bg-[#fffefb] hover:border-[#b89455]/40 hover:bg-[#fffefb]",
+                      : "border-[#2b232a]/6 bg-[#fffefb] hover:border-[#b89455]/40 hover:-translate-y-px",
                   )}
+                  style={{ boxShadow: busyKey === key ? SHADOW_FLOAT : SHADOW_SOFT }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full border border-[#b89455]/40 bg-[#fffefb] flex items-center justify-center text-[#675d66] text-body-sm font-medium shrink-0">
+                    <span className="w-10 h-10 rounded-full border border-[#b89455]/40 bg-gradient-to-br from-[#fffefb] to-[#f3e6c8]/50 flex items-center justify-center text-[#675d66] text-body-md font-display shrink-0">
                       {cast.name.slice(0, 1)}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -348,7 +361,8 @@ function RoleRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full text-left px-4 py-3 rounded-lg border border-[#2b232a]/8 bg-[#fffefb] hover:border-[#b89455]/40 transition disabled:opacity-60"
+      className="w-full text-left px-5 py-4 rounded-3xl border border-[#2b232a]/6 bg-[#fffefb] hover:border-[#b89455]/40 hover:-translate-y-px transition disabled:opacity-60 will-change-transform"
+      style={{ boxShadow: SHADOW_SOFT }}
     >
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
