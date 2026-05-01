@@ -186,13 +186,21 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
                     <p className="text-[12px] text-[#c2575b]">{emailError}</p>
                   )}
                 </form>
-                <button
-                  type="button"
-                  onClick={() => setShowEmailForm(false)}
-                  className="text-[12px] text-[#a39ba1] hover:text-[#675d66]"
-                >
-                  閉じる
-                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailForm(false)}
+                    className="text-[12px] text-[#a39ba1] hover:text-[#675d66]"
+                  >
+                    閉じる
+                  </button>
+                  <Link
+                    href="/auth/reset-password"
+                    className="text-[12px] text-[#c98d80] underline-offset-2 hover:underline"
+                  >
+                    パスワードを忘れた
+                  </Link>
+                </div>
               </div>
             )}
           </section>
@@ -227,6 +235,14 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
               </section>
             </>
           )}
+
+          <div className="pt-4 flex items-center justify-center gap-3 text-[11px] text-[#a39ba1]">
+            <Link href="/legal/terms" className="hover:text-[#675d66]">利用規約</Link>
+            <span>·</span>
+            <Link href="/legal/privacy" className="hover:text-[#675d66]">プライバシー</Link>
+            <span>·</span>
+            <Link href="/legal/tokutei" className="hover:text-[#675d66]">特商法表記</Link>
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { reportError } from "@/lib/nightos/error-reporter";
+
 export default function Error({
   error,
   reset,
@@ -7,23 +10,34 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    reportError(error, {
+      scope: "app.error-boundary",
+      extra: { digest: error.digest },
+    });
+  }, [error]);
+
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-6">
-      <div className="max-w-sm text-center">
-        <div className="text-3xl mb-3">⚠️</div>
-        <h2 className="text-lg font-bold text-ink mb-2">
-          ページの読み込みに失敗しました
+    <div className="min-h-[60vh] flex items-center justify-center px-6 bg-pearl">
+      <div className="max-w-sm text-center space-y-3">
+        <h2 className="font-display text-[22px] font-medium text-ink">
+          ページを読み込めませんでした
         </h2>
-        <p className="text-sm text-ink-secondary mb-5 leading-relaxed">
+        <p className="text-body-sm text-ink-secondary leading-relaxed">
           通信状況を確認して、もう一度お試しください。
         </p>
         <button
           type="button"
           onClick={reset}
-          className="px-5 py-2.5 rounded-btn bg-gradient-to-r from-[#9a7bbb] to-[#c98d80] text-white font-medium shadow-soft-card active:scale-95 transition-transform"
+          className="px-6 py-3 rounded-pill bg-gradient-blush text-ink text-body-md font-medium tracking-wide hover:brightness-[1.02] hover:-translate-y-px active:translate-y-px transition shadow-float will-change-transform"
         >
           もう一度試す
         </button>
+        {error.digest && (
+          <p className="text-[10px] text-ink-muted pt-3">
+            参照ID: {error.digest}
+          </p>
+        )}
       </div>
     </div>
   );

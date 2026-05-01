@@ -7,6 +7,7 @@ import { DEMO_STORE_IDS } from "@/lib/nightos/constants";
 import { isMockAuthDisabled } from "@/lib/nightos/env";
 import { mockCasts } from "@/lib/nightos/mock-data";
 import { onboardingSchema, signupSchema } from "@/lib/nightos/validation";
+import { reportError } from "@/lib/nightos/error-reporter";
 
 export async function mockLogin(castId: string) {
   if (isMockAuthDisabled()) {
@@ -198,13 +199,15 @@ export async function completeOnboarding(
       .from("nightos_stores")
       .insert({ id: storeId, name: input.newStoreName });
     if (storeErr) {
-      console.error("[onboarding] store insert failed", {
+      reportError(storeErr, {
+        scope: "onboarding.store-insert",
         userId: user.id,
-        storeId,
-        code: storeErr.code,
-        message: storeErr.message,
-        details: storeErr.details,
-        hint: storeErr.hint,
+        extra: {
+          storeId,
+          code: storeErr.code,
+          details: storeErr.details,
+          hint: storeErr.hint,
+        },
       });
       return {
         error: `店舗の作成に失敗しました: ${storeErr.message}${
@@ -223,14 +226,16 @@ export async function completeOnboarding(
     auth_user_id: user.id,
   });
   if (castErr) {
-    console.error("[onboarding] cast insert failed", {
+    reportError(castErr, {
+      scope: "onboarding.cast-insert",
       userId: user.id,
       castId,
-      storeId,
-      code: castErr.code,
-      message: castErr.message,
-      details: castErr.details,
-      hint: castErr.hint,
+      extra: {
+        storeId,
+        code: castErr.code,
+        details: castErr.details,
+        hint: castErr.hint,
+      },
     });
     return {
       error: `キャスト登録に失敗しました: ${castErr.message}${
@@ -249,12 +254,11 @@ export async function completeOnboarding(
     .eq("auth_user_id", user.id)
     .maybeSingle();
   if (verifyErr || !verify) {
-    console.error("[onboarding] post-insert read-back failed", {
+    reportError(verifyErr ?? new Error("read-back returned no row"), {
+      scope: "onboarding.post-insert-readback",
       userId: user.id,
       castId,
-      storeId,
-      verifyErr,
-      verify,
+      extra: { storeId, verify },
     });
     return {
       error:
@@ -263,6 +267,159 @@ export async function completeOnboarding(
   }
 
   redirect("/");
+}
+
+// ═══════════════ Password reset ═══════════════
+
+/**
+ * Step 1 of password reset: user submits their email; Supabase sends
+ * them a magic link to /auth/callback?type=recovery, which then
+ * forwards to /auth/update-password.
+ */
+export async function requestPasswordReset(
+  formData: FormData,
+): Promise<{ error?: string; sent?: boolean }> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email || !email.includes("@")) {
+    return { error: "メールアドレスを入力してください" };
+  }
+
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return { error: "Supabase が未設定のためこの機能は利用できません" };
+  }
+
+  const { createServerSupabaseClient } = await import("@/lib/supabase/server");
+  const supabase = createServerSupabaseClient();
+  const origin = resolveOrigin();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/update-password`,
+  });
+  if (error) {
+    return { error: `送信に失敗しました: ${error.message}` };
+  }
+  // Always return sent=true (don't leak whether the email is registered).
+  return { sent: true };
+}
+
+/**
+ * Step 2 of password reset: user (now authenticated by the recovery
+ * link cookie) submits a new password.
+ */
+export async function updatePassword(
+  formData: FormData,
+): Promise<{ error?: string }> {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 8) {
+    return { error: "パスワードは8文字以上で入力してください" };
+  }
+
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return { error: "Supabase が未設定のためこの機能は利用できません" };
+  }
+
+  const { createServerSupabaseClient } = await import("@/lib/supabase/server");
+  const supabase = createServerSupabaseClient();
+
+  // Must have an active session (created by the recovery link)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return {
+      error:
+        "セッションが切れています。もう一度メールのリンクから開き直してください。",
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: `パスワード更新に失敗しました: ${error.message}` };
+  }
+  redirect("/");
+}
+
+// ═══════════════ Account deletion ═══════════════
+
+/**
+ * Permanently delete the signed-in user's account.
+ *
+ * Cascades:
+ * - nightos_casts (auth_user_id = user.id) → cast row + downstream
+ *   visits / bottles / cast_memos via FK ON DELETE CASCADE
+ * - Supabase Auth user via admin API (requires SERVICE_ROLE_KEY)
+ *
+ * After deletion the session cookie is cleared and the user lands on
+ * /auth/login.
+ */
+export async function deleteAccount(): Promise<{ error?: string }> {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return { error: "Supabase が未設定のためこの機能は利用できません" };
+  }
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return {
+      error:
+        "退会処理のサーバー側の権限が未設定です。管理者にご連絡ください。",
+    };
+  }
+
+  const { createServerSupabaseClient } = await import("@/lib/supabase/server");
+  const supabase = createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "ログインしてからお試しください。" };
+  }
+
+  // 1. Delete the cast row (FKs cascade to visits / bottles / memos)
+  const { error: castErr } = await supabase
+    .from("nightos_casts")
+    .delete()
+    .eq("auth_user_id", user.id);
+  if (castErr) {
+    reportError(castErr, {
+      scope: "deleteAccount.cast-delete",
+      userId: user.id,
+      extra: { code: castErr.code },
+    });
+    return {
+      error: `データの削除に失敗しました: ${castErr.message}`,
+    };
+  }
+
+  // 2. Delete the auth user via service role
+  const { createClient } = await import("@supabase/supabase-js");
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+  const { error: authErr } = await admin.auth.admin.deleteUser(user.id);
+  if (authErr) {
+    // Cast row is already deleted at this point — surface the auth
+    // error but don't roll back; the user can retry deletion later
+    // and we won't double-delete the (already-gone) cast row.
+    reportError(authErr, {
+      scope: "deleteAccount.auth-user-delete",
+      userId: user.id,
+    });
+    return {
+      error: `アカウントの削除に失敗しました: ${authErr.message}`,
+    };
+  }
+
+  await supabase.auth.signOut();
+  cookies().delete("nightos.mock-cast-id");
+  redirect("/auth/login?deleted=1");
 }
 
 function resolveOrigin(): string {

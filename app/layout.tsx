@@ -3,8 +3,18 @@ import { ConnectionStatus } from "@/components/nightos/connection-status";
 import { FeedbackLink } from "@/components/nightos/feedback-link";
 import "./globals.css";
 
+// Set NEXT_PUBLIC_APP_URL to your production canonical URL (e.g.
+// https://nightos.example.com) so OG tags / robots / RSS resolve
+// against an absolute origin instead of the random Vercel preview
+// hostname.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://example.com";
+
 export const metadata: Metadata = {
-  title: "NIGHTOS",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: "NIGHTOS",
+    template: "%s | NIGHTOS",
+  },
   description:
     "夜のお店のためのワークスペース。店舗が入力し、キャストが活用する。",
   manifest: "/manifest.json",
@@ -12,6 +22,17 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "NIGHTOS",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "NIGHTOS",
+  },
+  robots: {
+    // Production deployments should override via env / per-page metadata
+    // when the site is ready to be indexed.
+    index: false,
+    follow: false,
   },
 };
 

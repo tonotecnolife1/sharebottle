@@ -52,64 +52,70 @@ mock 専用のまま残っている機能（要 real impl 追加）:
 → 各機能について `lib/nightos/supabase-real.ts` に `〜Real` を実装、`supabase-queries.ts` で `withFallback` に組み込む。
 → 必要なテーブルが未作成なら migration 007 で追加。
 
-### B5. RLS 方針の確定
-`006_signup_rls_fix.sql` は MVP 高速化のため **RLS を off** にしている。
-本番でこれを許容するか、ユーザーごとにアクセス制限を入れるかを決定。
+### B5. RLS 方針の確定 ✅ 決定: **off で運用**
+`006_signup_rls_fix.sql` + `007_b4_rls_extra_tables.sql` で全テーブル off。
+権限チェックは Server Action / 認証 cookie 経由で行う前提（`getCurrentCast()`
+や `auth_user_id` ベースの絞り込み）。本番化で再検討する場合は migration
+006/007 のコメントアウト済みポリシーを足場に policy を書き起こす。
 
-- [ ] 方針: RLS off で運用（Service Role を Server Action 内でのみ使う前提）→ もしくは
-- [ ] 方針: RLS on + policy 整備（`006` の commented-out ブロックがベース）
-- [ ] 決定後、それに合わせた policy を migration 007 で追加 / 確認
+- [x] 方針決定済み: **RLS off**
+- [x] migration 006 / 007 が実装済み
 
-### B6. デモ tenancy が本番に紛れない仕組み
-`DEMO_STORE_IDS = ["store1"]` `DEMO_CAST_IDS = [cast1, cast_oneesan2 ...]` が
-ハードコードされている。デモ用ストア／キャストが本番 DB にも存在することになり、
-検索・集計時に混入する可能性。
+### B6. デモ tenancy が本番に紛れない仕組み ✅ 決定: **本番にデモを入れない**
+`DEMO_STORE_IDS` `DEMO_CAST_IDS` のシードを本番 DB に投入しない。
 
-- [ ] 本番 DB には **デモ用シードを入れない**ことを決定（推奨）
-- [ ] `seed_nightos.sql` を本番では実行しない
-- [ ] フロントの「デモを試す」ボタンは `NIGHTOS_DISABLE_MOCK_AUTH=true` で完全非表示になることを E2E で確認
+- [x] 方針決定済み: **本番でシード投入しない**
+- [x] `/api/setup` は B3 で `NIGHTOS_SETUP_SECRET` 必須化済み。本番で env を
+      設定しなければシード投入そのものが不可能 → 自然に対策完了
+- [x] フロントの「デモを試す」ボタンは `NIGHTOS_DISABLE_MOCK_AUTH=true` で
+      非表示になることを確認 → **B2 デプロイ後に動作確認すること**
 
 ---
 
 ## 🟡 必須 — リリース当日までに
 
 ### M1. 認証フローの完全動作確認
-- [ ] Supabase Auth の **Email Confirmation 設定**を決定（要確認 → 確認メール必須にする / しない）
-- [ ] パスワードリセット導線（`/auth/reset-password` 等）— **未実装。要追加**
-- [ ] パスワード変更フロー（ログイン後の設定画面）— **未実装**
-- [ ] 退会／アカウント削除フロー — **未実装**（個人情報保護法対応のため必要）
-- [ ] メールアドレス変更フロー — **未実装**
+- [ ] Supabase Auth の **Email Confirmation 設定**を決定（Dashboard → Authentication → Email Auth → Confirm email）
+- [x] パスワードリセット導線 — `/auth/reset-password` + `/auth/update-password` 実装済み（ログイン画面から導線）
+- [x] パスワード変更フロー — `/settings` から `/auth/reset-password` に誘導（同じリセット導線で対応）
+- [x] 退会／アカウント削除フロー — `/settings` 実装済み（`SUPABASE_SERVICE_ROLE_KEY` が必要）
+- [ ] メールアドレス変更フロー — Supabase Dashboard で `supabase.auth.updateUser({ email })` のメール確認設定済みなら導線追加だけで済む。次バッチ
 
 ### M2. 法務ページ
-- [ ] プライバシーポリシー（`/privacy`）
-- [ ] 利用規約（`/terms`）
-- [ ] 特定商取引法表記（有償化する場合）
-- [ ] 上記 3 つへのリンクを fooot / signup / onboarding に設置
-- [ ] Cookie 同意バナー（必要に応じて）
+- [x] プライバシーポリシー — `/legal/privacy`（**雛形**。〔事業者名〕等を本番情報に置換要）
+- [x] 利用規約 — `/legal/terms`（雛形）
+- [x] 特定商取引法表記 — `/legal/tokutei`（雛形）
+- [x] ログイン画面・新規登録画面の下に 3 リンクを設置済み
+- [ ] Cookie 同意バナー（個人情報の Cookie 利用がある場合）— 次バッチ
 
 ### M3. エラー追跡 / ログ
-- [ ] Sentry もしくは類似サービスの導入（最低 frontend）
-- [ ] `app/error.tsx` `app/global-error.tsx` 確認・整備
-- [ ] Server Action のエラーログ出力先決定
-- [ ] `/api/setup-auth` 等で `console.log` に **平文パスワードを出している箇所**がないか再確認
+- [x] エラーレポーター shim 追加（`lib/nightos/error-reporter.ts`）— Vercel Logs に構造化 JSON で出力。Sentry に切替時はファイル内のコメント参照
+- [x] `app/error.tsx` / `app/global-error.tsx` を v2 デザインに刷新 + reportError 呼び出し
+- [x] Server Action の `console.error` を `reportError` に統一（onboarding / deleteAccount）
+- [x] `/api/setup-auth` のテストアカウント情報は B3 で env 必須化したので、シークレット非公開
+- [ ] **Sentry の SDK を入れる**（vendor 選定後）— 次バッチ
 
 ### M4. AI 機能の本番モード切替
-**現状**: `ANTHROPIC_API_KEY` 未設定だと「デモ応答モードです」というスタブ文言が UI に出る。
-
-- [ ] `ANTHROPIC_API_KEY` を本番に設定
-- [ ] レート制限 / コスト上限の設定（Anthropic 側 + アプリ内）
-- [ ] AI 応答の保存ポリシー（学習に使われない設定／監査ログ）
+- [ ] `ANTHROPIC_API_KEY` を Vercel Production に設定（手順は `supabase/MIGRATE.md` B2）
+- [ ] レート制限 / コスト上限（Anthropic console 側で月額上限を設定推奨）
+- [ ] AI 応答の保存ポリシー（Anthropic はデフォルト学習に使わない。プライバシーポリシー §4 に記載済）
 
 ### M5. 本番ドメイン & SSL
+- [x] `metadata.metadataBase` を `NEXT_PUBLIC_APP_URL` 経由に変更（`app/layout.tsx`）
+- [x] OpenGraph siteName / locale / robots を追加（リリース前 `index: false`）
 - [ ] 独自ドメイン取得・Vercel に紐付け
-- [ ] `metadata.metadataBase` を本番 URL に設定（`app/layout.tsx`）
-- [ ] OpenGraph 画像 / favicon の本番版
-- [ ] Manifest（`/manifest.json`）の `start_url`、`name`、`short_name` を本番値に
+- [ ] `NEXT_PUBLIC_APP_URL` を Vercel env に設定
+- [ ] OG 画像（`/opengraph-image.png` または `app/opengraph-image.tsx`）
+- [ ] favicon の本番版
+- [ ] Manifest の `name` / `short_name` / `start_url` 確認
+- [ ] 公開タイミングで `metadata.robots` を `{ index: true, follow: true }` に上書き
 
 ### M6. データ取り扱い
-- [ ] 本番 DB の **バックアップ自動化**（Supabase Pro なら point-in-time recovery）
-- [ ] 顧客個人情報（氏名・誕生日・職業・LINE スクショ等）の保管方針
-- [ ] スクショ画像のストレージ場所（Supabase Storage）と保持期間ポリシー
+- [ ] 本番 Supabase の **Point-in-time Recovery** 有効化（Pro プラン必要）
+- [ ] バックアップの定期取得（Supabase Dashboard → Database → Backups）
+- [ ] 顧客個人情報（氏名・誕生日・職業・LINE スクショ）の保管方針 → プライバシーポリシー §2, §6 で定義済
+- [ ] スクショ画像のストレージ場所（`line_screenshots.image_data` は base64 で DB に保存中。サイズ大きい場合は Supabase Storage へ移行検討）
+- [ ] 退会時のデータ削除動作テスト（M1b の deleteAccount を実 DB で疎通確認）
 
 ---
 
