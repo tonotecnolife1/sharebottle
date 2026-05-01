@@ -25,6 +25,7 @@ Supabase ダッシュボードと Vercel ダッシュボードでの作業をま
 | 3 | `supabase/migrations/004_team_chat.sql` | チームチャット用テーブル |
 | 4 | `supabase/migrations/005_customer_region.sql` | `customers.region` カラム追加 |
 | 5 | `supabase/migrations/006_signup_rls_fix.sql` | **🔴 最重要** — `nightos_stores` / `nightos_casts` の RLS を disable + `authenticated` `anon` ロールに `select/insert/update` を grant。これが当たっていないと新規登録の店舗作成で**サイレントに失敗**する |
+| 6 | `supabase/migrations/007_b4_rls_extra_tables.sql` | 🔴 同等に必須 — `cast_messages` / `cast_requests` / `coupons` / `douhans` / `cast_goals` / `follow_logs` / `ai_chats` 等で RLS を disable + grant。B4 で mock-only → 実 DB 化した機能が、本番で「保存はできているように見えるが読めない」状態になるのを防ぐ |
 
 ### 適用後の動作確認（SQL Editor で実行）
 
