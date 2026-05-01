@@ -12,7 +12,9 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { Badge } from "@/components/nightos/badge";
 import { Card } from "@/components/nightos/card";
+import { CsvDownloadButton } from "@/components/nightos/csv-download-button";
 import type { Cast, Customer } from "@/types/nightos";
+import type { CsvColumn } from "@/lib/nightos/csv";
 import { deleteCustomerAction } from "../actions";
 
 interface Props {
@@ -53,6 +55,31 @@ export function CustomerListClient({ customers: initial, casts }: Props) {
   const castName = (id: string) =>
     casts.find((c) => c.id === id)?.name ?? "（未割当）";
 
+  const csvColumns: CsvColumn<Customer>[] = [
+    { header: "顧客ID", value: (c) => c.id },
+    { header: "氏名", value: (c) => c.name },
+    {
+      header: "カテゴリ",
+      value: (c) =>
+        c.category === "vip" ? "VIP" : c.category === "new" ? "新規" : "常連",
+    },
+    { header: "担当キャスト", value: (c) => castName(c.cast_id) },
+    { header: "誕生日", value: (c) => c.birthday ?? "" },
+    { header: "職業", value: (c) => c.job ?? "" },
+    { header: "好み", value: (c) => c.favorite_drink ?? "" },
+    { header: "店舗メモ", value: (c) => c.store_memo ?? "" },
+    {
+      header: "ファネル",
+      value: (c) =>
+        c.funnel_stage === "line_exchanged"
+          ? "LINE交換済"
+          : c.funnel_stage === "assigned"
+            ? "担当割当済"
+            : "店舗登録のみ",
+    },
+    { header: "登録日", value: (c) => c.created_at },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -78,8 +105,15 @@ export function CustomerListClient({ customers: initial, casts }: Props) {
         </Link>
       </div>
 
-      <div className="text-[11px] text-ink-muted">
-        {filtered.length}人 / 全{customers.length}人
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-ink-muted">
+          {filtered.length}人 / 全{customers.length}人
+        </span>
+        <CsvDownloadButton
+          rows={filtered}
+          columns={csvColumns}
+          filenamePrefix="customers"
+        />
       </div>
 
       {filtered.length === 0 ? (

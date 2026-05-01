@@ -129,26 +129,38 @@ mock 専用のまま残っている機能（要 real impl 追加）:
 - [ ] mama 系画面群
 
 ### R2. テスト
-- [ ] E2E テスト（Playwright が demo/ にあるので拡張）
-  - [ ] 新規登録 → onboarding → cast home の通り
-  - [ ] 店舗作成 → 顧客登録 → 来店登録
-  - [ ] デモログイン全 4 役割
-- [ ] 既存 vitest（77 件）のカバレッジ確認
+- [x] E2E テスト雛形（Playwright）— `e2e/` に配置、`playwright.config.ts` 追加
+  - [x] auth.spec.ts: ログイン UI / 新規登録フォーム / 法務ページ / デモログイン (顧客 + キャスト 5名)
+  - [ ] 店舗作成 → 顧客登録 → 来店登録（要 Supabase 接続のため別 suite に分割）
+  - [x] デモログイン 4 役割（customer 動作確認 + cast 5 ペルソナの可視性）
+- [x] 既存 vitest 83 件（CSV 6 件含む）パス
+- [ ] **ローカルで `@playwright/test` インストール → `npx playwright test` 実行で疎通確認**
 
 ### R3. オンボーディング UX
+※ UI ブラッシュアップが先と決定済み。ブラッシュアップ後に再着手。
 - [ ] サインアップ後の最初のチュートリアル
 - [ ] サンプルデータ生成オプション（個人 demo 用）
 - [ ] 各画面のヘルプテキスト / FAQ
 
 ### R4. パフォーマンス
-- [ ] Lighthouse / Web Vitals で計測
-- [ ] 画像最適化（next/image）
-- [ ] バンドルサイズ確認（mockCasts / mock-data.ts は本番不要 → tree-shake）
+- [x] パフォーマンス監査ノート — `PERF_NOTES.md` に既知の懸念 6 件と着手順を整理
+- [ ] 本番ドメイン稼働後に Lighthouse / Vercel Analytics で実測
+- [ ] mock-data.ts (~100KB) の動的ロード化（実測後の優先度次第）
+- [ ] apple-touch-icon PNG 化
+- [ ] `next/font/google` 移行（Noto Serif JP の LCP 影響評価次第）
 
 ### R5. 機能完備
-- [ ] 通知（プッシュ / メール）
-- [ ] PWA インストール導線
-- [ ] CSV エクスポート（顧客一覧、来店履歴等）
+- [ ] 通知（プッシュ / メール）— launch 後の優先機能
+- [x] PWA インストール導線 — `components/nightos/install-prompt.tsx`
+      - Android / Edge: `beforeinstallprompt` をキャプチャしてシート表示
+      - iOS Safari: 「共有 → ホーム画面に追加」ヒントを 4秒後に表示
+      - 14 日間の dismiss 記憶
+      - manifest の theme_color / background_color を v2 トークンに
+- [x] CSV エクスポート — `lib/nightos/csv.ts` + `CsvDownloadButton`
+      - 顧客一覧 / 来店履歴 / ボトル管理の 3 画面に配置
+      - UTF-8 BOM 付き（Excel for JP で 文字化けしない）
+      - 検索フィルタ後の rows のみエクスポート（顧客一覧）
+- [ ] PDF / 印刷用レイアウト
 
 ---
 

@@ -4,6 +4,8 @@ import { CalendarPlus, Sparkles, Trash2, User } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/nightos/card";
+import { CsvDownloadButton } from "@/components/nightos/csv-download-button";
+import type { CsvColumn } from "@/lib/nightos/csv";
 import type { VisitWithNames } from "@/lib/nightos/supabase-queries";
 import { deleteVisitAction } from "../actions";
 
@@ -28,19 +30,35 @@ export function VisitListClient({ visits: initial }: Props) {
     });
   };
 
+  const csvColumns: CsvColumn<VisitWithNames>[] = [
+    { header: "来店ID", value: (v) => v.id },
+    { header: "来店日時", value: (v) => v.visited_at },
+    { header: "顧客名", value: (v) => v.customer_name },
+    { header: "担当キャスト", value: (v) => v.cast_name },
+    { header: "席", value: (v) => v.table_name ?? "" },
+    { header: "指名", value: (v) => (v.is_nominated ? "あり" : "なし") },
+  ];
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="text-label-sm text-ink-muted">
           {visits.length}件の来店記録
         </span>
-        <Link
-          href="/store/visits/new"
-          className="h-10 px-4 rounded-btn bg-gradient-rose-gold text-pearl flex items-center gap-1 shadow-soft-card text-label-md font-medium active:scale-95 transition-transform"
-        >
-          <CalendarPlus size={14} />
-          新規来店
-        </Link>
+        <div className="flex items-center gap-2">
+          <CsvDownloadButton
+            rows={visits}
+            columns={csvColumns}
+            filenamePrefix="visits"
+          />
+          <Link
+            href="/store/visits/new"
+            className="h-10 px-4 rounded-btn bg-gradient-rose-gold text-pearl flex items-center gap-1 shadow-soft-card text-label-md font-medium active:scale-95 transition-transform"
+          >
+            <CalendarPlus size={14} />
+            新規来店
+          </Link>
+        </div>
       </div>
 
       {visits.length === 0 ? (
