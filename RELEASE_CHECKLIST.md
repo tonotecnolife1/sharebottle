@@ -167,30 +167,39 @@ mock 専用のまま残っている機能（要 real impl 追加）:
 ## 🔵 運用 — リリース後継続
 
 ### O1. 監視・アラート
-- [ ] uptime monitor（vercel cron 等）
-- [ ] Anthropic / Supabase の月次コスト追跡
-- [ ] エラーレート閾値アラート
+- [x] 推奨アラート設定の早見表 — `OPS_RUNBOOK.md` §D1
+- [x] ログ集約方針（Vercel Function Logs → 構造化 JSON `[nightos:error]` で grep）— §D2
+- [ ] **Vercel Cron** で `/api/health` を 5 分おきに叩いて Slack/Discord に通知（要 webhook URL 取得）
+- [ ] Anthropic console で月額予算アラート設定
+- [ ] Supabase Reports でエラーレートのアラート
 
 ### O2. インシデント対応
-- [ ] 障害時の連絡先 / 切り戻し手順
-- [ ] DB 破損時のリストア runbook
-- [ ] セキュリティ脆弱性開示窓口
+- [x] 症状逆引き runbook — `OPS_RUNBOOK.md` §A
+- [x] データ復旧手順 — `OPS_RUNBOOK.md` §B
+- [x] セキュリティインシデント手順（service_role 漏洩 / anon key 漏洩 / setup endpoint 誤公開）— §C
+- [x] デプロイ・ロールバック手順 — §E
+- [ ] **連絡先テンプレート** (`OPS_RUNBOOK.md` §F) を実情報に置換
+- [ ] セキュリティ脆弱性開示窓口メールアドレスの取得
 
 ### O3. ドキュメント
-- [ ] CLAUDE.md / README に「本番運用」セクション追加
-- [ ] migration 適用手順を `supabase/README.md` 等に
-- [ ] 環境変数表のメンテ
+- [x] `README.md` に「本番運用ドキュメント」リンクと環境変数表を追加
+- [x] migration 適用手順 — `supabase/MIGRATE.md`（B1 で作成済み）
+- [x] **`DEPLOY_RUNBOOK.md`** — 初回デプロイ 30〜45 分の手順書
+- [x] **`OPS_RUNBOOK.md`** — 障害対応・データ復旧・セキュリティ・月次オペ
+- [x] `PERF_NOTES.md` — パフォーマンス監査メモ（R4 で作成済み）
+- [x] `design.md` — UI/デザイン指針
+- [x] 環境変数表のメンテ — README に追加 + `.env.example` に最新コメント
 
 ---
 
 ## まとめ
 
-最低限、🔴 ブロッカー 6 件 + 🟡 必須 6 件の **12 件** が片付かないと本番公開すべきでない。
+| Tier | 状態 |
+|------|------|
+| 🔴 ブロッカー (B1-B6) | コードレベル完了 (B1/B2 はユーザー側ダッシュボード操作のみ) |
+| 🟡 必須 (M1-M6) | 約 90% (Sentry SDK / 法務雛形→本番値 / OG 画像 / 独自ドメイン残) |
+| 🟢 推奨 (R2/R4/R5) | R3 (オンボーディング UX) 以外完了 |
+| 🔵 運用 (O1-O3) | ドキュメント完了。Vercel Cron / Anthropic アラート設定はユーザー操作 |
 
-特に優先度トップ:
-1. **B3 デモエンドポイントの遮断** — セキュリティ事故になる
-2. **B4 mock 専用機能の永続化** — クーポン・店舗連絡が失われる
-3. **M1 退会フロー** — 個人情報保護法対応
-4. **M2 法務ページ** — 公開時に揃っていないと炎上要因
-
-これらは完了の見通しが立つまで「クローズドβ」運用を強く推奨。
+**復帰時にやることは `DEPLOY_RUNBOOK.md` 1 つを上から順に**。
+本番稼働中に異常があれば `OPS_RUNBOOK.md` で症状逆引き。
