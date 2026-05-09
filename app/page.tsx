@@ -59,17 +59,51 @@ export default async function RootPage() {
         const meta = (user.user_metadata ?? {}) as {
           role?: string;
           display_name?: string;
+          cast_id?: string;
+          customer_id?: string;
         };
         const metaRole = meta.role;
         const displayName = meta.display_name;
+        const metaCastId = meta.cast_id;
+        const metaCustomerId = meta.customer_id;
 
-        // Try to link an existing UNLINKED row by display_name.
-        if (displayName) {
-          if (
-            metaRole === "cast" ||
-            metaRole === "store_owner" ||
-            metaRole === "store_staff"
-          ) {
+        if (
+          metaRole === "cast" ||
+          metaRole === "store_owner" ||
+          metaRole === "store_staff"
+        ) {
+          // Priority 1: link by cast_id from metadata — handles users whose
+          // row exists but auth_user_id is NULL or stale (e.g. seeded rows,
+          // store-transfer edge cases). Only updates rows that are either
+          // unlinked (NULL) or already owned by this user.
+          if (metaCastId) {
+            const { data: castRow } = await supabase
+              .from("nightos_casts")
+              .select("id, user_role, auth_user_id")
+              .eq("id", metaCastId)
+              .eq("is_active", true)
+              .maybeSingle();
+            if (
+              castRow &&
+              (castRow.auth_user_id === null || castRow.auth_user_id === user.id)
+            ) {
+              if (castRow.auth_user_id === null) {
+                await supabase
+                  .from("nightos_casts")
+                  .update({ auth_user_id: user.id })
+                  .eq("id", castRow.id);
+              }
+              autoLinkRedirect = homePathForRole(
+                (castRow.user_role ?? metaRole) as Parameters<
+                  typeof homePathForRole
+                >[0],
+              );
+            }
+          }
+
+          // Priority 2: fallback — link by display_name for legacy seeded rows
+          // that pre-date the cast_id metadata field.
+          if (!autoLinkRedirect && displayName) {
             const { data: castRow } = await supabase
               .from("nightos_casts")
               .select("id, user_role")
@@ -88,7 +122,31 @@ export default async function RootPage() {
                 >[0],
               );
             }
-          } else if (metaRole === "customer") {
+          }
+        } else if (metaRole === "customer") {
+          // Priority 1: link by customer_id from metadata.
+          if (metaCustomerId) {
+            const { data: custRow } = await supabase
+              .from("customers")
+              .select("id, auth_user_id")
+              .eq("id", metaCustomerId)
+              .maybeSingle();
+            if (
+              custRow &&
+              (custRow.auth_user_id === null || custRow.auth_user_id === user.id)
+            ) {
+              if (custRow.auth_user_id === null) {
+                await supabase
+                  .from("customers")
+                  .update({ auth_user_id: user.id })
+                  .eq("id", custRow.id);
+              }
+              autoLinkRedirect = "/customer/home";
+            }
+          }
+
+          // Priority 2: fallback by display_name.
+          if (!autoLinkRedirect && displayName) {
             const { data: custRow } = await supabase
               .from("customers")
               .select("id")
