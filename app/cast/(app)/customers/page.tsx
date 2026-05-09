@@ -1,28 +1,36 @@
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { GitBranch, UserPlus } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
+import { StatCard } from "@/components/nightos/stat-card";
 import { CustomerPageShell } from "@/features/cast-customers/components/customer-page-shell";
-import { getCurrentCastId } from "@/lib/nightos/auth";
 import {
   getAllCasts,
-  getCustomersForCast,
+  getAllCustomers,
 } from "@/lib/nightos/supabase-queries";
+import { mockCasts } from "@/lib/nightos/mock-data";
+import {
+  buildReferralTree,
+  calculateFunnelStats,
+} from "@/lib/nightos/referral-tree";
 
 export const dynamic = "force-dynamic";
 
 export default async function CastCustomerListPage() {
-  const castId = await getCurrentCastId();
-  const [allCasts, allMyCustomers] = await Promise.all([
+  const [allCasts, customers] = await Promise.all([
     getAllCasts(),
-    getCustomersForCast(castId),
+    getAllCustomers(),
   ]);
+
+  const funnel = calculateFunnelStats(customers);
+  const tree = buildReferralTree({ customers, casts: mockCasts });
+  const totalReferralChains = tree.filter((n) => n.children.length > 0).length;
 
   return (
     <div className="animate-fade-in">
       <PageHeader
         title="顧客リスト"
-        subtitle={`${allMyCustomers.length}人の顧客を管理`}
+        subtitle={`${customers.length}人のお客様`}
         showBack
         right={
           <Link
@@ -34,8 +42,40 @@ export default async function CastCustomerListPage() {
           </Link>
         }
       />
-      <div className="px-5 pt-3 pb-6">
-        {allMyCustomers.length === 0 ? (
+      <div className="px-5 pt-3 pb-6 space-y-5">
+        {/* Funnel snapshot */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <StatCard
+            label="店舗登録のみ"
+            value={funnel.storeOnly}
+            unit="人"
+            tone="default"
+          />
+          <StatCard
+            label="担当あり"
+            value={funnel.assigned}
+            unit="人"
+            tone="rose"
+          />
+          <StatCard
+            label="LINE交換済み"
+            value={funnel.lineExchanged}
+            unit="人"
+            tone="amethyst"
+          />
+        </div>
+
+        <Card className="p-3 flex items-center justify-between">
+          <span className="text-body-sm text-ink-secondary flex items-center gap-1.5">
+            <GitBranch size={13} className="text-amethyst-dark" />
+            お連れ様の繋がり数
+          </span>
+          <span className="text-body-md text-ink font-medium">
+            {totalReferralChains}本
+          </span>
+        </Card>
+
+        {customers.length === 0 ? (
           <Card className="p-8 text-center space-y-3">
             <p className="text-body-md text-ink">
               まだ顧客が登録されていません
@@ -54,7 +94,7 @@ export default async function CastCustomerListPage() {
         ) : (
           <CustomerPageShell
             allCasts={allCasts}
-            allMyCustomers={allMyCustomers}
+            allMyCustomers={customers}
           />
         )}
       </div>
