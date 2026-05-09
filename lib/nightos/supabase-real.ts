@@ -982,10 +982,14 @@ export async function getCastStatsDataReal(
 
 export async function getCastByAuthUserId(authUserId: string): Promise<Cast | null> {
   const supabase = createServerSupabaseClient();
+  // Only consider active memberships (migration 009). Inactive rows
+  // belong to former store memberships and should not resolve to the
+  // user's current cast.
   const { data, error } = await supabase
     .from("nightos_casts")
     .select("*")
     .eq("auth_user_id", authUserId)
+    .eq("is_active", true)
     .maybeSingle();
   if (error) throw error;
   return data ? rowToCast(data) : null;
@@ -1002,6 +1006,7 @@ function rowToCast(row: any): Cast {
     monthly_sales: Number(row.monthly_sales ?? 0),
     repeat_rate: Number(row.repeat_rate ?? 0),
     user_role: (row.user_role ?? "cast") as Cast["user_role"],
+    is_active: row.is_active === undefined ? true : Boolean(row.is_active),
     club_role: row.club_role ?? undefined,
     assigned_oneesan_id: row.assigned_oneesan_id ?? undefined,
   };

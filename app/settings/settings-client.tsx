@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { ArrowLeft, Check, Copy } from "lucide-react";
-import { deleteAccount, mockLogout } from "../auth/actions";
+import { changeStore, deleteAccount, mockLogout } from "../auth/actions";
 import type { CastUserRole } from "@/types/nightos";
 
 interface Props {
   email: string;
   castName: string | null;
   userRole: CastUserRole | null;
+  currentStoreName: string | null;
   storeInviteInfo: { name: string; inviteCode: string } | null;
 }
 
@@ -23,6 +24,7 @@ export default function SettingsClient({
   email,
   castName,
   userRole,
+  currentStoreName,
   storeInviteInfo,
 }: Props) {
   const [pending, startTransition] = useTransition();
@@ -30,6 +32,27 @@ export default function SettingsClient({
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Store change (cast / store_staff only — owners can't transfer)
+  const [showStoreChange, setShowStoreChange] = useState(false);
+  const [newInviteCode, setNewInviteCode] = useState("");
+  const [storeChangeError, setStoreChangeError] = useState<string | null>(null);
+  const canChangeStore =
+    userRole === "cast" || userRole === "store_staff";
+
+  const handleChangeStore = () => {
+    setStoreChangeError(null);
+    const formData = new FormData();
+    formData.set(
+      "inviteCode",
+      newInviteCode.replace(/[\s-]/g, "").toUpperCase(),
+    );
+    startTransition(async () => {
+      const result = await changeStore(formData);
+      if (result?.error) setStoreChangeError(result.error);
+      // Success path triggers a redirect — nothing to do here.
+    });
+  };
 
   const copyInviteCode = async () => {
     if (!storeInviteInfo) return;
@@ -129,6 +152,86 @@ export default function SettingsClient({
                 このコードを所属キャスト・スタッフに伝えると、新規登録時に
                 このお店に参加できます。コードを知らない人は加入できません。
               </p>
+            </section>
+          )}
+
+          {/* キャスト・スタッフのみ: 店舗変更 */}
+          {canChangeStore && (
+            <section className="rounded-card border border-ink/[0.06] bg-pearl-warm p-4 shadow-soft space-y-3">
+              <div>
+                <h2 className="font-display text-[18px] leading-tight font-medium text-ink">
+                  所属店舗
+                </h2>
+                {currentStoreName && (
+                  <p className="text-[11px] text-ink-muted mt-0.5">
+                    現在: {currentStoreName}
+                  </p>
+                )}
+              </div>
+
+              {!showStoreChange ? (
+                <button
+                  type="button"
+                  onClick={() => setShowStoreChange(true)}
+                  className="inline-block px-5 py-2.5 rounded-pill border border-gold/30 bg-pearl-warm text-body-sm text-ink hover:border-gold/50 transition shadow-soft"
+                >
+                  店舗を変更
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-[12px] text-ink-secondary leading-relaxed">
+                    新しい店舗の招待コード（8文字）を入力してください。
+                    <span className="block mt-1 text-ink-muted">
+                      ※ 過去の店舗での履歴（来店・ボトル・メモ）は元の店舗側に残ります。
+                    </span>
+                  </p>
+                  <input
+                    type="text"
+                    value={newInviteCode}
+                    onChange={(e) =>
+                      setNewInviteCode(
+                        e.target.value
+                          .replace(/[\s-]/g, "")
+                          .toUpperCase()
+                          .slice(0, 8),
+                      )
+                    }
+                    placeholder="例: AB23CD45"
+                    aria-label="新しい店舗の招待コード"
+                    disabled={pending}
+                    autoCapitalize="characters"
+                    className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep tracking-[0.2em] font-mono uppercase"
+                    style={{ fontSize: "16px" }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowStoreChange(false);
+                        setNewInviteCode("");
+                        setStoreChangeError(null);
+                      }}
+                      disabled={pending}
+                      className="flex-1 px-4 py-2.5 rounded-pill border border-ink/15 bg-pearl-warm text-body-sm text-ink disabled:opacity-50"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleChangeStore}
+                      disabled={newInviteCode.length !== 8 || pending}
+                      className="flex-1 px-4 py-2.5 rounded-pill bg-gradient-blush text-ink text-body-sm font-medium shadow-soft hover:brightness-[1.02] disabled:opacity-50 disabled:hover:brightness-100"
+                    >
+                      {pending ? "変更中..." : "変更を確定"}
+                    </button>
+                  </div>
+                  {storeChangeError && (
+                    <p className="text-[12px] text-[#c2575b] leading-relaxed">
+                      {storeChangeError}
+                    </p>
+                  )}
+                </div>
+              )}
             </section>
           )}
 
