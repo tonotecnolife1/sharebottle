@@ -148,7 +148,8 @@ function PromptCard({
 }) {
   return (
     <div
-      className="fixed left-3 right-3 bottom-3 z-40 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm"
+      className="fixed left-3 right-3 z-50 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4.5rem)" }}
       role="dialog"
       aria-label="アプリのインストール"
     >
