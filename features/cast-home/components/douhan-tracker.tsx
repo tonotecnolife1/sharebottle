@@ -186,7 +186,7 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="text-[10px] text-amethyst-dark px-0.5"
+              className="text-[10px] text-ink-secondary underline-offset-2 hover:underline px-0.5"
             >
               他{completed.length - 2}件を表示
             </button>
@@ -310,14 +310,14 @@ function EntryCard({
       {/* Cancellation reason */}
       {isCancelled && entry.cancellation_reason && (
         <p className="text-[10px] text-ink-secondary pl-8">
-          <span className="text-rose font-medium">理由:</span>{" "}
+          <span className="text-[#c2575b] font-medium">理由:</span>{" "}
           {entry.cancellation_reason}
         </p>
       )}
 
       {/* Cancel form (inline) */}
       {showCancelForm && (
-        <div className="pl-8 space-y-1.5 pt-1 border-t border-pearl-soft">
+        <div className="pl-8 space-y-1.5 pt-1 border-t border-ink/[0.06]">
           <div className="text-[10px] text-ink-secondary font-medium">
             キャンセル理由（必須）
           </div>
@@ -330,7 +330,7 @@ function EntryCard({
                 className={cn(
                   "text-[10px] h-6 px-2 rounded-full border transition-all active:scale-95",
                   cancelReason === preset
-                    ? "bg-rose text-pearl border-rose"
+                    ? "bg-blush-soft text-blush-deep border-blush"
                     : "bg-pearl text-ink-secondary border-pearl-soft hover:border-ink-muted",
                 )}
               >
@@ -344,7 +344,7 @@ function EntryCard({
             onChange={(e) => setCancelReason(e.target.value)}
             placeholder="または自由入力"
             style={{ fontSize: "14px" }}
-            className="w-full h-8 rounded-btn border border-pearl-soft bg-pearl-warm px-2 text-[12px] text-ink placeholder:text-ink-muted outline-none focus:border-rose"
+            className="w-full h-8 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-2 text-[12px] text-ink placeholder:text-ink-muted outline-none focus:border-blush-deep"
           />
           <div className="flex items-center gap-1.5">
             <button
@@ -354,7 +354,7 @@ function EntryCard({
               className={cn(
                 "h-7 px-3 rounded-full text-[10px] font-medium transition-all active:scale-95",
                 cancelReason.trim()
-                  ? "bg-rose text-pearl"
+                  ? "border border-[#c2575b]/40 bg-[#c2575b]/5 text-[#c2575b]"
                   : "bg-pearl-soft text-ink-muted cursor-not-allowed",
               )}
             >
@@ -407,11 +407,11 @@ function EntryCard({
           )}
           {confirmDelete ? (
             <div className="flex items-center gap-1 ml-auto">
-              <span className="text-[10px] text-rose">削除する？</span>
+              <span className="text-[10px] text-[#c2575b]">削除する？</span>
               <button
                 type="button"
                 onClick={onDelete}
-                className="text-[10px] text-rose font-medium underline"
+                className="text-[10px] text-[#c2575b] font-medium underline"
               >
                 はい
               </button>
@@ -473,7 +473,7 @@ function AddForm({
         <select
           value={customerId}
           onChange={(e) => setCustomerId(e.target.value)}
-          className="w-full h-10 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-sm text-ink"
+          className="w-full h-10 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-sm text-ink focus:outline-none focus:border-blush-deep"
           style={{ fontSize: "16px" }}
         >
           <option value="" disabled>
@@ -490,7 +490,7 @@ function AddForm({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full h-10 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-sm text-ink"
+          className="w-full h-10 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-sm text-ink focus:outline-none focus:border-blush-deep"
           style={{ fontSize: "16px" }}
         />
 
@@ -499,7 +499,7 @@ function AddForm({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="場所やメモ（任意）"
-          className="w-full h-10 rounded-btn border border-pearl-soft bg-pearl-warm px-3 text-body-sm text-ink placeholder:text-ink-muted"
+          className="w-full h-10 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-blush-deep"
           style={{ fontSize: "16px" }}
         />
       </div>
@@ -509,7 +509,7 @@ function AddForm({
         onClick={handleSubmit}
         disabled={!canSubmit}
         className={cn(
-          "w-full h-10 rounded-btn text-label-sm font-medium transition-all active:scale-[0.98]",
+          "w-full h-10 rounded-full text-label-sm font-medium transition-all active:scale-[0.98]",
           canSubmit
             ? "bg-gradient-blush text-ink shadow-soft hover:-translate-y-px"
             : "bg-pearl-soft text-ink-muted cursor-not-allowed",
