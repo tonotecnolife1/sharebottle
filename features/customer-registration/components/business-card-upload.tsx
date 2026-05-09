@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Camera, Check, Loader2, ScanLine, X } from "lucide-react";
+import { AlertCircle, Camera, Check, Images, Loader2, ScanLine, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { Card } from "@/components/nightos/card";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ interface Props {
  */
 export function BusinessCardUpload({ onApply, mode = "new" }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ExtractedBusinessCard | null>(null);
@@ -110,14 +111,24 @@ export function BusinessCardUpload({ onApply, mode = "new" }: Props) {
       </div>
 
       {!preview && !result && (
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full h-11 rounded-btn bg-amethyst text-pearl shadow-soft-card flex items-center justify-center gap-2 active:scale-[0.98] transition-transform text-label-md font-medium"
-        >
-          <Camera size={16} />
-          名刺を撮影・選択
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 h-11 rounded-btn bg-amethyst text-pearl shadow-soft-card flex items-center justify-center gap-2 active:scale-[0.98] transition-transform text-label-md font-medium"
+          >
+            <Camera size={16} />
+            撮影
+          </button>
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            className="flex-1 h-11 rounded-btn border border-amethyst-border bg-pearl-warm text-amethyst-dark flex items-center justify-center gap-2 active:scale-[0.98] transition-transform text-label-md font-medium"
+          >
+            <Images size={16} />
+            カメラロール
+          </button>
+        </div>
       )}
 
       {preview && (
@@ -195,11 +206,20 @@ export function BusinessCardUpload({ onApply, mode = "new" }: Props) {
         </div>
       )}
 
+      {/* capture="environment" — カメラを直接起動 */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      {/* capture なし — OS のファイルピッカーでカメラロールから選択 */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileChange}
         className="hidden"
       />
