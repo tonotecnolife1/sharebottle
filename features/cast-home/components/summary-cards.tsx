@@ -23,7 +23,7 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
           unit="%"
           icon={<Heart size={12} className="text-gold" />}
           tone="rose"
-          className="h-full cursor-pointer hover:border-gold/30 transition-colors"
+          className="h-full cursor-pointer hover:border-gold/30 hover:shadow-float hover:-translate-y-px transition will-change-transform"
         />
       </Link>
       <StatCard
