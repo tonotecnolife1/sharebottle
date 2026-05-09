@@ -10,9 +10,9 @@ import { RoleSelector } from "./role-selector";
 export const dynamic = "force-dynamic";
 
 export default async function RootPage() {
-  // Account-bound roles (migration 008): direct each user to their
-  // role's home. RoleSelector is kept as a dev-only fallback for the
-  // mock-auth path (NIGHTOS_DISABLE_MOCK_AUTH unset).
+  // Account-bound roles (migration 008/009): each logged-in user has
+  // exactly one active cast row OR one customer row. Route them to
+  // the matching app's home.
   const cast = await getCurrentCast();
   if (cast) {
     redirect(homePathForRole(cast.user_role ?? "cast"));
@@ -23,12 +23,13 @@ export default async function RootPage() {
     redirect("/customer/home");
   }
 
-  // Signed in via Supabase but no profile yet → onboarding.
-  // IMPORTANT: do NOT call `redirect()` inside a try/catch, because
-  // redirect() throws a NEXT_REDIRECT signal that the framework needs
-  // to receive — wrapping it in try/catch swallows the signal and the
-  // navigation never happens. We capture the user id first, then
-  // redirect outside the catch.
+  // Signed in via Supabase but no row yet — they came back to / after
+  // signup before /auth/finalize ran (e.g. they bookmarked / and
+  // clicked it in a different tab). Send them through finalize so the
+  // pending_* metadata gets materialised.
+  //
+  // NOTE: redirect() throws NEXT_REDIRECT — keep it OUT of try/catch,
+  // otherwise the empty catch swallows the signal and we fall through.
   let signedInUserId: string | null = null;
   if (
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -44,23 +45,20 @@ export default async function RootPage() {
       } = await supabase.auth.getUser();
       signedInUserId = user?.id ?? null;
     } catch {
-      // fall through; keep signedInUserId = null
+      // ignore; signedInUserId stays null
     }
   }
   if (signedInUserId) {
-    redirect("/onboarding");
+    redirect("/auth/finalize");
   }
 
-  // Production: mock auth is disabled, so unauthenticated visits should
-  // go straight to the login screen instead of flashing the dev-only
-  // RoleSelector. Without this guard, the unauthed user briefly sees
-  // the venue/role picker, then RoleSelector's localStorage check
-  // either bounces them through /cast/home → /auth/login or just sits
-  // on a useless screen.
+  // Unauthenticated. In production (NIGHTOS_DISABLE_MOCK_AUTH=true) we
+  // send them to the cast login as the most-common entry point — they
+  // can pick a different app from the bottom links there.
   if (isMockAuthDisabled()) {
-    redirect("/auth/login");
+    redirect("/cast/auth/login");
   }
 
-  // Fallback: dev / mock-auth flow that uses the localStorage role-store.
+  // Dev / mock-auth flow: show the legacy RoleSelector.
   return <RoleSelector />;
 }

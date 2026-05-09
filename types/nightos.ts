@@ -35,6 +35,12 @@ export interface Cast {
   /** Account-level role (migration 008). Defaults to "cast" when absent
    *  (legacy mock data and rows from before 008 was applied). */
   user_role?: CastUserRole;
+  /** Whether this cast row is the user's currently-active membership at
+   *  this store (migration 009). When a cast transfers to another store,
+   *  the old row stays around with is_active=false so historical
+   *  visits/bottles/memos retain attribution; the user is re-linked via
+   *  a new active row. Defaults to true for legacy data. */
+  is_active?: boolean;
   /** Club only: role in the hierarchy */
   club_role?: ClubRole;
   /** Club only: the oneesan this help is assigned to */

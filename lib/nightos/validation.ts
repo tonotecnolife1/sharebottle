@@ -100,9 +100,25 @@ const displayName = z
   .min(1, "名前を入力してください")
   .max(40, "40文字以内で入力してください");
 
+// Common signup primitives reused across all 4 role-specific signup
+// schemas below.
+const signupEmail = z
+  .string()
+  .email("メールアドレスの形式が正しくありません")
+  .max(200);
+const signupPassword = z
+  .string()
+  .min(8, "パスワードは8文字以上")
+  .max(200);
+
+/**
+ * Legacy signup (email/password/name only). Kept for the old shared
+ * /auth/signup form during the URL-split migration. New code should
+ * reach the role-specific schemas below via the per-role auth pages.
+ */
 export const signupSchema = z.object({
-  email: z.string().email("メールアドレスの形式が正しくありません").max(200),
-  password: z.string().min(8, "パスワードは8文字以上").max(200),
+  email: signupEmail,
+  password: signupPassword,
   name: displayName,
 });
 
@@ -163,6 +179,53 @@ export const onboardingSchema = z.discriminatedUnion("role", [
 ]);
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
+
+// Per-role signup schemas (post URL-split). Each role's signup form
+// collects email + password + everything needed to materialise the
+// nightos_casts / customers row in one shot — there is no separate
+// onboarding step in the new flow.
+//
+// signupAs* server actions in app/auth/actions.ts validate against
+// these. The role is implied by which page (and therefore which
+// schema) the user submitted from, so we don't accept a `role` field
+// from the client.
+
+export const signupCastSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+  inviteCode,
+});
+export type SignupCastInput = z.infer<typeof signupCastSchema>;
+
+export const signupStaffSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+  inviteCode,
+});
+export type SignupStaffInput = z.infer<typeof signupStaffSchema>;
+
+export const signupOwnerSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+  venueType: z.enum(["club", "cabaret"]),
+  newStoreName: z.string().min(1, "店舗名を入力してください").max(80),
+});
+export type SignupOwnerInput = z.infer<typeof signupOwnerSchema>;
+
+export const signupCustomerSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+});
+export type SignupCustomerInput = z.infer<typeof signupCustomerSchema>;
+
+/** Store-change (settings -> 店舗を変更) — migration 009. */
+export const changeStoreSchema = z.object({
+  inviteCode,
+});
 
 export const generateTemplateSchema = z.object({
   customerId,

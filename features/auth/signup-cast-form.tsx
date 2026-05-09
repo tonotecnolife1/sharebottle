@@ -2,23 +2,22 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { emailSignup } from "../actions";
+import { signupAsCast } from "@/app/auth/actions";
+import { ConfirmationView } from "./confirmation-view";
 
-export default function SignupForm() {
-  const [error, setError] = useState<string | null>(null);
+export default function SignupCastForm() {
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const [pendingConfirmation, setPendingConfirmation] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const handleSubmit = (formData: FormData) => {
     setError(null);
-    const email = String(formData.get("email") ?? "");
-    setSubmittedEmail(email);
+    setSubmittedEmail(String(formData.get("email") ?? ""));
     startTransition(async () => {
-      const result = await emailSignup(formData);
+      const result = await signupAsCast(formData);
       if (result?.error) {
         setError(result.error);
-        setSubmittedEmail(null);
       } else if (result?.pendingConfirmation) {
         setPendingConfirmation(true);
       }
@@ -26,43 +25,7 @@ export default function SignupForm() {
   };
 
   if (pendingConfirmation) {
-    return (
-      <main className="min-h-dvh bg-pearl flex flex-col">
-        <div className="bg-gradient-hero px-6 pt-14 pb-12">
-          <div className="max-w-sm mx-auto">
-            <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-ink">
-              確認メールを送信しました
-            </h1>
-            <p className="mt-1.5 text-body-sm text-ink-secondary">
-              メール本文のリンクをタップで完了します
-            </p>
-          </div>
-        </div>
-        <div className="flex-1 px-6 pt-8 pb-12">
-          <div className="max-w-sm mx-auto space-y-4">
-            <div
-              className="rounded-card border border-ink/[0.06] bg-pearl-warm p-5 shadow-soft space-y-2"
-            >
-              <p className="text-body-md text-ink">
-                <span className="font-medium">{submittedEmail}</span>
-              </p>
-              <p className="text-body-sm text-ink-secondary leading-relaxed">
-                上記のメールに送ったリンクをタップすると登録が完了します。
-              </p>
-              <p className="text-[11px] text-ink-muted">
-                届かない場合は迷惑メール / プロモーションタブも確認してください。
-              </p>
-            </div>
-            <Link
-              href="/auth/login"
-              className="block w-full text-center px-6 py-3.5 rounded-pill border border-gold/30 bg-pearl-warm/80 text-body-md text-ink hover:border-gold/50 hover:-translate-y-px transition shadow-soft"
-            >
-              ログイン画面に戻る
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
+    return <ConfirmationView email={submittedEmail} backHref="/cast/auth/login" />;
   }
 
   return (
@@ -70,10 +33,10 @@ export default function SignupForm() {
       <div className="bg-gradient-hero px-6 pt-14 pb-12">
         <div className="max-w-sm mx-auto">
           <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-ink">
-            新規登録
+            新規登録（キャスト）
           </h1>
           <p className="mt-1.5 text-body-sm text-ink-secondary">
-            キャストとして利用を始めます
+            所属店舗のオーナーから受け取った招待コードで参加
           </p>
         </div>
       </div>
@@ -81,14 +44,29 @@ export default function SignupForm() {
       <div className="flex-1 px-6 pt-8 pb-12">
         <div className="max-w-sm mx-auto flex flex-col gap-5">
           <form action={handleSubmit} className="space-y-3">
-            <Field label="お名前">
+            <Field label="源氏名">
               <input
                 type="text"
                 name="name"
-                placeholder="源氏名（例: あかり）"
+                placeholder="例: あかり"
                 required
+                maxLength={40}
                 disabled={pending}
                 className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep"
+                style={{ fontSize: "16px" }}
+              />
+            </Field>
+
+            <Field label="招待コード" hint="所属店舗のオーナーから受け取る">
+              <input
+                type="text"
+                name="inviteCode"
+                placeholder="例: AB23CD45"
+                required
+                maxLength={8}
+                disabled={pending}
+                autoCapitalize="characters"
+                className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep tracking-[0.2em] font-mono uppercase"
                 style={{ fontSize: "16px" }}
               />
             </Field>
@@ -125,21 +103,23 @@ export default function SignupForm() {
               {pending ? "登録中..." : "登録する"}
             </button>
             {error && (
-              <p className="text-[12px] text-[#c2575b] text-center">{error}</p>
+              <p className="text-[12px] text-[#c2575b] text-center leading-relaxed">
+                {error}
+              </p>
             )}
           </form>
 
           <p className="text-body-sm text-ink-secondary text-center">
             既にアカウントをお持ちの方は{" "}
             <Link
-              href="/auth/login"
+              href="/cast/auth/login"
               className="text-blush-deep underline-offset-2 hover:underline"
             >
               ログイン
             </Link>
           </p>
 
-          <p className="text-[11px] text-ink-muted text-center leading-relaxed pt-2">
+          <p className="text-[11px] text-ink-muted text-center leading-relaxed">
             登録すると{" "}
             <Link href="/legal/terms" className="underline underline-offset-2">
               利用規約
