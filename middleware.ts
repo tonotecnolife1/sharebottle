@@ -29,10 +29,17 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Detect Supabase auth cookies. Supabase splits the JWT into chunks
+  // when it grows beyond ~4KB (which can happen once user_metadata
+  // accumulates fields like role / store_id / store_name / cast_id).
+  // Chunked cookies are named `sb-<projectref>-auth-token.0`, `.1`, …
+  // — they do NOT end in `-auth-token`. Match anything starting with
+  // `sb-` and containing `auth-token` so chunked sessions are still
+  // recognised as logged-in.
   const hasSupabaseSession =
-    request.cookies.get("sb-access-token")?.value ||
+    !!request.cookies.get("sb-access-token")?.value ||
     Array.from(request.cookies.getAll()).some(
-      (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"),
+      (c) => c.name.startsWith("sb-") && c.name.includes("auth-token"),
     );
 
   if (!hasSupabaseSession) {
