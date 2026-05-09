@@ -4,6 +4,7 @@ import {
   getCurrentCustomer,
   homePathForRole,
 } from "@/lib/nightos/auth";
+import { isMockAuthDisabled } from "@/lib/nightos/env";
 import { RoleSelector } from "./role-selector";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,16 @@ export default async function RootPage() {
     }
   }
 
+  // Production: mock auth is disabled, so unauthenticated visits should
+  // go straight to the login screen instead of flashing the dev-only
+  // RoleSelector. Without this guard, the unauthed user briefly sees
+  // the venue/role picker, then RoleSelector's localStorage check
+  // either bounces them through /cast/home → /auth/login or just sits
+  // on a useless screen.
+  if (isMockAuthDisabled()) {
+    redirect("/auth/login");
+  }
+
   // Fallback: dev / mock-auth flow that uses the localStorage role-store.
-  // Production has NIGHTOS_DISABLE_MOCK_AUTH=true so this branch is dead.
   return <RoleSelector />;
 }
