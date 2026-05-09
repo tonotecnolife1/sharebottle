@@ -6,7 +6,7 @@ import {
   Check,
   Clock,
   MessageCircle,
-  Sparkles,
+  TrendingUp,
   Wine,
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
@@ -26,20 +26,20 @@ const reasonConfig: Record<
   },
   birthday: {
     icon: Cake,
-    color: "text-blush-dark",
-    bg: "bg-blush-light",
+    color: "text-blush-deep",
+    bg: "bg-blush-soft",
   },
   nomination_chance: {
-    icon: Sparkles,
-    color: "text-roseGold-dark",
-    bg: "bg-roseGold-muted",
+    icon: TrendingUp,
+    color: "text-gold-deep",
+    bg: "bg-champagne-soft",
   },
 };
 
 const categoryLabel: Record<string, { text: string; cls: string }> = {
-  vip: { text: "VIP", cls: "bg-roseGold text-pearl" },
-  new: { text: "新規", cls: "bg-blush-light text-blush-dark" },
-  regular: { text: "常連", cls: "bg-champagne text-ink-secondary" },
+  vip: { text: "VIP", cls: "border border-gold/50 bg-champagne-soft text-gold-deep" },
+  new: { text: "新規", cls: "bg-blush-soft text-blush-deep" },
+  regular: { text: "常連", cls: "bg-champagne-soft text-ink-secondary" },
 };
 
 interface Props {
@@ -129,7 +129,7 @@ export function FollowTargetCard({
         <div className="space-y-0.5 text-[10px] text-ink-secondary">
           {bottle && (
             <div className="flex items-center gap-1">
-              <Wine size={10} className="text-roseGold-dark shrink-0" />
+              <Wine size={10} className="text-gold shrink-0" />
               <span>
                 {bottle.brand}（残 {formatBottleRemainingPct(
                   bottle.remaining_glasses,
@@ -161,7 +161,7 @@ export function FollowTargetCard({
         )}
         <Link
           href={`/cast/templates?customerId=${customer.id}`}
-          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-roseGold-border bg-roseGold-muted text-roseGold-dark active:scale-[0.97]"
+          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-blush/50 bg-blush-soft/60 text-blush-deep active:scale-[0.97]"
           onClick={(e) => e.stopPropagation()}
         >
           <MessageCircle size={10} />
@@ -169,10 +169,10 @@ export function FollowTargetCard({
         </Link>
         <Link
           href={`/cast/ruri-mama?customerId=${customer.id}`}
-          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-amethyst-border bg-amethyst-muted text-amethyst-dark active:scale-[0.97]"
+          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-gold/30 bg-champagne-soft/60 text-gold-deep active:scale-[0.97]"
           onClick={(e) => e.stopPropagation()}
         >
-          <Sparkles size={10} />
+          <MessageCircle size={10} />
           相談
         </Link>
       </div>
