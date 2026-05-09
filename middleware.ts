@@ -1,12 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+// Paths that don't require an authenticated session. Each app's
+// /auth/ subdirectory is included so unauthenticated users can reach
+// the per-role login / signup screens.
 const PUBLIC_PATHS = [
   "/auth/",
+  "/cast/auth/",
+  "/store/auth/",
+  "/customer/auth/",
   "/api/",
   "/docs/",
   "/pitch",
   "/setup",
-  "/onboarding",
+  "/legal/",
 ];
 
 function mockAuthDisabled(): boolean {
@@ -29,14 +35,28 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Detect Supabase auth cookies. Supabase splits the JWT into chunks
+  // when it grows beyond ~4KB (which can happen once user_metadata
+  // accumulates fields like role / store_id / store_name / cast_id).
+  // Chunked cookies are named `sb-<projectref>-auth-token.0`, `.1`, …
+  // — they do NOT end in `-auth-token`. Match anything starting with
+  // `sb-` and containing `auth-token` so chunked sessions are still
+  // recognised as logged-in.
   const hasSupabaseSession =
-    request.cookies.get("sb-access-token")?.value ||
+    !!request.cookies.get("sb-access-token")?.value ||
     Array.from(request.cookies.getAll()).some(
-      (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"),
+      (c) => c.name.startsWith("sb-") && c.name.includes("auth-token"),
     );
 
   if (!hasSupabaseSession) {
-    const loginUrl = new URL("/auth/login", request.url);
+    // Pick the most appropriate login page based on the URL the user
+    // tried to reach. Falls back to the cast login for unknown paths.
+    const loginPath = pathname.startsWith("/store")
+      ? "/store/auth/login"
+      : pathname.startsWith("/customer")
+        ? "/customer/auth/login"
+        : "/cast/auth/login";
+    const loginUrl = new URL(loginPath, request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }

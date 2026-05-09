@@ -1,7 +1,13 @@
-import { isMockAuthDisabled } from "@/lib/nightos/env";
-import LoginForm from "./login-form";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
-  const mockAuthEnabled = !isMockAuthDisabled();
-  return <LoginForm mockAuthEnabled={mockAuthEnabled} />;
+/**
+ * Legacy login URL (pre URL-split). The 3 apps now have their own
+ * login pages at /cast/auth/login, /store/auth/login,
+ * /customer/auth/login. Redirect to the cast login as the default;
+ * users can switch via the bottom switcher there.
+ *
+ * Old bookmarks / external links land here without a 404.
+ */
+export default function LoginRedirect() {
+  redirect("/cast/auth/login");
 }
