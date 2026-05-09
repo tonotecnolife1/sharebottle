@@ -106,7 +106,7 @@ export function FollowTargetCard({
         {/* Name row */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-baseline gap-1.5 min-w-0">
-            <h3 className="text-body-sm font-semibold text-ink truncate">
+            <h3 className="text-body-sm font-medium text-ink truncate">
               {formatCustomerName(customer.name)}
             </h3>
             {customer.job && (
@@ -148,7 +148,7 @@ export function FollowTargetCard({
       </Link>
 
       {/* ── Action bar ── */}
-      <div className="flex items-center gap-1 px-2.5 pb-2 pt-1 border-t border-pearl-soft">
+      <div className="flex items-center gap-1 px-2.5 pb-2 pt-1 border-t border-ink/[0.06]">
         {!contacted && (
           <button
             type="button"
