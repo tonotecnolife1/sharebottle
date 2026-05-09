@@ -80,8 +80,59 @@ export async function finalizeSignedUpUser(): Promise<FinalizeResult> {
     "";
 
   if (!role) {
-    // No pending role — treat as not yet onboarded. Send to login;
-    // the user can sign up via the proper per-role page.
+    // No pending role. This can happen when an already-finalised user's
+    // cast row exists but auth_user_id is unlinked (seeded rows, store
+    // transfer edge cases). Try to recover via canonical cast_id / customer_id
+    // stored in metadata before giving up with a login redirect.
+    const canonicalRole = meta.role as string | undefined;
+    const castId = meta.cast_id as string | undefined;
+    const customerId = meta.customer_id as string | undefined;
+
+    if (castId && canonicalRole && canonicalRole !== "customer") {
+      const { data: castRow } = await supabase
+        .from("nightos_casts")
+        .select("id, user_role, auth_user_id")
+        .eq("id", castId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (
+        castRow &&
+        (castRow.auth_user_id === null || castRow.auth_user_id === user.id)
+      ) {
+        if (castRow.auth_user_id === null) {
+          await supabase
+            .from("nightos_casts")
+            .update({ auth_user_id: user.id })
+            .eq("id", castId);
+        }
+        return {
+          redirectTo: homePathForRole(
+            (castRow.user_role as CastUserRole) ?? "cast",
+          ),
+        };
+      }
+    }
+
+    if (customerId && canonicalRole === "customer") {
+      const { data: custRow } = await supabase
+        .from("customers")
+        .select("id, auth_user_id")
+        .eq("id", customerId)
+        .maybeSingle();
+      if (
+        custRow &&
+        (custRow.auth_user_id === null || custRow.auth_user_id === user.id)
+      ) {
+        if (custRow.auth_user_id === null) {
+          await supabase
+            .from("customers")
+            .update({ auth_user_id: user.id })
+            .eq("id", customerId);
+        }
+        return { redirectTo: "/customer/home" };
+      }
+    }
+
     return {
       redirectTo: "/auth/login",
       error: "登録情報が見つかりませんでした。再度サインアップしてください。",
