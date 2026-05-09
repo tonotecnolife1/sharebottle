@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { changeStore, deleteAccount, mockLogout } from "../auth/actions";
 import type { CastUserRole } from "@/types/nightos";
+import { InstallAppSectionAlways } from "@/components/nightos/install-app-section";
 
 interface Props {
   email: string;
@@ -234,6 +235,9 @@ export default function SettingsClient({
               )}
             </section>
           )}
+
+          {/* アプリとして使う */}
+          <InstallAppSectionAlways />
 
           {/* パスワード */}
           <section className="rounded-card border border-ink/[0.06] bg-pearl-warm p-4 shadow-soft space-y-2">

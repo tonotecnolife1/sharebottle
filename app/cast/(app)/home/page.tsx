@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Crown, Users } from "lucide-react";
+import { ChevronRight, Crown, UserCircle, Users } from "lucide-react";
 import { SummaryCards } from "@/features/cast-home/components/summary-cards";
 import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
 
@@ -29,13 +29,20 @@ export default async function CastHomePage() {
       <VisitNotificationPoller castId={data.cast.id} />
 
       {/* ── Hero ── */}
-      <div className="bg-gradient-hero px-5 pt-12 pb-6">
+      <div className="relative bg-gradient-hero px-5 pt-12 pb-6">
         <p className="text-body-sm text-ink-secondary mb-1">
           おかえりなさい
         </p>
         <h1 className="font-display text-[26px] leading-[1.2] font-medium tracking-wide text-ink">
           {data.cast.name}さん
         </h1>
+        <Link
+          href="/cast/my"
+          aria-label="マイページ"
+          className="absolute top-12 right-5 w-9 h-9 rounded-full bg-pearl-warm/60 backdrop-blur-sm flex items-center justify-center hover:bg-pearl-warm/80 transition shadow-soft"
+        >
+          <UserCircle size={22} className="text-ink-secondary" />
+        </Link>
       </div>
 
       <div className="px-5 pt-5 pb-8 space-y-5">

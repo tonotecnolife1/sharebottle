@@ -20,7 +20,8 @@ export default async function CastLayout({ children }: { children: ReactNode }) 
   if (!cast) {
     const role = await getCurrentRole();
     if (role) redirect(homePathForRole(role));
-    redirect("/auth/login");
+    // Authenticated but profile not linked → root page handles auto-link/onboarding
+    redirect("/");
   }
   const userRole = cast.user_role ?? "cast";
   if (userRole !== "cast") {

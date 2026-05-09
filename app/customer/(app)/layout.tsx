@@ -21,7 +21,7 @@ export default async function CustomerLayout({
   if (!customer) {
     const role = await getCurrentRole();
     if (role) redirect(homePathForRole(role));
-    redirect("/auth/login");
+    redirect("/");
   }
 
   return (

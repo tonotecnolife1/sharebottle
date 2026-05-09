@@ -2,71 +2,46 @@
 
 import { Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  captureInstallPrompt,
+  clearInstallPrompt,
+  getInstallPrompt,
+  isInstalledPwa,
+  isIosSafari,
+} from "@/lib/nightos/pwa";
 
-const DISMISS_STORAGE_KEY = "nightos.install-prompt.dismissed-at";
-const DISMISS_HIDE_DAYS = 14;
+const DISMISS_KEY = "nightos.install-prompt.dismissed-at";
+const DISMISS_DAYS = 30;
+const SHOW_DELAY_MS = 3000;
 
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
-
-/**
- * PWA install prompt for Android Chrome / Edge.
- *
- * iOS Safari does not fire `beforeinstallprompt`; we show a separate
- * iOS hint when the user opens the app from Mobile Safari and isn't
- * already running standalone.
- *
- * Either banner can be dismissed; we remember that for 14 days so we
- * don't spam regular users.
- */
 export function InstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
-    null,
-  );
+  const [ready, setReady] = useState(false);
   const [showIosHint, setShowIosHint] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (isInstalledPwa()) return;
 
-    // Hide if already installed (running standalone)
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      // iOS Safari old non-standard
-      (window.navigator as any).standalone === true;
-    if (isStandalone) return;
-
-    // Hide if recently dismissed
-    const dismissedAt = window.localStorage.getItem(DISMISS_STORAGE_KEY);
+    const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
-      const daysAgo =
-        (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
-      if (daysAgo < DISMISS_HIDE_DAYS) {
+      const daysAgo = (Date.now() - Number(dismissedAt)) / 86_400_000;
+      if (daysAgo < DISMISS_DAYS) {
         setDismissed(true);
         return;
       }
     }
 
     const onPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
+      captureInstallPrompt(e);
+      // Delay showing the popup so it doesn't interrupt landing
+      window.setTimeout(() => setReady(true), SHOW_DELAY_MS);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
 
-    // iOS detection — Safari only, no Chrome/CriOS in UA
-    const ua = window.navigator.userAgent;
-    const isIos = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS/.test(ua);
-    if (isIos) {
-      // Delay so we don't pop up immediately on first navigation.
-      const t = window.setTimeout(() => setShowIosHint(true), 4000);
+    if (isIosSafari()) {
+      const t = window.setTimeout(() => setShowIosHint(true), SHOW_DELAY_MS);
       return () => {
-        window.clearTimeout(t);
+        clearTimeout(t);
         window.removeEventListener("beforeinstallprompt", onPrompt);
       };
     }
@@ -75,20 +50,21 @@ export function InstallPrompt() {
   }, []);
 
   const dismiss = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(DISMISS_STORAGE_KEY, String(Date.now()));
-    }
-    setDeferred(null);
+    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    clearInstallPrompt();
+    setReady(false);
     setShowIosHint(false);
     setDismissed(true);
   };
 
   const install = async () => {
-    if (!deferred) return;
-    await deferred.prompt();
-    const choice = await deferred.userChoice;
-    if (choice.outcome === "accepted") {
-      setDeferred(null);
+    const prompt = getInstallPrompt();
+    if (!prompt) return;
+    await prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === "accepted") {
+      clearInstallPrompt();
+      setReady(false);
     } else {
       dismiss();
     }
@@ -96,7 +72,7 @@ export function InstallPrompt() {
 
   if (dismissed) return null;
 
-  if (deferred) {
+  if (ready && getInstallPrompt()) {
     return (
       <PromptCard onDismiss={dismiss}>
         <div className="flex-1 min-w-0">
@@ -148,7 +124,8 @@ function PromptCard({
 }) {
   return (
     <div
-      className="fixed left-3 right-3 bottom-3 z-40 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm"
+      className="fixed left-3 right-3 z-50 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4.5rem)" }}
       role="dialog"
       aria-label="アプリのインストール"
     >
