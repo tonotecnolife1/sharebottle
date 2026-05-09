@@ -24,13 +24,20 @@ import type {
   Cast,
   CastHomeData,
   CastMemo,
+  CastToStoreRequest,
+  Coupon,
+  CouponType,
   Customer,
+  CustomerBottleView,
   CustomerCategory,
   CustomerContext,
+  CustomerStoreOverview,
   Douhan,
+  DouhanSummary,
   FollowLog,
   LineScreenshot,
   MemoExtractionResult,
+  StoreToCastMessage,
   Visit,
 } from "@/types/nightos";
 import type { TrendPoint, RepeatPoint } from "./store-mock-data";
@@ -1077,3 +1084,463 @@ function rowToScreenshot(row: any): LineScreenshot {
     created_at: row.created_at,
   };
 }
+
+function rowToDouhan(row: any): Douhan {
+  return {
+    id: row.id,
+    cast_id: row.cast_id,
+    customer_id: row.customer_id,
+    store_id: row.store_id,
+    date: row.date,
+    status: row.status,
+    note: row.note ?? null,
+    cancellation_reason: row.cancellation_reason ?? null,
+    cancelled_at: row.cancelled_at ?? null,
+    created_at: row.created_at ?? row.date,
+  };
+}
+
+function rowToCoupon(row: any): Coupon {
+  return {
+    id: row.id,
+    customer_id: row.customer_id,
+    store_id: row.store_id,
+    store_name: row.store_name ?? "",
+    type: (row.type ?? "drink") as CouponType,
+    title: row.title,
+    description: row.description ?? "",
+    valid_from: row.valid_from,
+    valid_until: row.valid_until,
+    used_at: row.used_at ?? null,
+    code: row.code ?? "",
+  };
+}
+
+function rowToCastMessage(row: any): StoreToCastMessage {
+  return {
+    id: row.id,
+    cast_id: row.cast_id,
+    message: row.message,
+    sent_at: row.sent_at,
+    read: Boolean(row.read),
+  };
+}
+
+function rowToCastRequest(row: any): CastToStoreRequest {
+  return {
+    id: row.id,
+    cast_id: row.cast_id,
+    cast_name: row.cast_name,
+    message: row.message,
+    sent_at: row.sent_at,
+    resolved: Boolean(row.resolved),
+  };
+}
+
+// ═══════════════ Cast → Store messaging (cast_messages) ═══════════════
+
+export async function sendCastMessageReal(args: {
+  castId: string;
+  message: string;
+}): Promise<StoreToCastMessage> {
+  const supabase = createServerSupabaseClient();
+  const id = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const sent_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("cast_messages")
+    .insert({
+      id,
+      cast_id: args.castId,
+      message: args.message,
+      sent_at,
+      read: false,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return rowToCastMessage(data);
+}
+
+export async function getUnreadCastMessagesReal(
+  castId: string,
+): Promise<StoreToCastMessage[]> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_messages")
+    .select("*")
+    .eq("cast_id", castId)
+    .eq("read", false)
+    .order("sent_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToCastMessage);
+}
+
+export async function markCastMessageReadReal(id: string): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("cast_messages")
+    .update({ read: true })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// ═══════════════ Cast → Store requests (cast_requests) ═══════════════
+
+export async function sendCastRequestReal(args: {
+  castId: string;
+  castName: string;
+  message: string;
+}): Promise<CastToStoreRequest> {
+  const supabase = createServerSupabaseClient();
+  const id = `req_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const sent_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("cast_requests")
+    .insert({
+      id,
+      cast_id: args.castId,
+      cast_name: args.castName,
+      message: args.message,
+      sent_at,
+      resolved: false,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return rowToCastRequest(data);
+}
+
+export async function getUnresolvedCastRequestsReal(): Promise<
+  CastToStoreRequest[]
+> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_requests")
+    .select("*")
+    .eq("resolved", false)
+    .order("sent_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToCastRequest);
+}
+
+export async function resolveCastRequestReal(id: string): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("cast_requests")
+    .update({ resolved: true })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// ═══════════════ Douhan summary (douhans) ═══════════════
+
+export async function getDouhanSummaryReal(
+  castId: string,
+  today: Date,
+): Promise<DouhanSummary> {
+  const supabase = createServerSupabaseClient();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+    .toISOString()
+    .slice(0, 10);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    .toISOString()
+    .slice(0, 10);
+
+  const { data, error } = await supabase
+    .from("douhans")
+    .select("*")
+    .eq("cast_id", castId)
+    .gte("date", monthStart)
+    .lte("date", monthEnd)
+    .order("date", { ascending: true });
+  if (error) throw error;
+
+  const douhans = (data ?? []).map(rowToDouhan);
+
+  // Pull goal from cast_goals if available; otherwise fall back to 8.
+  const { data: goal } = await supabase
+    .from("cast_goals")
+    .select("douhan_goal")
+    .eq("cast_id", castId)
+    .maybeSingle();
+  const monthlyGoal = (goal?.douhan_goal as number | undefined) ?? 8;
+
+  return {
+    monthlyCount: douhans.filter((d) => d.status === "completed").length,
+    monthlyGoal,
+    thisMonthDouhans: douhans,
+  };
+}
+
+// ═══════════════ Customer queries (coupons / overviews / bottle views) ═══════════════
+
+export async function getCustomerCouponsReal(
+  customerId: string,
+): Promise<Coupon[]> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("coupons")
+    .select("*")
+    .eq("customer_id", customerId);
+  if (error) throw error;
+
+  return (data ?? []).map(rowToCoupon).sort((a, b) => {
+    // Unused first, then by valid_until desc
+    if (!a.used_at && b.used_at) return -1;
+    if (a.used_at && !b.used_at) return 1;
+    return (
+      new Date(b.valid_until).getTime() - new Date(a.valid_until).getTime()
+    );
+  });
+}
+
+export async function getCustomerBottleViewsReal(
+  customerId: string,
+): Promise<CustomerBottleView[]> {
+  const supabase = createServerSupabaseClient();
+
+  const { data: bottles, error: bErr } = await supabase
+    .from("bottles")
+    .select("*")
+    .eq("customer_id", customerId);
+  if (bErr) throw bErr;
+  if (!bottles || bottles.length === 0) return [];
+
+  const storeIds = Array.from(new Set(bottles.map((b: any) => b.store_id)));
+  const { data: stores } = await supabase
+    .from("nightos_stores")
+    .select("id, name")
+    .in("id", storeIds);
+  const storeMap = new Map(
+    (stores ?? []).map((s: any) => [s.id, s.name as string]),
+  );
+
+  // Resolve "regular cast" — the one most recently nominated by this
+  // customer. Falls back to the customer.cast_id field.
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("cast_id")
+    .eq("id", customerId)
+    .maybeSingle();
+  const castId = (customer as any)?.cast_id as string | undefined;
+  let castName: string | null = null;
+  if (castId) {
+    const { data: cast } = await supabase
+      .from("nightos_casts")
+      .select("name")
+      .eq("id", castId)
+      .maybeSingle();
+    castName = ((cast as any)?.name as string | undefined) ?? null;
+  }
+
+  return bottles.map((b: any) => ({
+    bottle: rowToBottle(b),
+    store_name: storeMap.get(b.store_id) ?? "（不明）",
+    cast_name: castName,
+  }));
+}
+
+const RANK_TIERS_REAL: {
+  tier: import("@/types/nightos").RankTier;
+  label: string;
+  emoji: string;
+  minVisits: number;
+}[] = [
+  { tier: "diamond", label: "ダイヤモンド", emoji: "💎", minVisits: 50 },
+  { tier: "platinum", label: "プラチナ", emoji: "👑", minVisits: 20 },
+  { tier: "gold", label: "ゴールド", emoji: "🥇", minVisits: 10 },
+  { tier: "silver", label: "シルバー", emoji: "🥈", minVisits: 5 },
+  { tier: "bronze", label: "ブロンズ", emoji: "🥉", minVisits: 0 },
+];
+
+function computeRank(
+  visitCount: number,
+): import("@/types/nightos").CustomerRank {
+  let currentIdx = RANK_TIERS_REAL.length - 1;
+  for (let i = 0; i < RANK_TIERS_REAL.length; i++) {
+    if (visitCount >= RANK_TIERS_REAL[i].minVisits) {
+      currentIdx = i;
+      break;
+    }
+  }
+  const current = RANK_TIERS_REAL[currentIdx];
+  const next = currentIdx > 0 ? RANK_TIERS_REAL[currentIdx - 1] : null;
+  const rangeStart = current.minVisits;
+  const rangeEnd = next ? next.minVisits : current.minVisits + 10;
+  return {
+    tier: current.tier,
+    label: current.label,
+    emoji: current.emoji,
+    visitCount,
+    nextTierLabel: next ? next.label : null,
+    visitsToNextTier: Math.max(0, next ? next.minVisits - visitCount : 0),
+    progress:
+      rangeEnd > rangeStart
+        ? Math.min(1, Math.max(0, (visitCount - rangeStart) / (rangeEnd - rangeStart)))
+        : 1,
+  };
+}
+
+export async function getCustomerStoreOverviewsReal(
+  customerId: string,
+): Promise<CustomerStoreOverview[]> {
+  const supabase = createServerSupabaseClient();
+
+  const [bottlesRes, visitsRes, couponsRes, customerRes] = await Promise.all([
+    supabase.from("bottles").select("*").eq("customer_id", customerId),
+    supabase
+      .from("visits")
+      .select("*")
+      .eq("customer_id", customerId)
+      .order("visited_at", { ascending: false }),
+    supabase.from("coupons").select("*").eq("customer_id", customerId),
+    supabase
+      .from("customers")
+      .select("category")
+      .eq("id", customerId)
+      .maybeSingle(),
+  ]);
+  if (bottlesRes.error) throw bottlesRes.error;
+  if (visitsRes.error) throw visitsRes.error;
+  if (couponsRes.error) throw couponsRes.error;
+
+  const bottles = (bottlesRes.data ?? []).map(rowToBottle);
+  const visits = (visitsRes.data ?? []).map(rowToVisit);
+  const coupons = (couponsRes.data ?? []).map(rowToCoupon);
+  const isVip = (customerRes.data as any)?.category === "vip";
+
+  const storeIdSet = new Set<string>([
+    ...bottles.map((b) => b.store_id),
+    ...visits.map((v) => v.store_id),
+  ]);
+  const storeIds = Array.from(storeIdSet);
+  if (storeIds.length === 0) return [];
+
+  // Look up store names + relevant cast names in parallel.
+  const nominatedCastIds = Array.from(
+    new Set(
+      visits.filter((v) => v.is_nominated && v.cast_id).map((v) => v.cast_id!),
+    ),
+  );
+  const [storesRes, castsRes] = await Promise.all([
+    supabase.from("nightos_stores").select("id, name").in("id", storeIds),
+    nominatedCastIds.length > 0
+      ? supabase.from("nightos_casts").select("id, name").in("id", nominatedCastIds)
+      : Promise.resolve({ data: [] as any[], error: null }),
+  ]);
+  const storeMap = new Map(
+    (storesRes.data ?? []).map((s: any) => [s.id as string, s.name as string]),
+  );
+  const castMap = new Map(
+    (castsRes.data ?? []).map((c: any) => [c.id as string, c.name as string]),
+  );
+
+  return storeIds.map((storeId) => {
+    const storeBottles = bottles.filter((b) => b.store_id === storeId);
+    const storeVisits = visits.filter((v) => v.store_id === storeId);
+    const nomination = storeVisits.find((v) => v.is_nominated && v.cast_id);
+    const storeCoupons = coupons.filter((c) => c.store_id === storeId);
+    return {
+      store_id: storeId,
+      store_name: storeMap.get(storeId) ?? "（不明）",
+      visit_count: storeVisits.length,
+      total_spent_estimate: storeVisits.length * (isVip ? 40_000 : 22_000),
+      bottles: storeBottles,
+      nomination_cast: nomination?.cast_id
+        ? (castMap.get(nomination.cast_id) ?? null)
+        : null,
+      nomination_cast_id: nomination?.cast_id ?? null,
+      last_visit: storeVisits[0]?.visited_at ?? null,
+      coupons: storeCoupons,
+      rank: computeRank(storeVisits.length),
+    };
+  });
+}
+
+// ═══════════════ Onboarding (migration 008) ═══════════════════
+
+/**
+ * Generate an 8-char human-friendly invite code.
+ * Excludes 0/O/1/I/L to avoid confusion when a user types it in.
+ */
+const INVITE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+export function generateInviteCode(): string {
+  let out = "";
+  for (let i = 0; i < 8; i++) {
+    out += INVITE_ALPHABET[
+      Math.floor(Math.random() * INVITE_ALPHABET.length)
+    ];
+  }
+  return out;
+}
+
+/**
+ * Look up a store by invite code (case-insensitive, hyphens stripped).
+ * Returns null if not found. Used during cast / store_staff onboarding.
+ */
+export async function getStoreByInviteCodeReal(
+  rawCode: string,
+): Promise<{ id: string; name: string; venue_type: "club" | "cabaret" } | null> {
+  const normalized = rawCode.replace(/[\s-]/g, "").toUpperCase();
+  if (!normalized) return null;
+
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("nightos_stores")
+    .select("id, name, venue_type")
+    .eq("invite_code", normalized)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    id: data.id as string,
+    name: data.name as string,
+    venue_type: ((data.venue_type as string) ?? "cabaret") as
+      | "club"
+      | "cabaret",
+  };
+}
+
+/**
+ * Get the venue_type for the store a cast belongs to.
+ * Returns "club" as a safe fallback if not found.
+ */
+export async function getVenueTypeForCastReal(
+  castId: string,
+): Promise<"club" | "cabaret"> {
+  const supabase = createServerSupabaseClient();
+  const { data } = await supabase
+    .from("nightos_casts")
+    .select("store_id")
+    .eq("id", castId)
+    .maybeSingle();
+  if (!data?.store_id) return "club";
+
+  const { data: store } = await supabase
+    .from("nightos_stores")
+    .select("venue_type")
+    .eq("id", data.store_id)
+    .maybeSingle();
+
+  const vt = (store as any)?.venue_type;
+  return vt === "club" || vt === "cabaret" ? vt : "club";
+}
+
+/**
+ * Look up the customer row owned by the signed-in user.
+ * Returns null if the user signed up as a non-customer role.
+ */
+export async function getCustomerByAuthUserIdReal(
+  authUserId: string,
+): Promise<Customer | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToCustomer(data) : null;
+}
+

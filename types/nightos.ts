@@ -8,7 +8,14 @@ export interface Store {
   id: string;
   name: string;
   venue_type: VenueType;
+  invite_code?: string;
 }
+
+/**
+ * Account-level role bound at sign-up. Drives the URL gates in
+ * middleware.ts and the post-auth redirect in app/page.tsx.
+ */
+export type CastUserRole = "cast" | "store_staff" | "store_owner";
 
 export interface Cast {
   id: string;
@@ -17,6 +24,7 @@ export interface Cast {
   nomination_count: number;
   monthly_sales: number;
   repeat_rate: number; // 0..1
+  user_role?: CastUserRole;
   /** Club only: role in the hierarchy */
   club_role?: ClubRole;
   /** Club only: the oneesan this help is assigned to */
@@ -398,6 +406,25 @@ export interface RuriMamaRequest {
   previousReply?: string;
   /** ブラッシュアップの方向性（例: "もっと温かく"） */
   refinementDirection?: string;
+}
+
+// ═══════════════ Store ↔ Cast messaging ═══════════════
+
+export interface StoreToCastMessage {
+  id: string;
+  cast_id: string;
+  message: string;
+  sent_at: string;
+  read: boolean;
+}
+
+export interface CastToStoreRequest {
+  id: string;
+  cast_id: string;
+  cast_name: string;
+  message: string;
+  sent_at: string;
+  resolved: boolean;
 }
 
 export interface RuriMamaResponse {

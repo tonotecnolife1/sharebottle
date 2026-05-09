@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
-import type { Cast } from "@/types/nightos";
+import type { Cast, CastUserRole, Customer } from "@/types/nightos";
 import { CURRENT_CAST_ID, CURRENT_MAMA_ID } from "./constants";
 import { isMockAuthDisabled } from "./env";
 import { mockCasts } from "./mock-data";
+
+export type AccountRole = CastUserRole | "customer";
 
 function isSupabaseConfigured(): boolean {
   return Boolean(
@@ -95,3 +97,79 @@ function getMockCast(): Cast | null {
   if (!mockCastId) return null;
   return mockCasts.find((c) => c.id === mockCastId) ?? null;
 }
+
+/**
+ * Returns the customers row owned by the signed-in user (migration 008).
+ * Used by /customer/* layouts to enforce role and to scope queries.
+ */
+export async function getCurrentCustomer(): Promise<Customer | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { createServerSupabaseClient } = await import("@/lib/supabase/server");
+    const supabase = createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { getCustomerByAuthUserIdReal } = await import("./supabase-real");
+    return await getCustomerByAuthUserIdReal(user.id);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve the account-level role of the signed-in user.
+ *
+ * Priority:
+ *   1. nightos_casts row → cast.user_role
+ *   2. customers row with auth_user_id → "customer"
+ *   3. mock cookie (dev only, when NIGHTOS_DISABLE_MOCK_AUTH unset)
+ *      treated as "cast"
+ *   4. null (not signed in / no profile yet)
+ */
+export async function getCurrentRole(): Promise<AccountRole | null> {
+  const cast = await getCurrentCast();
+  if (cast) return (cast.user_role ?? "cast") as CastUserRole;
+
+  const customer = await getCurrentCustomer();
+  if (customer) return "customer";
+
+  return null;
+}
+
+/**
+ * Resolve the venue type for the current cast's store.
+ * Falls back to "club" for mock sessions and unauthenticated users.
+ */
+export async function getCurrentVenueType(): Promise<"club" | "cabaret"> {
+  const cast = await getCurrentCast();
+  if (!cast) return "club";
+
+  if (!isSupabaseConfigured()) {
+    // Mock mode: read from the mock cast's store — default to club
+    return "club";
+  }
+
+  try {
+    const { getVenueTypeForCastReal } = await import("./supabase-real");
+    return await getVenueTypeForCastReal(cast.id);
+  } catch {
+    return "club";
+  }
+}
+
+/** Where the role is supposed to land after sign-in. */
+export function homePathForRole(role: AccountRole): string {
+  switch (role) {
+    case "cast":
+      return "/cast/home";
+    case "store_owner":
+    case "store_staff":
+      return "/store";
+    case "customer":
+      return "/customer/home";
+  }
+}
+
