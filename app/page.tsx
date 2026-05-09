@@ -24,6 +24,12 @@ export default async function RootPage() {
   }
 
   // Signed in via Supabase but no profile yet → onboarding.
+  // IMPORTANT: do NOT call `redirect()` inside a try/catch, because
+  // redirect() throws a NEXT_REDIRECT signal that the framework needs
+  // to receive — wrapping it in try/catch swallows the signal and the
+  // navigation never happens. We capture the user id first, then
+  // redirect outside the catch.
+  let signedInUserId: string | null = null;
   if (
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -36,10 +42,13 @@ export default async function RootPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) redirect("/onboarding");
+      signedInUserId = user?.id ?? null;
     } catch {
-      // fall through
+      // fall through; keep signedInUserId = null
     }
+  }
+  if (signedInUserId) {
+    redirect("/onboarding");
   }
 
   // Production: mock auth is disabled, so unauthenticated visits should
