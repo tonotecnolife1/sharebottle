@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
   "/pitch",
   "/setup",
   "/legal/",
+  "/demo",
 ];
 
 function mockAuthDisabled(): boolean {
