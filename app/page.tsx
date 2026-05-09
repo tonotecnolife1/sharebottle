@@ -22,7 +22,9 @@ export default async function RootPage() {
     redirect("/customer/home");
   }
 
-  // Signed in via Supabase but no profile yet → onboarding.
+  // Signed in via Supabase but no profile row linked yet.
+  // Try to auto-link an existing cast/customer row by metadata before
+  // falling through to onboarding (which would create a duplicate row).
   if (
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -35,7 +37,59 @@ export default async function RootPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) redirect("/onboarding");
+      if (user) {
+        const meta = (user.user_metadata ?? {}) as {
+          role?: string;
+          display_name?: string;
+        };
+        const metaRole = meta.role;
+        const displayName = meta.display_name;
+
+        // Try to find an unlinked row matching this user's display_name.
+        if (displayName) {
+          if (
+            metaRole === "cast" ||
+            metaRole === "store_owner" ||
+            metaRole === "store_staff"
+          ) {
+            const { data: castRow } = await supabase
+              .from("nightos_casts")
+              .select("id, user_role")
+              .eq("name", displayName)
+              .is("auth_user_id", null)
+              .maybeSingle();
+            if (castRow) {
+              await supabase
+                .from("nightos_casts")
+                .update({ auth_user_id: user.id })
+                .eq("id", castRow.id);
+              redirect(
+                homePathForRole(
+                  (castRow.user_role ?? metaRole) as Parameters<
+                    typeof homePathForRole
+                  >[0],
+                ),
+              );
+            }
+          } else if (metaRole === "customer") {
+            const { data: custRow } = await supabase
+              .from("customers")
+              .select("id")
+              .eq("name", displayName)
+              .is("auth_user_id", null)
+              .maybeSingle();
+            if (custRow) {
+              await supabase
+                .from("customers")
+                .update({ auth_user_id: user.id })
+                .eq("id", custRow.id);
+              redirect("/customer/home");
+            }
+          }
+        }
+
+        redirect("/onboarding");
+      }
     } catch {
       // fall through
     }
