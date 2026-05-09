@@ -5,7 +5,6 @@ import {
   Crown,
   Diamond,
   MapPin,
-  Sparkles,
   Star,
   Ticket,
   User,
@@ -49,17 +48,16 @@ export default async function CustomerHomePage() {
   const isPlatinumOrAbove = highestRank?.rank.tier === "diamond" || highestRank?.rank.tier === "platinum";
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <header className="px-5 pt-8 pb-4">
-        <div className="text-label-sm text-ink-muted tracking-wider uppercase mb-1">
-          My NIGHTOS
-        </div>
-        <h1 className="text-display-lg font-display font-semibold text-ink">
+    <div>
+      <header className="bg-gradient-hero px-5 pt-12 pb-6">
+        <p className="text-body-sm text-ink-secondary mb-1">
+          おかえりなさい
+        </p>
+        <h1 className="font-display text-[28px] leading-[1.2] font-medium tracking-wide text-ink">
           {customer?.name ?? "ゲスト"}さん
         </h1>
         {customer && (
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-2">
             <Badge
               tone={
                 customer.category === "vip"
@@ -75,37 +73,37 @@ export default async function CustomerHomePage() {
                   ? "新規"
                   : "常連"}
             </Badge>
-            <span className="text-label-sm text-ink-muted">
+            <span className="text-[11px] text-ink-muted">
               {overviews.length}店舗を利用中
             </span>
           </div>
         )}
       </header>
 
-      <div className="px-5 pb-6 space-y-5">
-        {/* ── Global Diamond/Platinum status banner ── */}
+      <div className="px-5 pt-5 pb-8 space-y-5">
+        {/* ── Diamond/Platinum status banner ── */}
         {isPlatinumOrAbove && highestRank && (
           <GemCard className="p-4">
             <div
               aria-hidden
-              className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.35),transparent_60%)]"
+              className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.4),transparent_60%)]"
             />
             <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-pearl-warm/40 backdrop-blur-sm flex items-center justify-center">
                 {isDiamond ? (
-                  <Diamond size={28} className="text-pearl" />
+                  <Diamond size={28} className="text-ink" />
                 ) : (
-                  <Crown size={28} className="text-pearl" />
+                  <Crown size={28} className="text-ink" />
                 )}
               </div>
               <div className="flex-1">
-                <div className="text-label-sm text-pearl/80 uppercase tracking-wider">
-                  {isDiamond ? "Diamond Member" : "Platinum Member"}
+                <div className="text-[11px] text-ink-secondary">
+                  {isDiamond ? "ダイヤモンド会員" : "プラチナ会員"}
                 </div>
-                <div className="text-display-sm font-display text-pearl">
+                <div className="font-display text-[20px] leading-tight text-ink">
                   {highestRank.rank.emoji} {highestRank.rank.label}
                 </div>
-                <div className="text-body-sm text-pearl/70 mt-0.5">
+                <div className="text-body-sm text-ink-secondary mt-0.5">
                   全{overviews.length}店舗で特別なおもてなしを受けられます
                 </div>
               </div>
@@ -132,7 +130,7 @@ export default async function CustomerHomePage() {
             label="クーポン"
             value={activeCoupons.length}
             unit="枚"
-            icon={<Sparkles size={12} className="text-amethyst-dark" />}
+            icon={<Ticket size={12} className="text-gold-deep" />}
             tone="amethyst"
           />
         </div>
@@ -141,8 +139,10 @@ export default async function CustomerHomePage() {
         {overviews.length > 1 && (
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Star size={14} className="text-roseGold-dark" />
-              <h3 className="text-body-md font-semibold text-ink">店舗別ランク</h3>
+              <Star size={14} className="text-gold-deep" />
+              <h3 className="font-display text-[18px] leading-tight font-medium text-ink">
+                店舗別ランク
+              </h3>
             </div>
             <div className="space-y-2">
               {overviews.map((o) => (
@@ -161,8 +161,8 @@ export default async function CustomerHomePage() {
 
         {/* Store cards */}
         <section className="space-y-3">
-          <h2 className="text-display-sm text-ink flex items-center gap-1.5">
-            <MapPin size={16} className="text-roseGold-dark" />
+          <h2 className="font-display text-[20px] leading-tight font-medium text-ink flex items-center gap-1.5 px-1">
+            <MapPin size={16} className="text-gold-deep" />
             ご利用店舗
           </h2>
 
@@ -182,14 +182,14 @@ export default async function CustomerHomePage() {
         {/* All coupons summary */}
         {activeCoupons.length > 0 && (
           <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-display-sm text-ink flex items-center gap-1.5">
-                <Ticket size={16} className="text-amethyst-dark" />
+            <div className="flex items-center justify-between px-1">
+              <h2 className="font-display text-[20px] leading-tight font-medium text-ink flex items-center gap-1.5">
+                <Ticket size={16} className="text-gold-deep" />
                 全クーポン
               </h2>
               <Link
                 href="/customer/coupons"
-                className="text-label-sm text-amethyst-dark flex items-center gap-0.5"
+                className="text-[12px] text-blush-deep flex items-center gap-0.5"
               >
                 すべて見る
                 <ChevronRight size={12} />

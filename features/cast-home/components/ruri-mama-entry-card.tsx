@@ -1,29 +1,31 @@
 import Link from "next/link";
-import { Gem, Sparkles } from "lucide-react";
+import { Gem } from "lucide-react";
 import { GemCard } from "@/components/nightos/card";
 
 export function RuriMamaEntryCard() {
   return (
-    <Link href="/cast/ruri-mama" className="block active:scale-[0.99] transition-transform">
+    <Link
+      href="/cast/ruri-mama"
+      className="block hover:-translate-y-px transition will-change-transform"
+    >
       <GemCard className="p-5">
         {/* subtle shine decoration */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.35),transparent_60%)]"
+          className="absolute inset-0 bg-[radial-gradient(400px_160px_at_120%_-20%,rgba(255,255,255,0.4),transparent_60%)]"
         />
         <div className="relative flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
-            <Gem size={22} className="text-pearl" />
+          <div className="w-12 h-12 rounded-full border border-gold/40 bg-pearl-warm/60 backdrop-blur-sm flex items-center justify-center">
+            <Gem size={22} className="text-gold-deep" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5 text-label-sm text-pearl/90 uppercase tracking-wider">
-              <Sparkles size={12} />
-              Sakura Mama AI
+            <div className="text-[11px] text-gold-deep mb-0.5">
+              さくらママ AI
             </div>
-            <div className="text-display-sm font-display text-pearl">
+            <div className="font-display text-[20px] leading-tight font-medium text-ink">
               さくらママに相談する
             </div>
-            <div className="text-body-sm text-pearl/80 mt-0.5">
+            <div className="text-body-sm text-ink-secondary mt-0.5">
               LINE文面・接客・ボトル提案、何でも聞いてね
             </div>
           </div>

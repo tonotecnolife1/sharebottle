@@ -19,18 +19,23 @@ import {
   mockChatRooms,
   mockChatMessages,
 } from "@/features/team-chat/lib/mock-chat-data";
+import { isSetupRequestAuthorized } from "@/lib/nightos/admin-gate";
 
 /**
  * POST /api/setup
  * Supabase にスキーマ＋テストデータを一括投入する。
  * 一度実行すれば OK。重複は ON CONFLICT で無視。
+ *
+ * 🔒 Gated by `NIGHTOS_SETUP_SECRET` env (≥16 chars). Returns 404 if
+ * unset — production deployments should NOT set this unless they
+ * intentionally want to seed demo data into prod.
  */
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get("secret");
 
-  if (secret !== "nightos-setup-2026") {
-    return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
+  if (!isSetupRequestAuthorized(secret)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   if (

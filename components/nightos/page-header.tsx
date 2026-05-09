@@ -30,8 +30,8 @@ export function PageHeader({
       className={cn(
         "sticky top-0 z-50 px-5 py-4 backdrop-blur-md",
         isRuri
-          ? "ruri-gradient text-pearl"
-          : "bg-pearl-warm/85 border-b border-pearl-soft",
+          ? "bg-gradient-blush text-ink shadow-soft"
+          : "bg-pearl-warm/85 border-b border-ink/[0.06]",
         className,
       )}
     >
@@ -41,33 +41,18 @@ export function PageHeader({
             type="button"
             onClick={() => router.back()}
             aria-label="戻る"
-            className={cn(
-              "p-1.5 -ml-1.5 rounded-full transition-colors",
-              isRuri
-                ? "hover:bg-white/15 text-pearl"
-                : "hover:bg-pearl-soft text-ink",
-            )}
+            className="p-1.5 -ml-1.5 rounded-full transition-colors text-ink hover:bg-pearl-soft"
           >
             <ArrowLeft size={22} />
           </button>
         )}
         {isRuri && <RuriMamaAvatar size={44} withGlow />}
         <div className="flex-1 min-w-0">
-          <h1
-            className={cn(
-              "text-display-sm leading-tight",
-              isRuri ? "text-pearl" : "text-ink",
-            )}
-          >
+          <h1 className="font-display text-[20px] leading-tight font-medium tracking-wide text-ink">
             {title}
           </h1>
           {subtitle && (
-            <p
-              className={cn(
-                "text-body-sm",
-                isRuri ? "text-pearl/80" : "text-ink-secondary",
-              )}
-            >
+            <p className="text-body-sm text-ink-secondary">
               {subtitle}
             </p>
           )}

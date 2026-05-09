@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Crown, Mail, Play, Sparkles, User, UserPlus } from "lucide-react";
-import { Card } from "@/components/nightos/card";
-import { Button } from "@/components/nightos/button";
+import { ChevronRight } from "lucide-react";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
+import { setRole, setVenueType } from "@/lib/nightos/role-store";
+import { setStorePermission } from "@/lib/nightos/store-permission-store";
 import { emailLogin, mockLogin } from "../actions";
 
 interface MockCast {
@@ -48,23 +49,60 @@ const MOCK_CASTS: MockCast[] = [
   },
 ];
 
+type DemoRole = "cast" | "store-staff" | "store-owner" | "customer";
+
+const DEFAULT_DEMO_CAST_ID = "cast1";
+
+// design.md §3.3 shadows — inline so they don't depend on tailwind tokens yet
+const SHADOW_FLOAT =
+  "0 4px 12px rgba(201, 141, 128, 0.14), 0 16px 32px rgba(201, 141, 128, 0.10)";
+const SHADOW_SOFT =
+  "0 2px 4px rgba(184, 148, 85, 0.04), 0 8px 24px rgba(184, 148, 85, 0.08)";
+
 interface Props {
   mockAuthEnabled: boolean;
 }
 
 export default function LoginForm({ mockAuthEnabled }: Props) {
-  const [selectedCast, setSelectedCast] = useState<string | null>(null);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoStep, setDemoStep] = useState<"role" | "cast">("role");
+  const [busyKey, setBusyKey] = useState<string | null>(null);
   const [showEmailForm, setShowEmailForm] = useState(!mockAuthEnabled);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [demoError, setDemoError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const handleMockLogin = async (castId: string) => {
-    setSelectedCast(castId);
+  const openDemo = () => {
+    setDemoError(null);
+    setDemoStep("role");
+    setDemoOpen(true);
+  };
+
+  const closeDemo = () => {
+    if (busyKey) return;
+    setDemoOpen(false);
+  };
+
+  const startDemo = async (role: DemoRole, castId: string, key: string) => {
+    setBusyKey(key);
+    setDemoError(null);
     try {
+      setVenueType("club");
+      if (role === "cast") {
+        setRole("cast");
+      } else if (role === "store-staff") {
+        setRole("store");
+        setStorePermission("staff");
+      } else if (role === "store-owner") {
+        setRole("store");
+        setStorePermission("owner");
+      } else if (role === "customer") {
+        setRole("customer");
+      }
       await mockLogin(castId);
     } catch (e: any) {
-      setSelectedCast(null);
-      setEmailError(e?.message ?? "ログインに失敗しました");
+      setBusyKey(null);
+      setDemoError(e?.message ?? "デモログインに失敗しました");
     }
   };
 
@@ -77,161 +115,286 @@ export default function LoginForm({ mockAuthEnabled }: Props) {
   };
 
   return (
-    <main className="bg-pearl min-h-dvh flex flex-col items-center justify-center px-6 py-12">
-      <div className="max-w-md w-full flex flex-col gap-6">
-        <div className="text-center space-y-2 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-badge bg-amethyst-muted text-amethyst-dark text-label-sm border border-amethyst-border">
-            <Sparkles size={14} />
-            MVP
-          </div>
-          <h1 className="font-display text-[3rem] leading-none font-semibold text-ink tracking-wide">
-            NIGHTOS
+    <main className="min-h-dvh bg-[#faf6f1] flex flex-col">
+      {/* ── Hero: blush-soft → pearl の縦グラデ ── */}
+      <div className="bg-gradient-to-b from-[#f4d4cf] via-[#faf0e8] to-[#faf6f1] px-6 pt-14 pb-12">
+        <div className="max-w-sm mx-auto">
+          <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-[#2b232a]">
+            ログイン
           </h1>
-          <p className="text-body-md text-ink-secondary">ログイン</p>
-        </div>
-
-        {/* ── 本番利用: 新規登録 / ログイン ────────────── */}
-        <Card className="p-4 space-y-3 animate-fade-in">
-          <div className="flex items-center gap-2">
-            <UserPlus size={14} className="text-amethyst-dark" />
-            <span className="text-body-md font-semibold text-ink">
-              自分のアカウントで使う
-            </span>
-          </div>
-          <p className="text-[11px] text-ink-muted">
-            自分の顧客・ボトル・メモを管理します。データは自分だけのものです。
+          <p className="mt-1.5 text-body-sm text-[#675d66]">
+            NIGHTOS にサインインしてください
           </p>
+        </div>
+      </div>
 
-          <Link
-            href="/auth/signup"
-            className="block w-full text-center px-4 py-2.5 rounded-btn bg-amethyst text-pearl text-body-md font-semibold"
-          >
-            新規登録
-          </Link>
+      {/* ── 本体 ── */}
+      <div className="flex-1 px-6 pt-8 pb-12">
+        <div className="max-w-sm mx-auto flex flex-col gap-5">
+          {/* 本番アカウント */}
+          <section className="space-y-3">
+            <Link
+              href="/auth/signup"
+              className="block w-full text-center px-6 py-3.5 rounded-full bg-gradient-to-br from-[#f4d4cf] to-[#e8b9a5] text-[#2b232a] text-body-md font-medium tracking-wide hover:brightness-[1.02] hover:-translate-y-px active:translate-y-px transition will-change-transform"
+              style={{ boxShadow: SHADOW_FLOAT }}
+            >
+              新規登録
+            </Link>
 
-          <button
-            type="button"
-            onClick={() => setShowEmailForm((v) => !v)}
-            className="w-full flex items-center justify-center gap-2 text-body-sm text-amethyst-dark font-medium"
-          >
-            <Mail size={14} />
-            {showEmailForm
-              ? "メールログインを閉じる"
-              : "すでに登録済みの方はこちら"}
-          </button>
-
-          {showEmailForm && (
-            <form action={handleEmailLogin} className="space-y-2">
-              <input
-                type="email"
-                name="email"
-                placeholder="email@example.com"
-                required
-                disabled={pending}
-                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
-                style={{ fontSize: "16px" }}
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="パスワード"
-                required
-                disabled={pending}
-                className="w-full px-3 py-2 rounded-btn border border-pearl-soft bg-pearl-soft text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst"
-                style={{ fontSize: "16px" }}
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={pending}
-                className="w-full"
+            {!showEmailForm && (
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(true)}
+                className="w-full text-body-sm text-[#675d66] hover:text-[#2b232a]"
               >
-                {pending ? "ログイン中..." : "ログイン"}
-              </Button>
-              {emailError && (
-                <p className="text-[11px] text-rose">{emailError}</p>
-              )}
-            </form>
-          )}
-        </Card>
+                既にアカウントをお持ちの方
+              </button>
+            )}
 
-        {/* ── デモ閲覧 ──────────────────────────── */}
-        {mockAuthEnabled && (
-          <div className="animate-fade-in">
-            <div className="flex items-center gap-2 px-1 mb-2">
-              <Play size={12} className="text-ink-muted" />
-              <span className="text-label-sm text-ink-muted uppercase tracking-wider">
-                デモを見る
-              </span>
-            </div>
-            <Card className="p-3 space-y-2 bg-pearl-soft/40">
-              <p className="text-[11px] text-ink-muted">
-                サンプルデータで画面を体験するだけならこちら。
-                下のキャストを選ぶと即ログインします。
-                <span className="block text-rose-dark/80 mt-1">
-                  ※ デモ用データは他の閲覧者と共有されます
-                </span>
-              </p>
-              <div className="space-y-2">
-                {MOCK_CASTS.map((cast) => (
+            {showEmailForm && (
+              <div className="space-y-2.5 pt-1">
+                <form action={handleEmailLogin} className="space-y-2.5">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="メールアドレス"
+                    aria-label="メールアドレス"
+                    required
+                    disabled={pending}
+                    className="w-full px-4 py-3 rounded-2xl border border-[#2b232a]/8 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                    style={{ fontSize: "16px", boxShadow: SHADOW_SOFT }}
+                  />
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="パスワード"
+                    aria-label="パスワード"
+                    required
+                    disabled={pending}
+                    className="w-full px-4 py-3 rounded-2xl border border-[#2b232a]/8 bg-[#fffefb] text-body-md text-[#2b232a] placeholder:text-[#a39ba1] focus:outline-none focus:border-[#c98d80]"
+                    style={{ fontSize: "16px", boxShadow: SHADOW_SOFT }}
+                  />
                   <button
-                    key={cast.id}
-                    type="button"
-                    disabled={selectedCast !== null}
-                    onClick={() => handleMockLogin(cast.id)}
-                    className="w-full text-left transition-transform active:scale-[0.98] disabled:opacity-60"
+                    type="submit"
+                    disabled={pending}
+                    className="w-full px-6 py-3.5 rounded-full border border-[#b89455]/30 bg-[#fffefb]/90 text-body-md text-[#2b232a] font-medium hover:border-[#b89455]/50 hover:-translate-y-px active:translate-y-px transition disabled:opacity-50 will-change-transform"
+                    style={{ boxShadow: SHADOW_SOFT }}
                   >
-                    <Card
-                      className={cn(
-                        "p-3",
-                        selectedCast === cast.id &&
-                          "!border-amethyst-border !bg-amethyst-muted",
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
-                            cast.role.includes("お姉さん") ||
-                              cast.role.includes("トップ")
-                              ? "ruri-gradient"
-                              : "rose-gradient",
-                          )}
-                        >
-                          {cast.role.includes("お姉さん") ||
-                          cast.role.includes("トップ") ? (
-                            <Crown size={16} className="text-pearl" />
-                          ) : (
-                            <User size={16} className="text-pearl" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-body-sm font-semibold text-ink">
-                              {cast.name}
-                            </span>
-                            <span className="text-[10px] text-ink-muted px-1.5 py-0.5 rounded-badge bg-pearl-soft">
-                              {cast.role}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-ink-muted mt-0.5 truncate">
-                            {cast.description}
-                          </p>
-                        </div>
-                        {selectedCast === cast.id && (
-                          <div className="text-[10px] text-amethyst-dark font-medium">
-                            ログイン中...
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                    {pending ? "ログイン中..." : "ログイン"}
                   </button>
-                ))}
+                  {emailError && (
+                    <p className="text-[12px] text-[#c2575b]">{emailError}</p>
+                  )}
+                </form>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailForm(false)}
+                    className="text-[12px] text-[#a39ba1] hover:text-[#675d66]"
+                  >
+                    閉じる
+                  </button>
+                  <Link
+                    href="/auth/reset-password"
+                    className="text-[12px] text-[#c98d80] underline-offset-2 hover:underline"
+                  >
+                    パスワードを忘れた
+                  </Link>
+                </div>
               </div>
-            </Card>
+            )}
+          </section>
+
+          {mockAuthEnabled && (
+            <>
+              {/* 区切り — gold極細 */}
+              <div className="flex items-center gap-3 text-[11px] text-[#a39ba1] py-1">
+                <span className="flex-1 h-px bg-[#b89455]/20" />
+                または
+                <span className="flex-1 h-px bg-[#b89455]/20" />
+              </div>
+
+              {/* デモ */}
+              <section className="space-y-3">
+                <button
+                  type="button"
+                  onClick={openDemo}
+                  className="w-full px-6 py-3.5 rounded-full border border-[#b89455]/30 bg-[#fffefb]/80 text-body-md text-[#2b232a] hover:border-[#b89455]/50 hover:-translate-y-px active:translate-y-px transition will-change-transform"
+                  style={{ boxShadow: SHADOW_SOFT }}
+                >
+                  デモを試す
+                </button>
+                <p className="text-[11px] text-[#a39ba1] leading-relaxed text-center px-2">
+                  サンプルデータで各画面を体験できます。デモ用データは他の閲覧者と共有されます。
+                </p>
+                {demoError && (
+                  <p className="text-[12px] text-[#c2575b] text-center">
+                    {demoError}
+                  </p>
+                )}
+              </section>
+            </>
+          )}
+
+          <div className="pt-4 flex items-center justify-center gap-3 text-[11px] text-[#a39ba1]">
+            <Link href="/legal/terms" className="hover:text-[#675d66]">利用規約</Link>
+            <span>·</span>
+            <Link href="/legal/privacy" className="hover:text-[#675d66]">プライバシー</Link>
+            <span>·</span>
+            <Link href="/legal/tokutei" className="hover:text-[#675d66]">特商法表記</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── デモ役割選択シート ── */}
+      <BottomSheet
+        isOpen={demoOpen}
+        onClose={closeDemo}
+        title={
+          demoStep === "role" ? "どの立場でデモしますか" : "キャストを選択"
+        }
+        subtitle={
+          demoStep === "role"
+            ? "選んだ役割の画面に直接ログインします"
+            : "ログインするキャストを選んでください"
+        }
+      >
+        {demoStep === "role" ? (
+          <div className="grid gap-3">
+            <RoleRow
+              title="キャスト"
+              description="接客・顧客・成績管理（5名から選択）"
+              onClick={() => setDemoStep("cast")}
+              hasArrow
+              disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="店舗スタッフ（入力担当）"
+              description="顧客・来店・ボトルの入力業務"
+              onClick={() =>
+                startDemo("store-staff", DEFAULT_DEMO_CAST_ID, "store-staff")
+              }
+              busy={busyKey === "store-staff"}
+              disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="店舗オーナー"
+              description="全機能・ダッシュボード・ファネル・AI"
+              onClick={() =>
+                startDemo("store-owner", DEFAULT_DEMO_CAST_ID, "store-owner")
+              }
+              busy={busyKey === "store-owner"}
+              disabled={busyKey !== null}
+            />
+            <RoleRow
+              title="来店客（田中太郎）"
+              description="ボトル管理・クーポン・会員ステータス"
+              onClick={() =>
+                startDemo("customer", DEFAULT_DEMO_CAST_ID, "customer")
+              }
+              busy={busyKey === "customer"}
+              disabled={busyKey !== null}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              disabled={busyKey !== null}
+              onClick={() => setDemoStep("role")}
+              className="text-[12px] text-[#a39ba1] hover:text-[#675d66] disabled:opacity-60 mb-1"
+            >
+              ← 役割選択に戻る
+            </button>
+            {MOCK_CASTS.map((cast) => {
+              const key = `cast:${cast.id}`;
+              return (
+                <button
+                  key={cast.id}
+                  type="button"
+                  disabled={busyKey !== null}
+                  onClick={() => startDemo("cast", cast.id, key)}
+                  className={cn(
+                    "w-full text-left px-4 py-3.5 rounded-3xl border transition disabled:opacity-60 will-change-transform",
+                    busyKey === key
+                      ? "border-[#c98d80] bg-[#f4d4cf]/40"
+                      : "border-[#2b232a]/6 bg-[#fffefb] hover:border-[#b89455]/40 hover:-translate-y-px",
+                  )}
+                  style={{ boxShadow: busyKey === key ? SHADOW_FLOAT : SHADOW_SOFT }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-full border border-[#b89455]/40 bg-gradient-to-br from-[#fffefb] to-[#f3e6c8]/50 flex items-center justify-center text-[#675d66] text-body-md font-display shrink-0">
+                      {cast.name.slice(0, 1)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-body-md font-medium text-[#2b232a]">
+                          {cast.name}
+                        </span>
+                        <span className="text-[11px] text-[#a39ba1]">
+                          {cast.role}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#a39ba1] mt-0.5 truncate">
+                        {cast.description}
+                      </p>
+                    </div>
+                    {busyKey === key && (
+                      <span className="text-[11px] text-[#c98d80] shrink-0">
+                        ログイン中...
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
-      </div>
+      </BottomSheet>
     </main>
+  );
+}
+
+interface RoleRowProps {
+  title: string;
+  description: string;
+  onClick: () => void;
+  hasArrow?: boolean;
+  busy?: boolean;
+  disabled?: boolean;
+}
+
+function RoleRow({
+  title,
+  description,
+  onClick,
+  hasArrow,
+  busy,
+  disabled,
+}: RoleRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full text-left px-5 py-4 rounded-3xl border border-[#2b232a]/6 bg-[#fffefb] hover:border-[#b89455]/40 hover:-translate-y-px transition disabled:opacity-60 will-change-transform"
+      style={{ boxShadow: SHADOW_SOFT }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="text-body-md font-medium text-[#2b232a]">
+            {title}
+          </div>
+          <p className="text-[11px] text-[#a39ba1] mt-0.5">{description}</p>
+        </div>
+        {busy ? (
+          <span className="text-[11px] text-[#c98d80] shrink-0">
+            接続中...
+          </span>
+        ) : hasArrow ? (
+          <ChevronRight size={16} className="text-[#a39ba1] shrink-0" />
+        ) : null}
+      </div>
+    </button>
   );
 }

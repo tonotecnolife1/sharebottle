@@ -1,10 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { ConnectionStatus } from "@/components/nightos/connection-status";
 import { FeedbackLink } from "@/components/nightos/feedback-link";
+import { InstallPrompt } from "@/components/nightos/install-prompt";
 import "./globals.css";
 
+// Set NEXT_PUBLIC_APP_URL to your production canonical URL (e.g.
+// https://nightos.example.com) so OG tags / robots / RSS resolve
+// against an absolute origin instead of the random Vercel preview
+// hostname.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://example.com";
+
 export const metadata: Metadata = {
-  title: "NIGHTOS",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: "NIGHTOS",
+    template: "%s | NIGHTOS",
+  },
   description:
     "夜のお店のためのワークスペース。店舗が入力し、キャストが活用する。",
   manifest: "/manifest.json",
@@ -13,13 +24,24 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "NIGHTOS",
   },
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "NIGHTOS",
+  },
+  robots: {
+    // Production deployments should override via env / per-page metadata
+    // when the site is ready to be indexed.
+    index: false,
+    follow: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#9a7bbb",
+  themeColor: "#e8b9a5",
   viewportFit: "cover",
 };
 
@@ -40,7 +62,7 @@ export default function RootLayout({
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
         {/* Apple touch icon for "Add to Home Screen" */}
@@ -50,6 +72,7 @@ export default function RootLayout({
         <ConnectionStatus />
         {children}
         <FeedbackLink />
+        <InstallPrompt />
       </body>
     </html>
   );

@@ -67,6 +67,17 @@ import {
   transferCustomersReal,
   updateCastMemoReal,
   updateCustomerReal,
+  // ── B4: real persistence for previously-mock-only features ──
+  sendCastMessageReal,
+  getUnreadCastMessagesReal,
+  markCastMessageReadReal,
+  sendCastRequestReal,
+  getUnresolvedCastRequestsReal,
+  resolveCastRequestReal,
+  getDouhanSummaryReal,
+  getCustomerCouponsReal,
+  getCustomerBottleViewsReal,
+  getCustomerStoreOverviewsReal,
 } from "./supabase-real";
 
 // ─────────────────────────────────────────────────────────────
@@ -1160,6 +1171,16 @@ function getCustomerContextMock(
 export async function getDouhanSummary(
   castId: string,
 ): Promise<import("@/types/nightos").DouhanSummary> {
+  return withFallback(
+    "getDouhanSummary",
+    () => getDouhanSummaryReal(castId, new Date()),
+    () => getDouhanSummaryMock(castId),
+  );
+}
+
+function getDouhanSummaryMock(
+  castId: string,
+): import("@/types/nightos").DouhanSummary {
   const now = MOCK_TODAY;
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -1184,31 +1205,48 @@ export async function sendCastMessage(args: {
   castId: string;
   message: string;
 }): Promise<StoreToCastMessage> {
-  const msg: StoreToCastMessage = {
-    id: `msg_${Date.now()}`,
-    cast_id: args.castId,
-    message: args.message,
-    sent_at: new Date().toISOString(),
-    read: false,
-  };
-  mockCastMessages.push(msg);
-  return msg;
+  return withFallback(
+    "sendCastMessage",
+    () => sendCastMessageReal(args),
+    () => {
+      const msg: StoreToCastMessage = {
+        id: `msg_${Date.now()}`,
+        cast_id: args.castId,
+        message: args.message,
+        sent_at: new Date().toISOString(),
+        read: false,
+      };
+      mockCastMessages.push(msg);
+      return msg;
+    },
+  );
 }
 
 export async function getUnreadCastMessages(
   castId: string,
 ): Promise<StoreToCastMessage[]> {
-  return mockCastMessages
-    .filter((m) => m.cast_id === castId && !m.read)
-    .sort(
-      (a, b) =>
-        new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime(),
-    );
+  return withFallback(
+    "getUnreadCastMessages",
+    () => getUnreadCastMessagesReal(castId),
+    () =>
+      mockCastMessages
+        .filter((m) => m.cast_id === castId && !m.read)
+        .sort(
+          (a, b) =>
+            new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime(),
+        ),
+  );
 }
 
 export async function markCastMessageRead(id: string): Promise<void> {
-  const msg = mockCastMessages.find((m) => m.id === id);
-  if (msg) msg.read = true;
+  await withFallback(
+    "markCastMessageRead",
+    () => markCastMessageReadReal(id),
+    () => {
+      const msg = mockCastMessages.find((m) => m.id === id);
+      if (msg) msg.read = true;
+    },
+  );
 }
 
 // ═══════════════ Customer (来店客) queries ═══════════════
@@ -1267,6 +1305,16 @@ function computeCustomerRank(visitCount: number): CustomerRank {
 export async function getCustomerStoreOverviews(
   customerId: string,
 ): Promise<CustomerStoreOverview[]> {
+  return withFallback(
+    "getCustomerStoreOverviews",
+    () => getCustomerStoreOverviewsReal(customerId),
+    () => getCustomerStoreOverviewsMock(customerId),
+  );
+}
+
+function getCustomerStoreOverviewsMock(
+  customerId: string,
+): CustomerStoreOverview[] {
   // For MVP: aggregate from mock data. One overview per store the customer has bottles at.
   const customerBottles = mockBottles.filter(
     (b) => b.customer_id === customerId,
@@ -1322,34 +1370,45 @@ export async function getCustomerStoreOverviews(
 export async function getCustomerBottleViews(
   customerId: string,
 ): Promise<CustomerBottleView[]> {
-  const bottles = mockBottles.filter((b) => b.customer_id === customerId);
-  return bottles.map((bottle) => {
-    const store = mockStores.find((s) => s.id === bottle.store_id);
-    const customer = mockCustomers.find((c) => c.id === customerId);
-    const cast = customer
-      ? mockCasts.find((c) => c.id === customer.cast_id)
-      : null;
-    return {
-      bottle,
-      store_name: store?.name ?? "（不明）",
-      cast_name: cast?.name ?? null,
-    };
-  });
+  return withFallback(
+    "getCustomerBottleViews",
+    () => getCustomerBottleViewsReal(customerId),
+    () => {
+      const bottles = mockBottles.filter((b) => b.customer_id === customerId);
+      return bottles.map((bottle) => {
+        const store = mockStores.find((s) => s.id === bottle.store_id);
+        const customer = mockCustomers.find((c) => c.id === customerId);
+        const cast = customer
+          ? mockCasts.find((c) => c.id === customer.cast_id)
+          : null;
+        return {
+          bottle,
+          store_name: store?.name ?? "（不明）",
+          cast_name: cast?.name ?? null,
+        };
+      });
+    },
+  );
 }
 
 export async function getCustomerCoupons(
   customerId: string,
 ): Promise<Coupon[]> {
-  return mockCoupons
-    .filter((c) => c.customer_id === customerId)
-    .sort((a, b) => {
-      // Unused first, then by valid_until desc
-      if (!a.used_at && b.used_at) return -1;
-      if (a.used_at && !b.used_at) return 1;
-      return (
-        new Date(b.valid_until).getTime() - new Date(a.valid_until).getTime()
-      );
-    });
+  return withFallback(
+    "getCustomerCoupons",
+    () => getCustomerCouponsReal(customerId),
+    () =>
+      mockCoupons
+        .filter((c) => c.customer_id === customerId)
+        .sort((a, b) => {
+          if (!a.used_at && b.used_at) return -1;
+          if (a.used_at && !b.used_at) return 1;
+          return (
+            new Date(b.valid_until).getTime() -
+            new Date(a.valid_until).getTime()
+          );
+        }),
+  );
 }
 
 // ═══════════════ Cast → Store requests ═══════════════
@@ -1361,25 +1420,45 @@ export async function sendCastRequest(args: {
   castName: string;
   message: string;
 }): Promise<CastToStoreRequest> {
-  const req: CastToStoreRequest = {
-    id: `req_${Date.now()}`,
-    cast_id: args.castId,
-    cast_name: args.castName,
-    message: args.message,
-    sent_at: new Date().toISOString(),
-    resolved: false,
-  };
-  mockCastRequests.push(req);
-  return req;
+  return withFallback(
+    "sendCastRequest",
+    () => sendCastRequestReal(args),
+    () => {
+      const req: CastToStoreRequest = {
+        id: `req_${Date.now()}`,
+        cast_id: args.castId,
+        cast_name: args.castName,
+        message: args.message,
+        sent_at: new Date().toISOString(),
+        resolved: false,
+      };
+      mockCastRequests.push(req);
+      return req;
+    },
+  );
 }
 
 export async function getUnresolvedCastRequests(): Promise<CastToStoreRequest[]> {
-  return mockCastRequests
-    .filter((r) => !r.resolved)
-    .sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime());
+  return withFallback(
+    "getUnresolvedCastRequests",
+    () => getUnresolvedCastRequestsReal(),
+    () =>
+      mockCastRequests
+        .filter((r) => !r.resolved)
+        .sort(
+          (a, b) =>
+            new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime(),
+        ),
+  );
 }
 
 export async function resolveCastRequest(id: string): Promise<void> {
-  const req = mockCastRequests.find((r) => r.id === id);
-  if (req) req.resolved = true;
+  await withFallback(
+    "resolveCastRequest",
+    () => resolveCastRequestReal(id),
+    () => {
+      const req = mockCastRequests.find((r) => r.id === id);
+      if (req) req.resolved = true;
+    },
+  );
 }

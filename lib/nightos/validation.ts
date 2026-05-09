@@ -106,15 +106,63 @@ export const signupSchema = z.object({
   name: displayName,
 });
 
-export const onboardingSchema = z.object({
-  name: displayName,
-  /** Optional — pick an existing store. */
-  storeId: z.string().min(1).max(64).optional(),
-  /** Optional — create a new store with this name. */
-  newStoreName: z.string().min(1).max(80).optional(),
-  venueType: z.enum(["club", "cabaret"]),
-  clubRole: z.enum(["mama", "oneesan", "help"]).optional(),
-});
+/**
+ * Account-level role chosen at onboarding (migration 008).
+ *
+ * - `cast`        : creates a nightos_casts row with user_role=cast
+ * - `store_staff` : creates a nightos_casts row with user_role=store_staff
+ * - `store_owner` : creates a new nightos_stores + nightos_casts (owner)
+ * - `customer`    : creates a customers row linked by auth_user_id
+ */
+export const accountRoleSchema = z.enum([
+  "cast",
+  "store_staff",
+  "store_owner",
+  "customer",
+]);
+export type AccountRole = z.infer<typeof accountRoleSchema>;
+
+/**
+ * Invite code shape: 8 chars, A-Z2-9 (no 0/O/1/I/L). The form normalises
+ * (uppercase + strip whitespace/hyphens) before validating.
+ */
+const inviteCode = z
+  .string()
+  .regex(/^[A-Z2-9]{8}$/, "招待コードは8文字（A-Z2-9）です");
+
+/**
+ * Onboarding payload — discriminated by `role`.
+ * Each branch has its own required fields.
+ */
+export const onboardingSchema = z.discriminatedUnion("role", [
+  // Owner: brand-new store + own profile
+  z.object({
+    role: z.literal("store_owner"),
+    name: displayName,
+    venueType: z.enum(["club", "cabaret"]),
+    newStoreName: z.string().min(1, "店舗名を入力してください").max(80),
+  }),
+  // Cast: join an existing store via invite code, club_role required
+  z.object({
+    role: z.literal("cast"),
+    name: displayName,
+    inviteCode,
+    clubRole: z.enum(["mama", "oneesan", "help"]),
+  }),
+  // Store staff: join via invite code, no club_role
+  z.object({
+    role: z.literal("store_staff"),
+    name: displayName,
+    inviteCode,
+  }),
+  // Customer: just a display name; no store binding at signup time
+  z.object({
+    role: z.literal("customer"),
+    name: displayName,
+  }),
+]);
+
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export const generateTemplateSchema = z.object({
   customerId,

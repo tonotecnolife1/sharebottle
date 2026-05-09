@@ -4,7 +4,9 @@ import { AlertTriangle, Minus, Trash2, Wine } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Card } from "@/components/nightos/card";
+import { CsvDownloadButton } from "@/components/nightos/csv-download-button";
 import { cn, formatBottleRemainingPct } from "@/lib/utils";
+import type { CsvColumn } from "@/lib/nightos/csv";
 import type { BottleWithCustomer } from "@/lib/nightos/supabase-queries";
 import { consumeBottleAction, deleteBottleAction } from "../actions";
 
@@ -49,19 +51,35 @@ export function BottleListClient({ bottles: initial }: Props) {
     });
   };
 
+  const csvColumns: CsvColumn<BottleWithCustomer>[] = [
+    { header: "ボトルID", value: (b) => b.id },
+    { header: "ブランド", value: (b) => b.brand },
+    { header: "顧客名", value: (b) => b.customer_name },
+    { header: "残量(%)", value: (b) => b.remaining_glasses },
+    { header: "総量(%)", value: (b) => b.total_glasses },
+    { header: "キープ日時", value: (b) => b.kept_at },
+  ];
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="text-label-sm text-ink-muted">
           {bottles.length}本のキープボトル
         </span>
-        <Link
-          href="/store/bottles/new"
-          className="h-10 px-4 rounded-btn bg-gradient-rose-gold text-pearl flex items-center gap-1 shadow-soft-card text-label-md font-medium active:scale-95"
-        >
-          <Wine size={14} />
-          新規登録
-        </Link>
+        <div className="flex items-center gap-2">
+          <CsvDownloadButton
+            rows={bottles}
+            columns={csvColumns}
+            filenamePrefix="bottles"
+          />
+          <Link
+            href="/store/bottles/new"
+            className="h-10 px-4 rounded-btn bg-gradient-rose-gold text-pearl flex items-center gap-1 shadow-soft-card text-label-md font-medium active:scale-95"
+          >
+            <Wine size={14} />
+            新規登録
+          </Link>
+        </div>
       </div>
 
       {bottles.length === 0 ? (
