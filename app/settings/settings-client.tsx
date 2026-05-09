@@ -2,19 +2,45 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Copy } from "lucide-react";
 import { deleteAccount, mockLogout } from "../auth/actions";
+import type { CastUserRole } from "@/types/nightos";
 
 interface Props {
   email: string;
   castName: string | null;
+  userRole: CastUserRole | null;
+  storeInviteInfo: { name: string; inviteCode: string } | null;
 }
 
-export default function SettingsClient({ email, castName }: Props) {
+const ROLE_LABEL: Record<CastUserRole, string> = {
+  cast: "キャスト",
+  store_staff: "店舗スタッフ",
+  store_owner: "店舗オーナー",
+};
+
+export default function SettingsClient({
+  email,
+  castName,
+  userRole,
+  storeInviteInfo,
+}: Props) {
   const [pending, startTransition] = useTransition();
   const [confirmText, setConfirmText] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyInviteCode = async () => {
+    if (!storeInviteInfo) return;
+    try {
+      await navigator.clipboard.writeText(storeInviteInfo.inviteCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore — user can long-press select instead
+    }
+  };
 
   const handleDelete = () => {
     setError(null);
@@ -66,8 +92,45 @@ export default function SettingsClient({ email, castName }: Props) {
                   <dd className="text-ink">{castName}</dd>
                 </div>
               )}
+              {userRole && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-muted shrink-0">役割</dt>
+                  <dd className="text-ink">{ROLE_LABEL[userRole]}</dd>
+                </div>
+              )}
             </dl>
           </section>
+
+          {/* オーナーのみ: 招待コード */}
+          {storeInviteInfo && (
+            <section className="rounded-card border border-gold/30 bg-gradient-to-br from-pearl-warm to-champagne-soft/40 p-4 shadow-soft space-y-3">
+              <div>
+                <h2 className="font-display text-[18px] leading-tight font-medium text-ink">
+                  店舗の招待コード
+                </h2>
+                <p className="text-[11px] text-ink-muted mt-0.5">
+                  {storeInviteInfo.name} のキャスト・スタッフ用
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 px-4 py-3 rounded-2xl border border-gold/30 bg-pearl-warm text-ink font-mono tracking-[0.2em] text-center text-body-md">
+                  {storeInviteInfo.inviteCode}
+                </code>
+                <button
+                  type="button"
+                  onClick={copyInviteCode}
+                  className="shrink-0 inline-flex items-center gap-1 px-4 py-3 rounded-pill border border-gold/30 bg-pearl-warm text-body-sm text-ink hover:border-gold/50 transition shadow-soft"
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? "コピー済み" : "コピー"}
+                </button>
+              </div>
+              <p className="text-[11px] text-ink-muted leading-relaxed">
+                このコードを所属キャスト・スタッフに伝えると、新規登録時に
+                このお店に参加できます。コードを知らない人は加入できません。
+              </p>
+            </section>
+          )}
 
           {/* パスワード */}
           <section className="rounded-card border border-ink/[0.06] bg-pearl-warm p-4 shadow-soft space-y-2">

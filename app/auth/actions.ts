@@ -6,7 +6,11 @@ import { z } from "zod";
 import { DEMO_STORE_IDS } from "@/lib/nightos/constants";
 import { isMockAuthDisabled } from "@/lib/nightos/env";
 import { mockCasts } from "@/lib/nightos/mock-data";
-import { onboardingSchema, signupSchema } from "@/lib/nightos/validation";
+import {
+  onboardingSchema,
+  signupSchema,
+  type OnboardingInput,
+} from "@/lib/nightos/validation";
 import { reportError } from "@/lib/nightos/error-reporter";
 
 export async function mockLogin(castId: string) {
@@ -132,35 +136,38 @@ export async function emailSignup(
 }
 
 /**
- * Finalize the new cast record for the logged-in user. Creates the
- * store if the form asked for a brand new one, then inserts a cast
- * row wired to the auth user. Safe to call twice — the cast lookup
- * short-circuits if a row already exists.
+ * Finalize the account-level role for the signed-in user (migration 008).
+ *
+ * Branches by `role`:
+ *   - `store_owner` : creates a new store + owner cast row
+ *   - `cast`        : joins an existing store via invite code, sets club_role
+ *   - `store_staff` : joins an existing store via invite code
+ *   - `customer`    : creates a customers row linked by auth_user_id
+ *
+ * Validation is delegated to onboardingSchema (discriminatedUnion).
+ *
+ * Idempotent: if a cast OR customer row already exists for this user,
+ * redirects to "/" instead of double-inserting.
  */
 export async function completeOnboarding(
   formData: FormData,
 ): Promise<{ error?: string }> {
+  const rawRole = String(formData.get("role") ?? "").trim();
+  // Pull all known fields; the discriminated union picks what it needs.
   const parsed = onboardingSchema.safeParse({
+    role: rawRole,
     name: String(formData.get("name") ?? "").trim(),
-    storeId: stringOrUndef(formData.get("storeId")),
-    newStoreName: stringOrUndef(formData.get("newStoreName")),
-    venueType: String(formData.get("venueType") ?? "cabaret"),
+    venueType: stringOrUndef(formData.get("venueType")) ?? "cabaret",
+    newStoreName: stringOrUndef(formData.get("newStoreName")) ?? "",
+    inviteCode: (stringOrUndef(formData.get("inviteCode")) ?? "")
+      .replace(/[\s-]/g, "")
+      .toUpperCase(),
     clubRole: stringOrUndef(formData.get("clubRole")) ?? "help",
   });
   if (!parsed.success) {
     return { error: zodFirstMessage(parsed.error) };
   }
   const input = parsed.data;
-
-  if (!input.storeId && !input.newStoreName) {
-    return { error: "店舗を選ぶか、新しい店舗名を入力してください" };
-  }
-  if (input.storeId && DEMO_STORE_IDS.includes(input.storeId)) {
-    return {
-      error:
-        "デモ用の店舗には参加できません。別の店舗を選ぶか、新しい店舗を作成してください。",
-    };
-  }
 
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -176,93 +183,227 @@ export async function completeOnboarding(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "セッションが見つかりません。もう一度ログインしてください。" };
+    return {
+      error: "セッションが見つかりません。もう一度ログインしてください。",
+    };
   }
 
-  // Already onboarded?
-  const { data: existing } = await supabase
-    .from("nightos_casts")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-  if (existing) {
+  // Idempotency: already a cast or customer? Just redirect.
+  const [{ data: existingCast }, { data: existingCustomer }] = await Promise.all(
+    [
+      supabase
+        .from("nightos_casts")
+        .select("id")
+        .eq("auth_user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("customers")
+        .select("id")
+        .eq("auth_user_id", user.id)
+        .maybeSingle(),
+    ],
+  );
+  if (existingCast || existingCustomer) {
     redirect("/");
   }
 
-  // Resolve / create store.
-  let storeId = input.storeId ?? "";
-  if (!storeId && input.newStoreName) {
-    storeId = `store_${Date.now().toString(36)}_${Math.random()
-      .toString(36)
-      .slice(2, 6)}`;
-    const { error: storeErr } = await supabase
+  if (input.role === "customer") {
+    return await onboardCustomer(supabase, user.id, input.name);
+  }
+
+  // All non-customer roles create a nightos_casts row.
+  let storeId: string;
+  if (input.role === "store_owner") {
+    const created = await createStoreForOwner(supabase, user.id, input);
+    if ("error" in created) return { error: created.error };
+    storeId = created.storeId;
+  } else {
+    // cast / store_staff: invite code → existing store
+    const looked = await lookupStoreByInvite(supabase, user.id, input.inviteCode);
+    if ("error" in looked) return { error: looked.error };
+    storeId = looked.storeId;
+  }
+
+  return await onboardCastRow(supabase, user.id, storeId, input);
+}
+
+// ─── Onboarding helpers ──────────────────────────────────────────
+
+type OnboardingResult = { error?: string } | never;
+
+async function onboardCustomer(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  name: string,
+): Promise<OnboardingResult> {
+  const customerId = `cust_self_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
+  // 来店客はサインアップ時点では店舗紐付けなし。store_id は最初の来店登録で
+  // 店舗側スタッフが紐付ける。MVP 期は CURRENT_STORE_ID をプレースホルダ
+  // として使いたいところだが、本番では各店舗の DB が共通なので NULLABLE 化
+  // が望ましい — マイグレーションで store_id を nullable にする検討は別途。
+  // 暫定: customers.store_id NOT NULL のため、最初に登録された (= owner が
+  // 作った) 店舗を取得して紐付ける。実害は customer/home の集計が一店舗
+  // に偏ること程度。
+  const { data: anyStore } = await supabase
+    .from("nightos_stores")
+    .select("id")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const placeholderStoreId = (anyStore?.id as string | undefined) ?? "store1";
+
+  const { error: custErr } = await supabase.from("customers").insert({
+    id: customerId,
+    store_id: placeholderStoreId,
+    cast_id: null,
+    name,
+    auth_user_id: userId,
+    funnel_stage: "store_only",
+  });
+  if (custErr) {
+    reportError(custErr, {
+      scope: "onboarding.customer-insert",
+      userId,
+      extra: { customerId, code: custErr.code, hint: custErr.hint },
+    });
+    return {
+      error: `登録に失敗しました: ${custErr.message}${
+        custErr.hint ? `（ヒント: ${custErr.hint}）` : ""
+      }`,
+    };
+  }
+
+  redirect("/");
+}
+
+async function createStoreForOwner(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  input: Extract<OnboardingInput, { role: "store_owner" }>,
+): Promise<{ storeId: string } | { error: string }> {
+  const storeId = `store_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
+  const { generateInviteCode } = await import("@/lib/nightos/supabase-real");
+  const inviteCode = generateInviteCode();
+
+  const { error: storeErr } = await supabase.from("nightos_stores").insert({
+    id: storeId,
+    name: input.newStoreName,
+    venue_type: input.venueType,
+    invite_code: inviteCode,
+  });
+  if (storeErr) {
+    reportError(storeErr, {
+      scope: "onboarding.store-insert",
+      userId,
+      extra: { storeId, code: storeErr.code, hint: storeErr.hint },
+    });
+    return {
+      error: `店舗の作成に失敗しました: ${storeErr.message}${
+        storeErr.hint ? `（ヒント: ${storeErr.hint}）` : ""
+      }`,
+    };
+  }
+  return { storeId };
+}
+
+async function lookupStoreByInvite(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  code: string,
+): Promise<{ storeId: string } | { error: string }> {
+  if (DEMO_STORE_IDS.length > 0) {
+    // Belt-and-suspenders: prevent self-signup into the demo tenancy
+    const { data: demo } = await supabase
       .from("nightos_stores")
-      .insert({ id: storeId, name: input.newStoreName });
-    if (storeErr) {
-      reportError(storeErr, {
-        scope: "onboarding.store-insert",
-        userId: user.id,
-        extra: {
-          storeId,
-          code: storeErr.code,
-          details: storeErr.details,
-          hint: storeErr.hint,
-        },
-      });
+      .select("id")
+      .in("id", DEMO_STORE_IDS as string[])
+      .eq("invite_code", code)
+      .maybeSingle();
+    if (demo) {
       return {
-        error: `店舗の作成に失敗しました: ${storeErr.message}${
-          storeErr.hint ? `（ヒント: ${storeErr.hint}）` : ""
-        }`,
+        error:
+          "このコードはデモ用の店舗のものです。所属店舗のオーナーから別のコードを受け取ってください。",
       };
     }
   }
 
-  const castId = `cast_${user.id.slice(0, 8)}_${Date.now().toString(36)}`;
+  const { data: store, error } = await supabase
+    .from("nightos_stores")
+    .select("id")
+    .eq("invite_code", code)
+    .maybeSingle();
+  if (error) {
+    reportError(error, {
+      scope: "onboarding.invite-lookup",
+      userId,
+      extra: { code, supabaseCode: error.code },
+    });
+    return { error: `招待コードの確認に失敗しました: ${error.message}` };
+  }
+  if (!store) {
+    return {
+      error:
+        "招待コードが見つかりません。所属店舗のオーナーにコードをご確認ください。",
+    };
+  }
+  return { storeId: store.id as string };
+}
+
+async function onboardCastRow(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  storeId: string,
+  input: Extract<
+    OnboardingInput,
+    { role: "cast" | "store_staff" | "store_owner" }
+  >,
+): Promise<OnboardingResult> {
+  const castId = `cast_${userId.slice(0, 8)}_${Date.now().toString(36)}`;
+  const clubRole =
+    input.role === "cast"
+      ? input.clubRole
+      : input.role === "store_owner"
+        ? "mama" // owner はママ相当として扱う（club venue のみ意味あり）
+        : null;
+
   const { error: castErr } = await supabase.from("nightos_casts").insert({
     id: castId,
     store_id: storeId,
     name: input.name,
-    club_role: input.clubRole ?? "help",
-    auth_user_id: user.id,
+    user_role: input.role,
+    club_role: clubRole,
+    auth_user_id: userId,
   });
   if (castErr) {
     reportError(castErr, {
       scope: "onboarding.cast-insert",
-      userId: user.id,
+      userId,
       castId,
-      extra: {
-        storeId,
-        code: castErr.code,
-        details: castErr.details,
-        hint: castErr.hint,
-      },
+      extra: { storeId, role: input.role, code: castErr.code },
     });
     return {
-      error: `キャスト登録に失敗しました: ${castErr.message}${
+      error: `登録に失敗しました: ${castErr.message}${
         castErr.hint ? `（ヒント: ${castErr.hint}）` : ""
       }`,
     };
   }
 
-  // Sanity check: the row we just inserted must be readable back via the
-  // same auth session. If it isn't, RLS or a missing migration is silently
-  // dropping the row, and redirecting to "/" will bounce the user right
-  // back to /onboarding (looks like "nothing happened" to the user).
+  // Read-back check (RLS / migration 006 が当たっているかの保険)
   const { data: verify, error: verifyErr } = await supabase
     .from("nightos_casts")
     .select("id")
-    .eq("auth_user_id", user.id)
+    .eq("auth_user_id", userId)
     .maybeSingle();
   if (verifyErr || !verify) {
     reportError(verifyErr ?? new Error("read-back returned no row"), {
       scope: "onboarding.post-insert-readback",
-      userId: user.id,
+      userId,
       castId,
-      extra: { storeId, verify },
+      extra: { storeId, role: input.role },
     });
     return {
       error:
-        "登録は試行できましたが、データを保存できませんでした。Supabase の RLS 設定またはマイグレーション (003_schema_additions.sql) を確認してください。",
+        "登録は試行できましたが、データを保存できませんでした。Supabase の migration 006 / 007 が適用されているか確認してください。",
     };
   }
 

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { DEMO_STORE_IDS } from "@/lib/nightos/constants";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import OnboardingForm, { type StoreOption } from "./onboarding-form";
+import OnboardingForm from "./onboarding-form";
 
 export const dynamic = "force-dynamic";
 
@@ -21,37 +20,30 @@ export default async function OnboardingPage() {
     redirect("/auth/login");
   }
 
-  const { data: existingCast } = await supabase
-    .from("nightos_casts")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-  if (existingCast) {
+  // Already onboarded? Redirect to root which routes by role.
+  const [{ data: existingCast }, { data: existingCustomer }] = await Promise.all(
+    [
+      supabase
+        .from("nightos_casts")
+        .select("id")
+        .eq("auth_user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("customers")
+        .select("id")
+        .eq("auth_user_id", user.id)
+        .maybeSingle(),
+    ],
+  );
+  if (existingCast || existingCustomer) {
     redirect("/");
   }
 
-  const { data: storeRows } = await supabase
-    .from("nightos_stores")
-    .select("id, name")
-    .order("created_at", { ascending: true });
-
-  // Hide the demo tenancy so real signups don't accidentally pollute
-  // the shared demo sandbox.
-  const stores: StoreOption[] = (storeRows ?? [])
-    .filter((s) => !DEMO_STORE_IDS.includes(s.id as string))
-    .map((s) => ({
-      id: s.id as string,
-      name: (s.name as string) ?? s.id,
-    }));
-
   const defaultName =
-    (user.user_metadata as { display_name?: string } | null)?.display_name ?? "";
+    (user.user_metadata as { display_name?: string } | null)?.display_name ??
+    "";
 
   return (
-    <OnboardingForm
-      email={user.email ?? ""}
-      defaultName={defaultName}
-      stores={stores}
-    />
+    <OnboardingForm email={user.email ?? ""} defaultName={defaultName} />
   );
 }

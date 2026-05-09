@@ -1001,6 +1001,7 @@ function rowToCast(row: any): Cast {
     nomination_count: row.nomination_count ?? 0,
     monthly_sales: Number(row.monthly_sales ?? 0),
     repeat_rate: Number(row.repeat_rate ?? 0),
+    user_role: (row.user_role ?? "cast") as Cast["user_role"],
     club_role: row.club_role ?? undefined,
     assigned_oneesan_id: row.assigned_oneesan_id ?? undefined,
   };
@@ -1457,4 +1458,66 @@ export async function getCustomerStoreOverviewsReal(
       rank: computeRank(storeVisits.length),
     };
   });
+}
+
+// ═══════════════ Onboarding (migration 008) ═══════════════════
+
+/**
+ * Generate an 8-char human-friendly invite code.
+ * Excludes 0/O/1/I/L to avoid confusion when a user types it in.
+ */
+const INVITE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+export function generateInviteCode(): string {
+  let out = "";
+  for (let i = 0; i < 8; i++) {
+    out += INVITE_ALPHABET[
+      Math.floor(Math.random() * INVITE_ALPHABET.length)
+    ];
+  }
+  return out;
+}
+
+/**
+ * Look up a store by invite code (case-insensitive, hyphens stripped).
+ * Returns null if not found. Used during cast / store_staff onboarding.
+ */
+export async function getStoreByInviteCodeReal(
+  rawCode: string,
+): Promise<{ id: string; name: string; venue_type: "club" | "cabaret" } | null> {
+  const normalized = rawCode.replace(/[\s-]/g, "").toUpperCase();
+  if (!normalized) return null;
+
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("nightos_stores")
+    .select("id, name, venue_type")
+    .eq("invite_code", normalized)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    id: data.id as string,
+    name: data.name as string,
+    venue_type: ((data.venue_type as string) ?? "cabaret") as
+      | "club"
+      | "cabaret",
+  };
+}
+
+/**
+ * Look up the customer row owned by the signed-in user.
+ * Returns null if the user signed up as a non-customer role.
+ */
+export async function getCustomerByAuthUserIdReal(
+  authUserId: string,
+): Promise<Customer | null> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? rowToCustomer(data) : null;
 }
