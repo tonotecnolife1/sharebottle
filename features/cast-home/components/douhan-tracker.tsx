@@ -102,14 +102,14 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
     <section className="space-y-2.5">
       {/* Header + Add button */}
       <div className="flex items-center justify-between">
-        <h2 className="text-display-sm text-ink flex items-center gap-1.5">
-          <CalendarCheck size={16} className="text-roseGold-dark" />
+        <h2 className="font-display text-display-sm text-ink flex items-center gap-1.5">
+          <CalendarCheck size={16} className="text-gold" />
           同伴
         </h2>
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-1 h-8 px-3 rounded-full rose-gradient text-pearl text-[11px] font-medium active:scale-[0.97] shadow-soft-card"
+          className="flex items-center gap-1 h-8 px-3 rounded-full bg-gradient-blush text-ink text-[11px] font-medium active:scale-[0.97] shadow-soft hover:-translate-y-px transition"
         >
           <Plus size={12} />
           同伴を登録
@@ -137,7 +137,7 @@ export function DouhanTracker({ customers, monthlyGoal = 8 }: Props) {
         </div>
         <div className="h-1.5 bg-pearl-soft rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-roseGold to-roseGold-dark rounded-full transition-all"
+            className="h-full bg-gradient-to-r from-blush to-blush-deep rounded-full transition-all"
             style={{ width: `${Math.min(pct, 100)}%` }}
           />
         </div>
@@ -461,7 +461,7 @@ function AddForm({
   };
 
   return (
-    <Card className="p-3 !border-amethyst-border space-y-2.5">
+    <Card className="p-3 space-y-2.5">
       <div className="flex items-center justify-between">
         <h3 className="text-body-sm text-ink font-medium">同伴を登録</h3>
         <button type="button" onClick={onClose} className="text-ink-muted p-0.5">
@@ -511,7 +511,7 @@ function AddForm({
         className={cn(
           "w-full h-10 rounded-btn text-label-sm font-medium transition-all active:scale-[0.98]",
           canSubmit
-            ? "rose-gradient text-pearl shadow-soft-card"
+            ? "bg-gradient-blush text-ink shadow-soft hover:-translate-y-px"
             : "bg-pearl-soft text-ink-muted cursor-not-allowed",
         )}
       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GemCard } from "@/components/nightos/card";
 import { RuriMamaAvatar } from "@/components/nightos/ruri-mama-avatar";
@@ -108,8 +108,7 @@ export function MorningBriefing({ castId }: Props) {
       <div className="relative">
         <div className="flex items-center gap-2 mb-2">
           <RuriMamaAvatar size={28} />
-          <span className="text-[12px] font-medium text-ink">
-            <Sparkles size={11} className="inline mr-1 text-gold-deep" />
+          <span className="font-display text-[13px] font-medium text-ink tracking-wide">
             今朝のさくらママから
           </span>
         </div>
