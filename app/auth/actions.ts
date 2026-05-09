@@ -231,6 +231,28 @@ export async function completeOnboarding(
 
 type OnboardingResult = { error?: string } | never;
 
+/**
+ * Write the user's role + store info to auth.users.user_metadata so it
+ * shows up in the Supabase Authentication → Users dashboard
+ * (click into a user → "User Metadata" panel).
+ *
+ * Non-fatal: if the update fails the redirect still happens.
+ * Source of truth is still nightos_casts / customers + the SQL view in
+ * supabase/USERS_VIEW.md — this is a convenience surface only.
+ */
+async function setUserMetadata(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ data: payload });
+  if (error) {
+    reportError(error, {
+      scope: "onboarding.metadata-update",
+      extra: { payload },
+    });
+  }
+}
+
 async function onboardCustomer(
   supabase: import("@supabase/supabase-js").SupabaseClient,
   userId: string,
@@ -272,6 +294,12 @@ async function onboardCustomer(
       }`,
     };
   }
+
+  await setUserMetadata(supabase, {
+    role: "customer",
+    customer_id: customerId,
+    display_name: name,
+  });
 
   redirect("/");
 }
@@ -406,6 +434,27 @@ async function onboardCastRow(
         "登録は試行できましたが、データを保存できませんでした。Supabase の migration 006 / 007 が適用されているか確認してください。",
     };
   }
+
+  // Pull the store name + invite code (for owner) so user_metadata is
+  // self-explanatory in the Supabase Auth dashboard.
+  const { data: storeRow } = await supabase
+    .from("nightos_stores")
+    .select("name, invite_code")
+    .eq("id", storeId)
+    .maybeSingle();
+
+  await setUserMetadata(supabase, {
+    role: input.role,
+    cast_id: castId,
+    store_id: storeId,
+    store_name: (storeRow?.name as string | undefined) ?? null,
+    store_invite_code:
+      input.role === "store_owner"
+        ? ((storeRow?.invite_code as string | undefined) ?? null)
+        : undefined,
+    club_role: clubRole,
+    display_name: input.name,
+  });
 
   redirect("/");
 }
