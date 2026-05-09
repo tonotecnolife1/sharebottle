@@ -59,7 +59,7 @@ const config: Config = {
           border: "#d9c7a8",
         },
 
-        // ═══════════════ SHAREBOTTLE palette (legacy — do not remove) ═══════════════
+        // ═══════════════ Legacy dark palette (旧プロダクト由来 — 互換のため残す) ═══════════════
         bg: {
           DEFAULT: "#08080d",
           card: "#111118",

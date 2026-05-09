@@ -14,7 +14,7 @@ Supabase ダッシュボードと Vercel ダッシュボードでの作業をま
 ### 手順
 
 1. **Supabase Dashboard** を開く: https://supabase.com/dashboard
-2. 対象プロジェクト（**`sharebottle`** などプロジェクト名で探す）を選択
+2. 対象プロジェクト（**`nightos`** などプロジェクト名で探す）を選択
 3. 左メニュー **SQL Editor** → **New query**
 4. 以下の順で各ファイルの内容を貼り付け → **Run** を押す
 
@@ -58,7 +58,7 @@ select grantee, privilege_type from information_schema.role_table_grants
 ### 手順
 
 1. **Vercel Dashboard** を開く: https://vercel.com/dashboard
-2. 対象プロジェクト（**`sharebottle`**）を選択
+2. 対象プロジェクト（**`nightos`**）を選択
 3. **Settings** → **Environment Variables**
 4. 以下を追加。`Environment` 列は **Production** と **Preview** の両方に
    チェックを入れる（Development は任意）

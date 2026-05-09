@@ -30,8 +30,8 @@ NIGHTOS は 3 つのモードを自動で切り替えます。
 ## 1分で動かす（モック / ローカル）
 
 ```bash
-git clone https://github.com/tonotecnolife1/sharebottle.git
-cd sharebottle
+git clone https://github.com/tonotecnolife1/nightos.git
+cd nightos
 npm install
 npm run dev
 ```
@@ -49,7 +49,7 @@ npm run dev
 
 本リポジトリの `main` ブランチが Vercel に自動デプロイされる構成です。
 
-1. https://vercel.com/new で `tonotecnolife1/sharebottle` をインポート
+1. https://vercel.com/new で `tonotecnolife1/nightos` をインポート
 2. Production Branch = `main`
 3. Environment Variables は空のままでも動作します（モックモード）
 4. Deploy → `https://<your-project>.vercel.app`

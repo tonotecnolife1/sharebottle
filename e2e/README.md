@@ -25,7 +25,7 @@ npx playwright test --ui       # 対話的デバッガ
 向けて実行できる：
 
 ```sh
-PLAYWRIGHT_BASE_URL=https://sharebottle.vercel.app npx playwright test
+PLAYWRIGHT_BASE_URL=https://nightos.vercel.app npx playwright test
 ```
 
 ## ファイル構成

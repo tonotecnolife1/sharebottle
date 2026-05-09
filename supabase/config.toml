@@ -1,6 +1,6 @@
 [project]
-id = "sharebottle"
-name = "SHAREBOTTLE"
+id = "nightos"
+name = "NIGHTOS"
 
 [api]
 enabled = true
