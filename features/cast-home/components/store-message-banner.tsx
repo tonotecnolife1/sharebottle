@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, X } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { markCastMessageReadAction } from "./store-message-banner-action";
 
 interface StoreMessage {
@@ -33,28 +33,30 @@ export function StoreMessageBanner({ initialMessages }: Props) {
       {messages.map((m) => (
         <div
           key={m.id}
-          className="flex items-start gap-3 rounded-card bg-champagne border border-champagne-dark p-3 animate-fade-in"
+          className="rounded-card bg-gradient-champagne border border-champagne-dark p-4 shadow-soft"
         >
-          <div className="w-8 h-8 rounded-full bg-champagne-dark flex items-center justify-center shrink-0">
-            <Bell size={14} className="text-ink" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-label-sm text-ink-secondary mb-0.5">
-              店舗からの連絡
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-roseGold/20 flex items-center justify-center shrink-0">
+              <Bell size={18} className="text-roseGold-dark" />
             </div>
-            <p className="text-body-md text-ink leading-relaxed">
-              {m.message}
-            </p>
+            <div className="flex-1 min-w-0">
+              <div className="text-label-md font-semibold text-ink mb-1">
+                店舗からの連絡
+              </div>
+              <p className="text-body-sm text-ink leading-relaxed">
+                {m.message}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => dismiss(m.id)}
+              disabled={pending}
+              className="p-1 rounded-full hover:bg-champagne-dark/50 text-ink-muted shrink-0"
+              aria-label="閉じる"
+            >
+              <X size={14} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => dismiss(m.id)}
-            disabled={pending}
-            className="p-1 rounded-full hover:bg-champagne-dark/50 text-ink-muted shrink-0"
-            aria-label="閉じる"
-          >
-            <X size={14} />
-          </button>
         </div>
       ))}
     </div>

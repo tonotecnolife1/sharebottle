@@ -4,6 +4,10 @@ import { CURRENT_CAST_ID, CURRENT_MAMA_ID } from "./constants";
 import { isMockAuthDisabled } from "./env";
 import { mockCasts } from "./mock-data";
 
+/**
+ * Account-level role surfaced from the DB. `null` = unauthenticated or
+ * legacy session without a cast / customer row.
+ */
 export type AccountRole = CastUserRole | "customer";
 
 function isSupabaseConfigured(): boolean {
@@ -148,7 +152,6 @@ export async function getCurrentVenueType(): Promise<"club" | "cabaret"> {
   if (!cast) return "club";
 
   if (!isSupabaseConfigured()) {
-    // Mock mode: read from the mock cast's store — default to club
     return "club";
   }
 

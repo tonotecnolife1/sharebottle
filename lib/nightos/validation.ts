@@ -100,20 +100,131 @@ const displayName = z
   .min(1, "名前を入力してください")
   .max(40, "40文字以内で入力してください");
 
+// Common signup primitives reused across all 4 role-specific signup
+// schemas below.
+const signupEmail = z
+  .string()
+  .email("メールアドレスの形式が正しくありません")
+  .max(200);
+const signupPassword = z
+  .string()
+  .min(8, "パスワードは8文字以上")
+  .max(200);
+
+/**
+ * Legacy signup (email/password/name only). Kept for the old shared
+ * /auth/signup form during the URL-split migration. New code should
+ * reach the role-specific schemas below via the per-role auth pages.
+ */
 export const signupSchema = z.object({
-  email: z.string().email("メールアドレスの形式が正しくありません").max(200),
-  password: z.string().min(8, "パスワードは8文字以上").max(200),
+  email: signupEmail,
+  password: signupPassword,
   name: displayName,
 });
 
-export const onboardingSchema = z.object({
+/**
+ * Account-level role chosen at onboarding (migration 008).
+ *
+ * - `cast`        : creates a nightos_casts row with user_role=cast
+ * - `store_staff` : creates a nightos_casts row with user_role=store_staff
+ * - `store_owner` : creates a new nightos_stores + nightos_casts (owner)
+ * - `customer`    : creates a customers row linked by auth_user_id
+ */
+export const accountRoleSchema = z.enum([
+  "cast",
+  "store_staff",
+  "store_owner",
+  "customer",
+]);
+export type AccountRole = z.infer<typeof accountRoleSchema>;
+
+/**
+ * Invite code shape: 8 chars, A-Z2-9 (no 0/O/1/I/L). The form normalises
+ * (uppercase + strip whitespace/hyphens) before validating.
+ */
+const inviteCode = z
+  .string()
+  .regex(/^[A-Z2-9]{8}$/, "招待コードは8文字（A-Z2-9）です");
+
+/**
+ * Onboarding payload — discriminated by `role`.
+ * Each branch has its own required fields.
+ */
+export const onboardingSchema = z.discriminatedUnion("role", [
+  // Owner: brand-new store + own profile
+  z.object({
+    role: z.literal("store_owner"),
+    name: displayName,
+    venueType: z.enum(["club", "cabaret"]),
+    newStoreName: z.string().min(1, "店舗名を入力してください").max(80),
+  }),
+  // Cast: join an existing store via invite code, club_role required
+  z.object({
+    role: z.literal("cast"),
+    name: displayName,
+    inviteCode,
+    clubRole: z.enum(["mama", "oneesan", "help"]),
+  }),
+  // Store staff: join via invite code, no club_role
+  z.object({
+    role: z.literal("store_staff"),
+    name: displayName,
+    inviteCode,
+  }),
+  // Customer: just a display name; no store binding at signup time
+  z.object({
+    role: z.literal("customer"),
+    name: displayName,
+  }),
+]);
+
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
+
+// Per-role signup schemas (post URL-split). Each role's signup form
+// collects email + password + everything needed to materialise the
+// nightos_casts / customers row in one shot — there is no separate
+// onboarding step in the new flow.
+//
+// signupAs* server actions in app/auth/actions.ts validate against
+// these. The role is implied by which page (and therefore which
+// schema) the user submitted from, so we don't accept a `role` field
+// from the client.
+
+export const signupCastSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
   name: displayName,
-  /** Optional — pick an existing store. */
-  storeId: z.string().min(1).max(64).optional(),
-  /** Optional — create a new store with this name. */
-  newStoreName: z.string().min(1).max(80).optional(),
+  inviteCode,
+});
+export type SignupCastInput = z.infer<typeof signupCastSchema>;
+
+export const signupStaffSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+  inviteCode,
+});
+export type SignupStaffInput = z.infer<typeof signupStaffSchema>;
+
+export const signupOwnerSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
   venueType: z.enum(["club", "cabaret"]),
-  clubRole: z.enum(["mama", "oneesan", "help"]).optional(),
+  newStoreName: z.string().min(1, "店舗名を入力してください").max(80),
+});
+export type SignupOwnerInput = z.infer<typeof signupOwnerSchema>;
+
+export const signupCustomerSchema = z.object({
+  email: signupEmail,
+  password: signupPassword,
+  name: displayName,
+});
+export type SignupCustomerInput = z.infer<typeof signupCustomerSchema>;
+
+/** Store-change (settings -> 店舗を変更) — migration 009. */
+export const changeStoreSchema = z.object({
+  inviteCode,
 });
 
 export const generateTemplateSchema = z.object({

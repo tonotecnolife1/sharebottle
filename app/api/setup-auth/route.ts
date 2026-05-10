@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { mockCasts } from "@/lib/nightos/mock-data";
+import { isSetupRequestAuthorized } from "@/lib/nightos/admin-gate";
 
 /**
- * POST /api/setup-auth?secret=nightos-setup-2026
+ * POST /api/setup-auth?secret=<NIGHTOS_SETUP_SECRET>
  *
  * Creates 5 test Supabase Auth users and links them to existing
  * cast records via auth_user_id.
  *
- * Requires SUPABASE_SERVICE_ROLE_KEY env (only on server).
+ * 🔒 Gated by `NIGHTOS_SETUP_SECRET` env (≥16 chars). If the env
+ * is unset, this endpoint returns 404 — even with a "correct"
+ * secret query string. Never set this in production unless you
+ * are intentionally seeding it.
  *
  * Test accounts:
  *   akari@test.nightos    / nightos2026 → cast1
@@ -30,8 +34,10 @@ export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get("secret");
 
-  if (secret !== "nightos-setup-2026") {
-    return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
+  if (!isSetupRequestAuthorized(secret)) {
+    // Pretend the route doesn't exist to avoid leaking that the
+    // endpoint is gated by an env variable.
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   if (

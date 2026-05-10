@@ -8,12 +8,20 @@ export interface Store {
   id: string;
   name: string;
   venue_type: VenueType;
+  /** 8-char join code for cast / store_staff sign-ups (migration 008). */
   invite_code?: string;
 }
 
 /**
  * Account-level role bound at sign-up. Drives the URL gates in
  * middleware.ts and the post-auth redirect in app/page.tsx.
+ *
+ * - "cast"        : 接客側のキャスト。/cast/* のみ
+ * - "store_staff" : 入力業務スタッフ。/store/* (オーナー専用ページ除く)
+ * - "store_owner" : 店舗オーナー。/store/* 全て
+ *
+ * 来店客は cast 行ではなく customers 行に auth_user_id 経由で紐づく
+ * （/customer/*）ため、ここには含めない。
  */
 export type CastUserRole = "cast" | "store_staff" | "store_owner";
 
@@ -24,7 +32,12 @@ export interface Cast {
   nomination_count: number;
   monthly_sales: number;
   repeat_rate: number; // 0..1
+  /** Account-level role (migration 008). Defaults to "cast" when absent
+   *  (legacy mock data and rows from before 008 was applied). */
   user_role?: CastUserRole;
+  /** Whether this cast row is the user's currently-active membership at
+   *  this store (migration 009). Defaults to true for legacy data. */
+  is_active?: boolean;
   /** Club only: role in the hierarchy */
   club_role?: ClubRole;
   /** Club only: the oneesan this help is assigned to */
@@ -406,25 +419,6 @@ export interface RuriMamaRequest {
   previousReply?: string;
   /** ブラッシュアップの方向性（例: "もっと温かく"） */
   refinementDirection?: string;
-}
-
-// ═══════════════ Store ↔ Cast messaging ═══════════════
-
-export interface StoreToCastMessage {
-  id: string;
-  cast_id: string;
-  message: string;
-  sent_at: string;
-  read: boolean;
-}
-
-export interface CastToStoreRequest {
-  id: string;
-  cast_id: string;
-  cast_name: string;
-  message: string;
-  sent_at: string;
-  resolved: boolean;
 }
 
 export interface RuriMamaResponse {

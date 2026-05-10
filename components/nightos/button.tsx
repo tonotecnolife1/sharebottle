@@ -10,24 +10,30 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
+// design.md §4.2 — pill 形状 + フローティング影 + hover で 1px 持ち上げ
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-btn font-medium transition-all select-none active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-pill font-medium tracking-wide transition will-change-transform select-none hover:-translate-y-px active:translate-y-px disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0";
 
 const variants: Record<Variant, string> = {
+  // 主要操作 — blush ソフトグラデ + フロート影
   primary:
-    "rose-gradient text-pearl shadow-soft-card hover:shadow-glow-rose hover:brightness-[1.03]",
+    "bg-gradient-blush text-ink shadow-float hover:brightness-[1.02]",
+  // 副次 — 半透明白 + 細枠
   secondary:
-    "bg-pearl-soft text-ink border border-roseGold-border hover:bg-pearl-warm",
-  ghost: "text-ink-secondary hover:bg-pearl-soft",
-  ruri:
-    "ruri-gradient text-pearl shadow-soft-card hover:shadow-glow-amethyst hover:brightness-[1.03]",
+    "bg-pearl-warm text-ink border border-ink/[0.08] shadow-soft hover:border-gold/30",
+  // テキストリンク調
+  ghost:
+    "text-ink-secondary hover:text-ink hover:bg-pearl-soft hover:translate-y-0",
+  // primary と同義（ruri は v1 名残のエイリアス。新しい画面では primary を使う）
+  ruri: "bg-gradient-blush text-ink shadow-float hover:brightness-[1.02]",
+  // outline — gold 細線
   outline:
-    "bg-pearl-warm text-roseGold-dark border border-roseGold hover:bg-roseGold-muted",
+    "bg-pearl-warm/80 text-ink border border-gold/30 shadow-soft hover:border-gold/50",
 };
 
 const sizes: Record<Size, string> = {
   sm: "h-9 px-4 text-body-sm",
-  md: "h-11 px-5 text-body-md",
+  md: "h-12 px-6 text-body-md",
   lg: "h-14 px-7 text-body-lg",
 };
 

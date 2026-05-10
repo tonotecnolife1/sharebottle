@@ -1,0 +1,138 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { signupAsStaff } from "@/app/auth/actions";
+import { ConfirmationView } from "./confirmation-view";
+
+export default function SignupStaffForm() {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+
+  const handleSubmit = (formData: FormData) => {
+    setError(null);
+    setSubmittedEmail(String(formData.get("email") ?? ""));
+    startTransition(async () => {
+      const result = await signupAsStaff(formData);
+      if (result?.error) setError(result.error);
+      else if (result?.pendingConfirmation) setPendingConfirmation(true);
+    });
+  };
+
+  if (pendingConfirmation) {
+    return <ConfirmationView email={submittedEmail} backHref="/store/auth/login" />;
+  }
+
+  return (
+    <main className="min-h-dvh bg-pearl flex flex-col">
+      <div className="bg-gradient-hero px-6 pt-14 pb-12">
+        <div className="max-w-sm mx-auto">
+          <h1 className="font-display text-[28px] leading-[1.3] font-medium tracking-wide text-ink">
+            新規登録（店舗スタッフ）
+          </h1>
+          <p className="mt-1.5 text-body-sm text-ink-secondary">
+            オーナーから受け取った招待コードで参加
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 px-6 pt-8 pb-12">
+        <div className="max-w-sm mx-auto flex flex-col gap-5">
+          <form action={handleSubmit} className="space-y-3">
+            <Field label="お名前">
+              <input
+                type="text"
+                name="name"
+                placeholder="例: 田中"
+                required
+                maxLength={40}
+                disabled={pending}
+                className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep"
+                style={{ fontSize: "16px" }}
+              />
+            </Field>
+
+            <Field label="招待コード" hint="店舗オーナーから受け取る">
+              <input
+                type="text"
+                name="inviteCode"
+                placeholder="例: AB23CD45"
+                required
+                maxLength={8}
+                disabled={pending}
+                autoCapitalize="characters"
+                className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep tracking-[0.2em] font-mono uppercase"
+                style={{ fontSize: "16px" }}
+              />
+            </Field>
+
+            <Field label="メールアドレス">
+              <input
+                type="email"
+                name="email"
+                placeholder="email@example.com"
+                required
+                disabled={pending}
+                className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink placeholder:text-ink-muted shadow-soft focus:outline-none focus:border-blush-deep"
+                style={{ fontSize: "16px" }}
+              />
+            </Field>
+
+            <Field label="パスワード" hint="8文字以上">
+              <input
+                type="password"
+                name="password"
+                required
+                minLength={8}
+                disabled={pending}
+                className="w-full px-4 py-3 rounded-2xl border border-ink/[0.08] bg-pearl-warm text-body-md text-ink shadow-soft focus:outline-none focus:border-blush-deep"
+                style={{ fontSize: "16px" }}
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={pending}
+              className="w-full mt-2 px-6 py-3.5 rounded-pill bg-gradient-blush text-ink text-body-md font-medium tracking-wide hover:brightness-[1.02] hover:-translate-y-px active:translate-y-px transition shadow-float will-change-transform disabled:opacity-50"
+            >
+              {pending ? "登録中..." : "登録する"}
+            </button>
+            {error && <p className="text-[12px] text-[#c2575b] text-center leading-relaxed">{error}</p>}
+          </form>
+
+          <p className="text-body-sm text-ink-secondary text-center">
+            <Link href="/store/auth/signup-owner" className="text-blush-deep underline-offset-2 hover:underline">
+              新しい店舗を開く（オーナー）
+            </Link>
+            {"  ·  "}
+            <Link href="/store/auth/login" className="text-blush-deep underline-offset-2 hover:underline">
+              ログイン
+            </Link>
+          </p>
+
+          <p className="text-[11px] text-ink-muted text-center leading-relaxed">
+            登録すると{" "}
+            <Link href="/legal/terms" className="underline underline-offset-2">利用規約</Link>
+            {" "}と{" "}
+            <Link href="/legal/privacy" className="underline underline-offset-2">プライバシーポリシー</Link>
+            {" "}に同意したとみなされます
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <div className="flex items-baseline justify-between mb-1.5 px-1">
+        <span className="text-body-sm text-ink-secondary">{label}</span>
+        {hint && <span className="text-[11px] text-ink-muted">{hint}</span>}
+      </div>
+      {children}
+    </label>
+  );
+}

@@ -405,7 +405,7 @@ export const mockDouhans: Douhan[] = [
   },
   {
     id: "douhan6",
-    cast_id: "cast_oneesan1",
+    cast_id: "cast_help2",
     customer_id: "cust4",
     store_id: CURRENT_STORE_ID,
     date: "2026-04-08",
@@ -429,7 +429,7 @@ export const mockDouhans: Douhan[] = [
   },
   {
     id: "douhan8",
-    cast_id: "cast_help1",
+    cast_id: "cast_oneesan3",
     customer_id: "cust15",
     store_id: CURRENT_STORE_ID,
     date: "2026-04-12",
@@ -1607,6 +1607,54 @@ export const mockCastMemos: CastMemo[] = [
     next_topics: "ブルゴーニュのテイスティング、最近読んだ本",
     visit_notes: null,
     updated_at: "2026-03-18T23:00:00+09:00",
+  },
+  // ── ゆき姉さん（cast_oneesan2）の担当顧客 ──
+  {
+    id: "memo35",
+    customer_id: "cust35",
+    cast_id: "cast_oneesan2",
+    last_topic: "新しく取得した湾岸の物件、息子のMBA進学",
+    service_tips:
+      "長期VIP。機密保持を最重視。同席者がいる時は仕事の話を控える。山崎25年は常時キープ。",
+    next_topics: "息子のMBA出発前の壮行、春の物件視察ツアー",
+    visit_notes: null,
+    updated_at: "2026-03-17T23:30:00+09:00",
+  },
+  // ── あやな（cast_help2）の担当顧客 ──
+  {
+    id: "memo4",
+    customer_id: "cust4",
+    cast_id: "cast_help2",
+    last_topic: "新しく動いている広告キャンペーンの撮影が押している",
+    service_tips:
+      "渡辺さま（cust3）の紹介。仕事の愚痴を聞いてほしいタイプ。響JHの水割りを切らさない。新人なので深追いせず、まず名前と顔を覚える。",
+    next_topics: "撮影の仕上がり、ゴールデンウィークの予定",
+    visit_notes: null,
+    updated_at: "2026-03-16T23:15:00+09:00",
+  },
+  // ── もえ姉さん（cast_oneesan3）の担当顧客 ──
+  {
+    id: "memo14",
+    customer_id: "cust14",
+    cast_id: "cast_oneesan3",
+    last_topic: "シンガポール出張の土産話、新しいブルゴーニュの輸入",
+    service_tips:
+      "ワインの知識深い。ドンペリロゼは特別な日のみ、普段はブルゴーニュ赤の方が話が弾む。海外出張多いので来店前にLINEで在庫確認。",
+    next_topics: "次の出張先（パリの予定）、ワインオークションの結果",
+    visit_notes: null,
+    updated_at: "2026-03-15T23:45:00+09:00",
+  },
+  // ── れな姉さん（cast_oneesan4）の担当顧客 ──
+  {
+    id: "memo24",
+    customer_id: "cust24",
+    cast_id: "cast_oneesan4",
+    last_topic: "戦国武将の本を読み返している、孫の入学祝い",
+    service_tips:
+      "歴史・古典の話題が鉄板。リタイア後で時間に余裕あり、長居傾向。響30年は3杯までで止める（飲み過ぎ注意の家族指示あり）。",
+    next_topics: "桜の季節の散策、孫の入学式",
+    visit_notes: null,
+    updated_at: "2026-03-14T23:00:00+09:00",
   },
 ];
 

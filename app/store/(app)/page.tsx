@@ -10,7 +10,6 @@ import {
   Users,
   Wine,
 } from "lucide-react";
-import { Card } from "@/components/nightos/card";
 import { StatCard } from "@/components/nightos/stat-card";
 import { StoreBriefing } from "@/features/store-hub/components/store-briefing";
 import { SendCastMessage } from "@/features/store-hub/components/send-cast-message";
@@ -31,24 +30,18 @@ export default async function StoreHubPage() {
   ]);
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <header className="px-5 pt-8 pb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="text-label-sm text-ink-muted tracking-wider uppercase">
-            Store Console
-          </div>
+    <div>
+      <header className="bg-gradient-hero px-5 pt-12 pb-6">
+        <p className="text-body-sm text-ink-secondary mb-1">店舗管理</p>
+        <h1 className="font-display text-[26px] leading-[1.2] font-medium tracking-wide text-ink">
+          CLUB NIGHTOS 銀座本店
+        </h1>
+        <div className="mt-2">
           <StorePermissionBadge />
         </div>
-        <h1 className="text-display-lg font-display font-semibold text-ink">
-          NIGHTOS
-        </h1>
-        <p className="text-body-md text-ink-secondary mt-0.5">
-          CLUB NIGHTOS 銀座本店
-        </p>
       </header>
 
-      <div className="px-5 pb-6 space-y-5">
+      <div className="px-5 pt-5 pb-8 space-y-5">
         {/* Quick stats — owner only */}
         <OwnerOnly>
           <div className="grid grid-cols-3 gap-2.5">
@@ -100,35 +93,30 @@ export default async function StoreHubPage() {
         </OwnerOnly>
 
         {/* Registration shortcuts */}
-        <section className="space-y-2">
-          <h2 className="text-label-md text-ink-secondary font-medium">
-            登録
-          </h2>
+        <section className="space-y-2.5">
+          <h2 className="text-body-sm text-ink-secondary px-1">登録</h2>
           <div className="grid grid-cols-3 gap-2">
             <ShortcutCard
               href="/store/customers/new"
-              icon={<UserPlus size={20} />}
+              icon={<UserPlus size={20} className="text-gold-deep" />}
               label="顧客"
-              tone="champagne"
             />
             <ShortcutCard
               href="/store/visits/new"
-              icon={<CalendarPlus size={20} />}
+              icon={<CalendarPlus size={20} className="text-gold-deep" />}
               label="来店"
-              tone="rose"
             />
             <ShortcutCard
               href="/store/bottles/new"
-              icon={<Wine size={20} />}
+              icon={<Wine size={20} className="text-gold-deep" />}
               label="ボトル"
-              tone="amethyst"
             />
           </div>
         </section>
 
         {/* Data management (both staff and owner) */}
-        <section className="space-y-2">
-          <h2 className="text-label-md text-ink-secondary font-medium">
+        <section className="space-y-2.5">
+          <h2 className="text-body-sm text-ink-secondary px-1">
             データ確認・編集
           </h2>
           <div className="space-y-2">
@@ -155,8 +143,8 @@ export default async function StoreHubPage() {
 
         {/* Owner-only management section */}
         <OwnerOnly>
-          <section className="space-y-2">
-            <h2 className="text-label-md text-ink-secondary font-medium flex items-center gap-1.5">
+          <section className="space-y-2.5">
+            <h2 className="text-body-sm text-ink-secondary flex items-center gap-1.5 px-1">
               オーナー管理
               <StorePermissionBadge />
             </h2>
@@ -193,34 +181,20 @@ function ShortcutCard({
   href,
   icon,
   label,
-  tone,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
-  tone: "champagne" | "rose" | "amethyst";
 }) {
-  const bg = {
-    champagne: "bg-gradient-champagne border-champagne-dark",
-    rose: "bg-pearl-warm border-roseGold-border",
-    amethyst: "bg-pearl-warm border-amethyst-border",
-  }[tone];
-  const iconBg = {
-    champagne: "bg-champagne-dark text-ink",
-    rose: "bg-gradient-rose-gold text-pearl",
-    amethyst: "bg-gradient-amethyst text-pearl",
-  }[tone];
   return (
     <Link
       href={href}
-      className={`rounded-card border ${bg} p-3 flex flex-col items-center gap-2 active:scale-95 transition-transform shadow-soft-card`}
+      className="rounded-card border border-ink/[0.06] bg-pearl-warm p-3 flex flex-col items-center gap-2 hover:-translate-y-px hover:border-gold/40 transition shadow-soft will-change-transform"
     >
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`}
-      >
+      <span className="w-11 h-11 rounded-full border border-gold/40 bg-gradient-to-br from-pearl-warm to-champagne-soft/60 flex items-center justify-center">
         {icon}
-      </div>
-      <span className="text-label-sm text-ink font-medium">{label}</span>
+      </span>
+      <span className="text-[11px] text-ink font-medium">{label}</span>
     </Link>
   );
 }
@@ -239,20 +213,20 @@ function ListLink({
   return (
     <Link
       href={href}
-      className="block active:scale-[0.99] transition-transform"
+      className="block rounded-card border border-ink/[0.06] bg-pearl-warm shadow-soft hover:-translate-y-px hover:border-gold/40 transition will-change-transform"
     >
-      <Card className="p-3">
+      <div className="p-3.5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-pearl-soft flex items-center justify-center text-ink-secondary shrink-0">
+          <span className="w-10 h-10 rounded-full border border-gold/40 bg-pearl-warm flex items-center justify-center text-gold-deep shrink-0">
             {icon}
-          </div>
+          </span>
           <div className="flex-1 min-w-0">
-            <div className="text-body-md font-semibold text-ink">{label}</div>
-            <div className="text-label-sm text-ink-secondary">{description}</div>
+            <div className="text-body-md font-medium text-ink">{label}</div>
+            <div className="text-[11px] text-ink-muted">{description}</div>
           </div>
           <ArrowRight size={14} className="text-ink-muted shrink-0" />
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
