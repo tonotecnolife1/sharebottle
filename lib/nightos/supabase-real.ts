@@ -38,10 +38,7 @@ import type {
   MemoExtractionResult,
   Visit,
 } from "@/types/nightos";
-import type {
-  StoreToCastMessage,
-  CastToStoreRequest,
-} from "./mock-data";
+import type { StoreToCastMessage, CastToStoreRequest } from "./mock-data";
 import type { TrendPoint, RepeatPoint } from "./store-mock-data";
 import type { StoreDashboardData, CastStatsData } from "./supabase-queries";
 import { selectFollowTargets } from "@/features/cast-home/data/follow-selector";
@@ -1511,6 +1508,31 @@ export async function getStoreByInviteCodeReal(
 }
 
 /**
+ * Get the venue_type for the store a cast belongs to.
+ * Returns "club" as a safe fallback if not found.
+ */
+export async function getVenueTypeForCastReal(
+  castId: string,
+): Promise<"club" | "cabaret"> {
+  const supabase = createServerSupabaseClient();
+  const { data } = await supabase
+    .from("nightos_casts")
+    .select("store_id")
+    .eq("id", castId)
+    .maybeSingle();
+  if (!data?.store_id) return "club";
+
+  const { data: store } = await supabase
+    .from("nightos_stores")
+    .select("venue_type")
+    .eq("id", data.store_id)
+    .maybeSingle();
+
+  const vt = (store as any)?.venue_type;
+  return vt === "club" || vt === "cabaret" ? vt : "club";
+}
+
+/**
  * Look up the customer row owned by the signed-in user.
  * Returns null if the user signed up as a non-customer role.
  */
@@ -1526,3 +1548,4 @@ export async function getCustomerByAuthUserIdReal(
   if (error) throw error;
   return data ? rowToCustomer(data) : null;
 }
+
