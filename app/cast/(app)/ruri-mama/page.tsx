@@ -3,17 +3,26 @@ import { History, ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { ChatWindow } from "@/features/ruri-mama/components/chat-window";
 import { ChatLimitBanner } from "@/features/ruri-mama/components/chat-limit-banner";
-import { getCurrentCastId } from "@/lib/nightos/auth";
-import { getCustomersForCast } from "@/lib/nightos/supabase-queries";
+import { getCurrentCast } from "@/lib/nightos/auth";
+import { CURRENT_CAST_ID } from "@/lib/nightos/constants";
+import {
+  getCustomersForCast,
+  getCustomersForOneesan,
+} from "@/lib/nightos/supabase-queries";
 
 interface Props {
   searchParams: { customerId?: string };
 }
 
 export default async function RuriMamaPage({ searchParams }: Props) {
-  const castId = await getCurrentCastId();
-  const customers = await getCustomersForCast(castId);
+  const cast = await getCurrentCast();
+  const castId = cast?.id ?? CURRENT_CAST_ID;
   const isStubMode = !process.env.ANTHROPIC_API_KEY;
+
+  const isOneesan = cast?.club_role === "oneesan";
+  const { customers, helpCastNames } = isOneesan
+    ? await getCustomersForOneesan(castId)
+    : { customers: await getCustomersForCast(castId), helpCastNames: {} };
 
   return (
     <div className="flex flex-col h-dvh animate-fade-in">
@@ -46,6 +55,7 @@ export default async function RuriMamaPage({ searchParams }: Props) {
       <ChatLimitBanner />
       <ChatWindow
         customers={customers}
+        helpCastNames={helpCastNames}
         initialCustomerId={searchParams.customerId}
         initialIsStubMode={isStubMode}
       />

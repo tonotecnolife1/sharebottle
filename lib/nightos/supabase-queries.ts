@@ -54,6 +54,8 @@ import {
   getCustomerByIdReal,
   getCustomerContextReal,
   getCustomersForCastReal,
+  getCustomersForOnesanReal,
+  getHelpCastNamesForOnesanReal,
   getRecentVisitsForCastReal,
   getRecentVisitsReal,
   getScreenshotsForCustomerReal,
@@ -65,6 +67,7 @@ import {
   saveScreenshotReal,
   setCastGoalReal,
   transferCustomersReal,
+  updateCastClubRoleReal,
   updateCastMemoReal,
   updateCustomerReal,
   // ── B4: real persistence for previously-mock-only features ──
@@ -145,6 +148,48 @@ export async function getCustomersForCast(
       err,
     );
     return mockFor();
+  }
+}
+
+/** For oneesan: own customers + assigned help casts' customers, plus a helpCastId→name map. */
+export async function getCustomersForOneesan(castId: string): Promise<{
+  customers: Customer[];
+  helpCastNames: Record<string, string>;
+}> {
+  const helpCasts = mockCasts.filter((c) => c.assigned_oneesan_id === castId);
+  const helpIds = helpCasts.map((c) => c.id);
+  const helpNamesMock = Object.fromEntries(helpCasts.map((c) => [c.id, c.name]));
+  const allIds = [castId, ...helpIds];
+
+  const mockFallback = () => ({
+    customers: mockCustomers.filter((c) => allIds.includes(c.cast_id ?? "")),
+    helpCastNames: helpNamesMock,
+  });
+
+  if (!isSupabaseConfigured()) return mockFallback();
+  try {
+    const [customers, helpCastNames] = await Promise.all([
+      getCustomersForOnesanReal(castId),
+      getHelpCastNamesForOnesanReal(castId),
+    ]);
+    if (customers.length === 0 && DEMO_CAST_IDS.includes(castId)) return mockFallback();
+    return { customers, helpCastNames };
+  } catch {
+    return mockFallback();
+  }
+}
+
+export async function updateCastClubRole(
+  castId: string,
+  clubRole: "mama" | "oneesan" | "help",
+  assignedOnesanId: string | null,
+): Promise<void> {
+  if (!isSupabaseConfigured()) return;
+  try {
+    await updateCastClubRoleReal(castId, clubRole, assignedOnesanId);
+  } catch (err) {
+    console.error("[supabase] updateCastClubRole failed:", err);
+    throw err;
   }
 }
 

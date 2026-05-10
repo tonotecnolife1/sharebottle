@@ -7,6 +7,7 @@ import type { Customer } from "@/types/nightos";
 
 interface Props {
   customers: Customer[];
+  helpCastNames?: Record<string, string>;
   selectedId?: string;
   onSelect: (id: string | undefined) => void;
 }
@@ -18,6 +19,7 @@ interface Props {
  */
 export function CustomerSelectInline({
   customers,
+  helpCastNames = {},
   selectedId,
   onSelect,
 }: Props) {
@@ -95,32 +97,42 @@ export function CustomerSelectInline({
           >
             指定なしで相談する
           </button>
-          {customers.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                onSelect(c.id);
-                setOpen(false);
-              }}
-              className={cn(
-                "w-full text-left px-3 py-2 hover:bg-pearl-soft",
-                selectedId === c.id && "bg-amethyst-muted",
-              )}
-            >
-              <div className="text-body-sm text-ink">
-                {formatCustomerName(c.name)}
-              </div>
-              <div className="text-[10px] text-ink-muted">
-                {c.job ?? "—"} ·{" "}
-                {c.category === "vip"
-                  ? "VIP"
-                  : c.category === "new"
-                    ? "新規"
-                    : "常連"}
-              </div>
-            </button>
-          ))}
+          {customers.map((c) => {
+            const helpName = c.cast_id ? helpCastNames[c.cast_id] : undefined;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  onSelect(c.id);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "w-full text-left px-3 py-2 hover:bg-pearl-soft",
+                  selectedId === c.id && "bg-amethyst-muted",
+                )}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-body-sm text-ink">
+                    {formatCustomerName(c.name)}
+                  </span>
+                  {helpName && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-champagne-soft text-ink-secondary">
+                      {helpName}担当
+                    </span>
+                  )}
+                </div>
+                <div className="text-[10px] text-ink-muted">
+                  {c.job ?? "—"} ·{" "}
+                  {c.category === "vip"
+                    ? "VIP"
+                    : c.category === "new"
+                      ? "新規"
+                      : "常連"}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
