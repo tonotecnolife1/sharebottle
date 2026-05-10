@@ -81,6 +81,7 @@ function clearStoredMessages(castId: string) {
 
 interface Props {
   customers: Customer[];
+  helpCastNames?: Record<string, string>;
   initialCustomerId?: string;
   initialIsStubMode?: boolean;
 }
@@ -115,6 +116,7 @@ const FREEFORM_PROMPT: ChatMessage = {
 
 export function ChatWindow({
   customers,
+  helpCastNames = {},
   initialCustomerId,
   initialIsStubMode = false,
 }: Props) {
@@ -546,6 +548,7 @@ export function ChatWindow({
                 phase.name === "intent-pick" && (
                   <CustomerSelectInline
                     customers={customers}
+                    helpCastNames={helpCastNames}
                     selectedId={selectedCustomerId}
                     onSelect={setSelectedCustomerId}
                   />
