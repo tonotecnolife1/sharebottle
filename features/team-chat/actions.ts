@@ -3,7 +3,7 @@
 import { getCurrentCastId } from "@/lib/nightos/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { mockChatRooms, mockStoreCasts } from "./lib/mock-chat-data";
-import { findOrCreateDmRoom, getStoreCastsForDm } from "./lib/supabase-queries";
+import { createGroupRoom, findOrCreateDmRoom, getStoreCastsForDm } from "./lib/supabase-queries";
 import type { CastMember } from "./lib/supabase-queries";
 
 function isSupabaseConfigured(): boolean {
@@ -72,4 +72,36 @@ export async function createDmRoomAction(
   // Return a synthetic ID for demo mode — the room won't persist but
   // the router will navigate to a (empty) chat view
   return `dm_${[castId, recipientId].sort().join("_")}`;
+}
+
+/**
+ * Create a new group channel with the current cast + selected members.
+ * Returns the room ID, or null on failure.
+ */
+export async function createGroupRoomAction(
+  memberIds: string[],
+  name: string,
+): Promise<string | null> {
+  const castId = await getCurrentCastId();
+
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createServerSupabaseClient();
+
+      const { data: self } = await supabase
+        .from("nightos_casts")
+        .select("store_id")
+        .eq("id", castId)
+        .maybeSingle();
+
+      if (self?.store_id) {
+        return createGroupRoom(supabase, castId, memberIds, name, self.store_id);
+      }
+    } catch {
+      // fall through to mock
+    }
+  }
+
+  // Mock: return a synthetic room ID
+  return `group_${castId}_${Date.now()}`;
 }

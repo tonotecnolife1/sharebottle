@@ -257,6 +257,33 @@ export async function findOrCreateDmRoom(
 }
 
 /**
+ * Create a new channel-type group room with the given members.
+ * Returns the room ID, or null on failure.
+ */
+export async function createGroupRoom(
+  supabase: SupabaseClient,
+  creatorId: string,
+  memberIds: string[],
+  name: string,
+  storeId: string,
+): Promise<string | null> {
+  const { data: room, error: roomErr } = await supabase
+    .from("team_chat_rooms")
+    .insert({ store_id: storeId, type: "channel", name, visible_to_seniors: false })
+    .select("id")
+    .single();
+  if (roomErr || !room) return null;
+
+  const allMembers = Array.from(new Set([creatorId, ...memberIds]));
+  const { error: memberErr } = await supabase
+    .from("team_chat_room_members")
+    .insert(allMembers.map((castId) => ({ room_id: room.id, cast_id: castId })));
+  if (memberErr) return null;
+
+  return room.id;
+}
+
+/**
  * Load all messages for a room, ordered oldest → newest. Populates
  * reply_count from thread_parent_id references.
  */
