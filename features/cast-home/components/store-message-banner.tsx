@@ -33,14 +33,14 @@ export function StoreMessageBanner({ initialMessages }: Props) {
       {messages.map((m) => (
         <div
           key={m.id}
-          className="rounded-card bg-gradient-champagne border border-champagne-dark p-4 shadow-soft"
+          className="rounded-card bg-champagne-soft border border-champagne-dark p-4 shadow-soft"
         >
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-roseGold/20 flex items-center justify-center shrink-0">
-              <Bell size={18} className="text-roseGold-dark" />
+            <div className="w-10 h-10 rounded-full border border-gold/40 flex items-center justify-center shrink-0">
+              <Bell size={18} className="text-gold-deep" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-label-md font-semibold text-ink mb-1">
+              <div className="text-label-md font-medium text-ink mb-1">
                 店舗からの連絡
               </div>
               <p className="text-body-sm text-ink leading-relaxed">
