@@ -5,11 +5,6 @@ import { Card } from "@/components/nightos/card";
 import { Button } from "@/components/nightos/button";
 
 interface Props {
-  /**
-   * The setup secret passed through from the page-level server gate.
-   * Already validated server-side; reused here only as a query string
-   * to authenticate the same admin against the API routes.
-   */
   secret: string;
 }
 
@@ -19,6 +14,17 @@ export default function SetupClient({ secret }: Props) {
   const [schemaStatus, setSchemaStatus] = useState<"idle" | "info">("idle");
   const [authStatus, setAuthStatus] = useState<"idle" | "running" | "done" | "error">("idle");
   const [authResult, setAuthResult] = useState<any>(null);
+
+  // New store creation state
+  const [newStore, setNewStore] = useState({
+    storeName: "",
+    venueType: "club" as "club" | "cabaret",
+    ownerName: "",
+    email: "",
+    password: "",
+  });
+  const [storeStatus, setStoreStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [storeResult, setStoreResult] = useState<any>(null);
 
   const qs = `?secret=${encodeURIComponent(secret)}`;
 
@@ -32,6 +38,23 @@ export default function SetupClient({ secret }: Props) {
     } catch (err: any) {
       setResult({ error: err.message });
       setStatus("error");
+    }
+  };
+
+  const createNewStore = async () => {
+    setStoreStatus("running");
+    try {
+      const res = await fetch(`/api/setup/new-store${qs}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newStore),
+      });
+      const data = await res.json();
+      setStoreResult(data);
+      setStoreStatus(res.ok ? "done" : "error");
+    } catch (err: any) {
+      setStoreResult({ error: err.message });
+      setStoreStatus("error");
     }
   };
 
@@ -216,6 +239,93 @@ export default function SetupClient({ secret }: Props) {
               <p className="text-[11px] text-ink-secondary mt-1">
                 {authResult.error}
               </p>
+            </div>
+          )}
+        </Card>
+
+        {/* ─── New store creation ─── */}
+        <Card className="p-4 space-y-4">
+          <div>
+            <h2 className="text-body-md font-semibold text-ink">
+              新規店舗オーナーを作成
+            </h2>
+            <p className="text-body-sm text-ink-secondary mt-1">
+              新規クライアント向け。店舗と店舗オーナーアカウントを同時に作成します。
+              オーナーは自己登録できないため、このフォームで作成してください。
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            <div className="space-y-1">
+              <label className="text-[11px] text-ink-secondary font-medium">店舗タイプ</label>
+              <div className="flex gap-3">
+                {(["club", "cabaret"] as const).map((v) => (
+                  <label key={v} className="flex items-center gap-1.5 text-body-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      name="venueType"
+                      value={v}
+                      checked={newStore.venueType === v}
+                      onChange={() => setNewStore((s) => ({ ...s, venueType: v }))}
+                    />
+                    {v === "club" ? "クラブ" : "キャバクラ"}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {[
+              { key: "storeName", label: "店舗名", placeholder: "CLUB NIGHTOS 銀座本店" },
+              { key: "ownerName", label: "オーナー名（表示名）", placeholder: "田中 太郎" },
+              { key: "email", label: "メールアドレス", placeholder: "owner@example.com" },
+              { key: "password", label: "初期パスワード（8文字以上）", placeholder: "nightos2026" },
+            ].map(({ key, label, placeholder }) => (
+              <div key={key} className="space-y-1">
+                <label className="text-[11px] text-ink-secondary font-medium">{label}</label>
+                <input
+                  type={key === "password" ? "password" : "text"}
+                  placeholder={placeholder}
+                  value={(newStore as any)[key]}
+                  onChange={(e) => setNewStore((s) => ({ ...s, [key]: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-xl border border-ink/[0.08] bg-pearl-warm text-body-sm text-ink placeholder:text-ink-muted focus:outline-none focus:border-blush-deep"
+                  style={{ fontSize: "16px" }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <Button
+            variant="primary"
+            onClick={createNewStore}
+            disabled={storeStatus === "running" || !newStore.storeName || !newStore.ownerName || !newStore.email || !newStore.password}
+            className="w-full"
+          >
+            {storeStatus === "running" ? "作成中..." : "店舗とオーナーを作成"}
+          </Button>
+
+          {storeStatus === "done" && storeResult?.success && (
+            <div className="bg-emerald/10 border border-emerald/20 rounded-btn p-3 space-y-2">
+              <p className="text-body-sm font-semibold text-emerald">作成完了</p>
+              <div className="text-[11px] text-ink-secondary space-y-0.5 font-mono">
+                <p>店舗名: {storeResult.storeName}</p>
+                <p>タイプ: {storeResult.venueType}</p>
+                <p>ログイン: {storeResult.email}</p>
+                <p className="font-semibold text-gold-deep">
+                  招待コード: {storeResult.inviteCode}
+                </p>
+              </div>
+              <p className="text-[11px] text-ink-muted">
+                ログインURL: /store/auth/login
+                <br />
+                招待コードはキャスト・スタッフの新規登録時に必要です。オーナーに伝えてください。
+              </p>
+            </div>
+          )}
+
+          {storeStatus === "error" && storeResult && (
+            <div className="bg-rose/10 border border-rose/20 rounded-btn p-3">
+              <p className="text-body-sm font-semibold text-rose">エラー</p>
+              <p className="text-[11px] text-ink-secondary mt-1">{storeResult.error}</p>
             </div>
           )}
         </Card>

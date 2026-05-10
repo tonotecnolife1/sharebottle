@@ -1462,3 +1462,20 @@ export async function resolveCastRequest(id: string): Promise<void> {
     },
   );
 }
+
+export async function getStoreInviteCode(storeId: string): Promise<string | null> {
+  return withFallback(
+    "getStoreInviteCode",
+    async () => {
+      const { createServerSupabaseClient } = await import("@/lib/supabase/server");
+      const supabase = createServerSupabaseClient();
+      const { data } = await supabase
+        .from("nightos_stores")
+        .select("invite_code")
+        .eq("id", storeId)
+        .maybeSingle();
+      return (data as any)?.invite_code ?? null;
+    },
+    () => "DEMO1234",
+  );
+}

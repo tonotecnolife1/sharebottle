@@ -19,15 +19,22 @@ import { OwnerOnly } from "@/features/store-hub/components/owner-only";
 import { ApprovalLink } from "@/features/store-hub/components/approval-link";
 import { StorePermissionBadge } from "@/features/store-hub/components/store-permission-badge";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
-import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests } from "@/lib/nightos/supabase-queries";
+import { getAllCasts, getAllCustomers, getStoreDashboardData, getUnresolvedCastRequests, getStoreInviteCode } from "@/lib/nightos/supabase-queries";
+import { InviteCodeCard } from "@/features/store-hub/components/invite-code-card";
+import { getCurrentCast } from "@/lib/nightos/auth";
 
 export default async function StoreHubPage() {
-  const [data, casts, customers, castRequests] = await Promise.all([
+  const [data, casts, customers, castRequests, currentCast] = await Promise.all([
     getStoreDashboardData(),
     getAllCasts(),
     getAllCustomers(),
     getUnresolvedCastRequests(),
+    getCurrentCast(),
   ]);
+
+  const inviteCode = currentCast?.store_id
+    ? await getStoreInviteCode(currentCast.store_id)
+    : null;
 
   return (
     <div>
@@ -169,6 +176,11 @@ export default async function StoreHubPage() {
               />
             </div>
           </section>
+        </OwnerOnly>
+
+        {/* Invite code — owner only */}
+        <OwnerOnly>
+          {inviteCode && <InviteCodeCard inviteCode={inviteCode} />}
         </OwnerOnly>
 
         <RoleSwitchLink />
