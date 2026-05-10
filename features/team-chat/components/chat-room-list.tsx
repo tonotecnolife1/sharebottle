@@ -55,7 +55,7 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
     <div>
       {/* Search bar */}
       <div className="px-5 pt-3">
-        <label className="flex items-center gap-2 rounded-btn border border-pearl-soft bg-pearl-warm px-3 py-2">
+        <label className="flex items-center gap-2 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 py-2">
           <Search size={14} className="text-ink-muted shrink-0" />
           <input
             value={query}
@@ -78,7 +78,7 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 px-5 py-3 border-b border-pearl-soft">
+      <div className="flex gap-1 px-5 py-3 border-b border-ink/[0.06]">
         {(["all", "channels", "dm", "coaching"] as FilterTab[]).map((t) => (
           <button
             key={t}
@@ -105,7 +105,7 @@ export function ChatRoomList({ rooms, currentCastId }: Props) {
       </div>
 
       {/* Room list */}
-      <div className="divide-y divide-pearl-soft">
+      <div className="divide-y divide-ink/[0.06]">
         {filtered.map((room) => (
           <RoomRow
             key={room.id}
@@ -179,7 +179,7 @@ function RoomRow({
         ) : memberCount > 2 ? (
           <Users size={20} />
         ) : (
-          <div className="text-body-lg font-semibold text-ink">
+          <div className="text-body-lg font-medium text-ink">
             {displayName.charAt(0)}
           </div>
         )}
@@ -189,7 +189,7 @@ function RoomRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="text-body-md font-semibold text-ink truncate">
+            <span className="text-body-md font-medium text-ink truncate">
               {displayName}
             </span>
             {room.type === "dm" && memberCount > 1 && (
