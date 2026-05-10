@@ -5,7 +5,9 @@ import {
   ArrowLeft,
   BookOpen,
   Check,
+  Clock,
   Copy,
+  Loader2,
   MessageCircle,
   MoreHorizontal,
   Pencil,
@@ -464,7 +466,7 @@ export function ChatRoomView({
                   aria-label="送信"
                   title="送信（⌘/Ctrl+Enter）"
                 >
-                  <Send size={16} />
+                  {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
               </div>
               <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
@@ -477,7 +479,28 @@ export function ChatRoomView({
 
       {/* Main message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-        {!isSearching && (
+        {!isSearching && topMessages.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-amethyst-muted flex items-center justify-center">
+              <MessageCircle size={24} className="text-amethyst-dark" />
+            </div>
+            <div>
+              <p className="text-body-md font-medium text-ink">
+                {room.type === "dm"
+                  ? `${displayName}さんへ最初のメッセージを送りましょう`
+                  : room.type === "coaching"
+                  ? "指導ノートを始めましょう"
+                  : `#${displayName} の最初のメッセージを送りましょう`}
+              </p>
+              <p className="text-body-sm text-ink-muted mt-1">
+                {room.type === "coaching"
+                  ? "目標・フィードバック・アドバイスをここに残せます"
+                  : "メンバー全員に届きます"}
+              </p>
+            </div>
+          </div>
+        )}
+        {!isSearching && topMessages.length > 0 && (
           <div className="text-center text-label-sm text-ink-muted py-4">
             これ以上メッセージはありません
           </div>
@@ -607,7 +630,7 @@ export function ChatRoomView({
               aria-label="送信"
               title="送信（⌘/Ctrl+Enter）"
             >
-              <Send size={16} />
+              {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
           </div>
           <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
@@ -718,6 +741,9 @@ function MessageRow({
             </span>
           )}
           <span className="text-label-sm text-ink-muted">{timeStr}</span>
+          {msg.id.startsWith("tmp_") && (
+            <Clock size={11} className="text-ink-muted animate-pulse" aria-label="送信中" />
+          )}
           {msg.edited_at && !isDeleted && (
             <span className="text-[10px] text-ink-muted">（編集済み）</span>
           )}

@@ -90,7 +90,10 @@ export function VisitNotificationPoller({ castId }: Props) {
   if (pending.length === 0) return null;
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-50 px-4 pointer-events-none">
+    <div
+      className="fixed left-0 right-0 z-50 px-4 pointer-events-none"
+      style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
+    >
       <div className="mx-auto max-w-[520px] space-y-2">
         {pending.map((v) => (
           <Link
