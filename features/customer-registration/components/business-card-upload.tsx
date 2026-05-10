@@ -101,7 +101,7 @@ export function BusinessCardUpload({ onApply, mode = "new" }: Props) {
       <div className="flex items-center gap-1.5">
         <ScanLine size={14} className="text-amethyst-dark" />
         <span className="text-label-md text-ink font-medium">
-          名刺で入力をかんたんに
+          名刺で入力を簡略化
         </span>
         {mode === "edit" && (
           <span className="ml-auto text-[9px] text-ink-muted">

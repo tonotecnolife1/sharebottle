@@ -31,18 +31,13 @@ export function StoreDashboardClub({ data, customers, allTargets }: Props) {
         <div className="px-5 pt-4 pb-6 space-y-5">
           <div className="grid grid-cols-2 gap-2.5">
             <StatCard
-              label="月間指名"
-              value={data.totalNominations}
-              unit="本"
+              label="月間売上合計"
+              value={formatCurrency(data.totalSales).replace("¥", "")}
+              unit="円"
               tone="rose"
             />
             <StatCard
-              label="月間売上"
-              value={formatCurrency(data.totalSales).replace("¥", "")}
-              unit="円"
-            />
-            <StatCard
-              label="平均リピート率"
+              label="平均再来店率"
               value={Math.round(data.averageRepeatRate * 100)}
               unit="%"
               tone="amethyst"
@@ -52,6 +47,12 @@ export function StoreDashboardClub({ data, customers, allTargets }: Props) {
               value={Math.round(data.averageFollowRate * 100)}
               unit="%"
               tone="rose"
+            />
+            <StatCard
+              label="担当顧客数"
+              value={data.castStats.reduce((s, c) => s + c.customerCount, 0)}
+              unit="人"
+              tone="amethyst"
             />
           </div>
 
@@ -77,13 +78,7 @@ export function StoreDashboardClub({ data, customers, allTargets }: Props) {
           <div className="border-t border-ink/[0.06] pt-2">
             <CollapsibleSection title="トレンドグラフ">
               <section>
-                <h2 className="text-display-sm text-ink mb-2">指名数の推移</h2>
-                <Card className="p-4">
-                  <NominationTrendBars points={data.nominationTrend} />
-                </Card>
-              </section>
-              <section>
-                <h2 className="text-display-sm text-ink mb-2">リピート率の推移</h2>
+                <h2 className="text-display-sm text-ink mb-2">再来店率の推移</h2>
                 <Card className="p-4">
                   <RepeatTrend points={data.repeatTrend} />
                 </Card>

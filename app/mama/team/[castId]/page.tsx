@@ -83,32 +83,25 @@ export default async function MamaTeamCastDetailPage({
         {/* Monthly stats */}
         <div className="grid grid-cols-3 gap-2.5">
           <StatCard
-            label="今月の指名"
-            value={cast.nomination_count}
-            unit="本"
+            label="今月の売上"
+            value={Math.round(cast.monthly_sales / 10000)}
+            unit="万円"
             tone="rose"
           />
           <StatCard
-            label="リピート率"
+            label="再来店率"
             value={Math.round(cast.repeat_rate * 100)}
             unit="%"
             tone="rose"
             icon={<Heart size={12} className="text-blush-dark" />}
           />
           <StatCard
-            label="新規"
+            label="新規顧客"
             value={stats.monthly.newCustomerCount}
             unit="人"
             tone="amethyst"
           />
         </div>
-
-        <Card className="p-3 flex items-center justify-between">
-          <span className="text-body-sm text-ink-secondary">今月の売上</span>
-          <span className="text-body-md text-ink font-medium">
-            {formatCurrency(cast.monthly_sales)}
-          </span>
-        </Card>
 
         <Card className="p-3 flex items-center justify-between">
           <span className="text-body-sm text-ink-secondary">連絡達成率</span>
