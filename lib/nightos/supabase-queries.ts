@@ -67,6 +67,7 @@ import {
   saveScreenshotReal,
   setCastGoalReal,
   transferCustomersReal,
+  updateCastClubRoleReal,
   updateCastMemoReal,
   updateCustomerReal,
   // ── B4: real persistence for previously-mock-only features ──
@@ -656,6 +657,20 @@ export interface CastMemoInput {
  * In mock mode the change is in-memory only and lasts until the server
  * process restarts — good enough for the MVP validation loop.
  */
+export async function updateCastClubRole(
+  castId: string,
+  clubRole: "mama" | "oneesan" | "help",
+  assignedOnesanId: string | null,
+): Promise<void> {
+  if (!isSupabaseConfigured()) return; // mock: no-op (in-memory only)
+  try {
+    await updateCastClubRoleReal(castId, clubRole, assignedOnesanId);
+  } catch (err) {
+    console.error("[supabase] updateCastClubRole failed:", err);
+    throw err;
+  }
+}
+
 export async function updateCastMemo(args: {
   castId: string;
   customerId: string;

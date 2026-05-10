@@ -275,6 +275,19 @@ export async function getScreenshotsForCustomerReal(
 
 // ═══════════════ Write ═══════════════
 
+export async function updateCastClubRoleReal(
+  castId: string,
+  clubRole: "mama" | "oneesan" | "help",
+  assignedOnesanId: string | null,
+): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("nightos_casts")
+    .update({ club_role: clubRole, assigned_oneesan_id: assignedOnesanId })
+    .eq("id", castId);
+  if (error) throw error;
+}
+
 export async function updateCastMemoReal(args: {
   castId: string;
   customerId: string;

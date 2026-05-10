@@ -12,6 +12,7 @@ import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CancelledDouhanSection } from "@/features/team-management/components/cancelled-douhan-section";
+import { ClubRoleEditor } from "@/features/team-management/components/club-role-editor";
 import { GoalSettingCard } from "@/features/team-management/components/goal-setting-card";
 import {
   getAllCasts,
@@ -69,7 +70,10 @@ export default async function MamaTeamCastDetailPage({
   });
   const helpEntries = aggregateHelpVisitsByCustomer(helpThisMonth);
 
-  const roleLabel = cast.club_role === "mama" ? "店長" : "キャスト";
+  const roleLabel = cast.club_role === "mama" ? "店長" : cast.club_role === "oneesan" ? "姉さん" : "キャスト";
+  const oneesans = allCasts.filter(
+    (c) => (c.club_role === "oneesan" || c.club_role === "mama") && c.id !== params.castId,
+  );
 
   return (
     <div className="animate-fade-in">
@@ -112,6 +116,15 @@ export default async function MamaTeamCastDetailPage({
             {Math.round(stats.monthly.followRate * 100)}%
           </span>
         </Card>
+
+        {/* Club role editor */}
+        <ClubRoleEditor
+          castId={params.castId}
+          castName={cast.name}
+          currentClubRole={cast.club_role as "mama" | "oneesan" | "help" | undefined}
+          currentAssignedOnesanId={cast.assigned_oneesan_id}
+          oneesans={oneesans}
+        />
 
         {/* Goal setting */}
         <GoalSettingCard
