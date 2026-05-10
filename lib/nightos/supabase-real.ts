@@ -82,6 +82,37 @@ export async function getCustomersForCastReal(
   return (data ?? []).map(rowToCustomer);
 }
 
+export async function getCustomersForOnesanReal(
+  castId: string,
+): Promise<Customer[]> {
+  const supabase = createServerSupabaseClient();
+  const { data: helps } = await supabase
+    .from("nightos_casts")
+    .select("id")
+    .eq("assigned_oneesan_id", castId)
+    .eq("is_active", true);
+  const allIds = [castId, ...(helps ?? []).map((h) => h.id)];
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .in("cast_id", allIds)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(rowToCustomer);
+}
+
+export async function getHelpCastNamesForOnesanReal(
+  castId: string,
+): Promise<Record<string, string>> {
+  const supabase = createServerSupabaseClient();
+  const { data } = await supabase
+    .from("nightos_casts")
+    .select("id, name")
+    .eq("assigned_oneesan_id", castId)
+    .eq("is_active", true);
+  return Object.fromEntries((data ?? []).map((r) => [r.id, r.name]));
+}
+
 export async function getAllCustomersReal(): Promise<Customer[]> {
   const supabase = createServerSupabaseClient();
   // Sort by latest visit so the registration form shows recent customers first

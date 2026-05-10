@@ -54,6 +54,8 @@ import {
   getCustomerByIdReal,
   getCustomerContextReal,
   getCustomersForCastReal,
+  getCustomersForOnesanReal,
+  getHelpCastNamesForOnesanReal,
   getRecentVisitsForCastReal,
   getRecentVisitsReal,
   getScreenshotsForCustomerReal,
@@ -145,6 +147,37 @@ export async function getCustomersForCast(
       err,
     );
     return mockFor();
+  }
+}
+
+/**
+ * For oneesan: returns own customers + all assigned help casts' customers,
+ * plus a map of helpCastId → helpCastName for UI labeling.
+ */
+export async function getCustomersForOneesan(castId: string): Promise<{
+  customers: Customer[];
+  helpCastNames: Record<string, string>;
+}> {
+  const helpCasts = mockCasts.filter((c) => c.assigned_oneesan_id === castId);
+  const helpIds = helpCasts.map((c) => c.id);
+  const helpNamesMock = Object.fromEntries(helpCasts.map((c) => [c.id, c.name]));
+  const allIds = [castId, ...helpIds];
+
+  const mockFallback = () => ({
+    customers: mockCustomers.filter((c) => allIds.includes(c.cast_id ?? "")),
+    helpCastNames: helpNamesMock,
+  });
+
+  if (!isSupabaseConfigured()) return mockFallback();
+  try {
+    const [customers, helpCastNames] = await Promise.all([
+      getCustomersForOnesanReal(castId),
+      getHelpCastNamesForOnesanReal(castId),
+    ]);
+    if (customers.length === 0 && DEMO_CAST_IDS.includes(castId)) return mockFallback();
+    return { customers, helpCastNames };
+  } catch {
+    return mockFallback();
   }
 }
 
