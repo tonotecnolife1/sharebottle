@@ -1,4 +1,14 @@
+import type { CastMember } from "./supabase-queries";
 import type { ChatMessage, ChatRoom } from "../types";
+
+// ═══════════════ Mock Cast Members ═══════════════
+// Full store1 roster — used for the new-DM picker
+
+export const mockStoreCasts: CastMember[] = [
+  { id: "cast_oneesan2", name: "ゆき（姉さん）" },
+  { id: "cast1", name: "あかり" },
+  { id: "cast_help2", name: "あやな" },
+];
 
 // ═══════════════ Mock Chat Rooms ═══════════════
 // Cast hierarchy:
