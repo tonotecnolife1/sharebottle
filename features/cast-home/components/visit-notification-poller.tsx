@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Sparkles, X } from "lucide-react";
+import { Bell, Crown, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { checkRecentVisitsAction } from "../actions";
@@ -90,7 +90,10 @@ export function VisitNotificationPoller({ castId }: Props) {
   if (pending.length === 0) return null;
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-50 px-4 pointer-events-none">
+    <div
+      className="fixed left-0 right-0 z-50 px-4 pointer-events-none"
+      style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
+    >
       <div className="mx-auto max-w-[520px] space-y-2">
         {pending.map((v) => (
           <Link
@@ -99,22 +102,22 @@ export function VisitNotificationPoller({ castId }: Props) {
             onClick={() => dismiss(v.id)}
             className="block pointer-events-auto"
           >
-            <div className="flex items-center gap-3 px-4 py-3 rounded-card ruri-gradient text-pearl shadow-glow-amethyst animate-fade-in border border-pearl/20">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <Bell size={18} />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-card bg-pearl-warm/95 backdrop-blur-md border border-gold/30 shadow-warm animate-fade-in">
+              <div className="w-10 h-10 rounded-full border border-gold/40 flex items-center justify-center shrink-0">
+                <Bell size={18} className="text-gold-deep" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-label-sm uppercase tracking-wider text-pearl/80 mb-0.5">
+                <div className="text-[11px] text-ink-muted mb-0.5">
                   新しい来店
                 </div>
-                <div className="text-body-md font-semibold flex items-center gap-1.5 truncate">
+                <div className="text-body-md font-medium text-ink flex items-center gap-1.5 truncate">
                   {v.customerName}さま
                   {v.isNominated && (
-                    <Sparkles size={12} className="text-pearl shrink-0" />
+                    <Crown size={11} className="text-gold shrink-0" />
                   )}
                 </div>
                 {(v.tableName || v.isNominated) && (
-                  <div className="text-label-sm text-pearl/80">
+                  <div className="text-[11px] text-ink-secondary">
                     {v.tableName && `テーブル: ${v.tableName}`}
                     {v.tableName && v.isNominated && " · "}
                     {v.isNominated && "指名"}
@@ -128,7 +131,7 @@ export function VisitNotificationPoller({ castId }: Props) {
                   e.stopPropagation();
                   dismiss(v.id);
                 }}
-                className="p-1 rounded-full hover:bg-white/15 shrink-0"
+                className="p-1 rounded-full hover:bg-pearl-soft shrink-0 text-ink-muted"
                 aria-label="閉じる"
               >
                 <X size={14} />

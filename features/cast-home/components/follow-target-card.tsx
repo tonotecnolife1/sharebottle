@@ -106,7 +106,7 @@ export function FollowTargetCard({
         {/* Name row */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-baseline gap-1.5 min-w-0">
-            <h3 className="text-body-sm font-semibold text-ink truncate">
+            <h3 className="text-body-sm font-medium text-ink truncate">
               {formatCustomerName(customer.name)}
             </h3>
             {customer.job && (
@@ -117,7 +117,7 @@ export function FollowTargetCard({
           </div>
           <span
             className={cn(
-              "shrink-0 ml-2 px-1.5 py-0.5 rounded-badge text-[9px] font-semibold",
+              "shrink-0 ml-2 px-1.5 py-0.5 rounded-badge text-[9px] font-medium",
               cat.cls,
             )}
           >
@@ -148,31 +148,33 @@ export function FollowTargetCard({
       </Link>
 
       {/* ── Action bar ── */}
-      <div className="flex items-center gap-1 px-2.5 pb-2 pt-1 border-t border-pearl-soft">
-        {!contacted && (
+      <div className="flex items-stretch gap-1.5 px-3 pb-3 pt-2 border-t border-ink/[0.06]">
+        {!contacted ? (
           <button
             type="button"
             onClick={() => onToggleContacted(customer.id)}
-            className="flex items-center justify-center gap-1 h-7 px-3 rounded-full bg-emerald/10 text-emerald border border-emerald/20 text-[11px] font-medium active:scale-[0.97]"
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-pill bg-emerald text-pearl text-[12px] font-medium shadow-soft active:scale-[0.98] transition-transform"
           >
-            <Check size={11} />
+            <Check size={13} />
             連絡した
           </button>
+        ) : (
+          <div className="flex-1" />
         )}
         <Link
           href={`/cast/templates?customerId=${customer.id}`}
-          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-blush/50 bg-blush-soft/60 text-blush-deep active:scale-[0.97]"
+          className="flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-pill text-[12px] font-medium border border-blush/50 bg-blush-soft/60 text-blush-deep active:scale-[0.98] transition-transform"
           onClick={(e) => e.stopPropagation()}
         >
-          <MessageCircle size={10} />
+          <MessageCircle size={12} />
           LINE文面
         </Link>
         <Link
           href={`/cast/ruri-mama?customerId=${customer.id}`}
-          className="flex items-center justify-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium border border-gold/30 bg-champagne-soft/60 text-gold-deep active:scale-[0.97]"
+          className="flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-pill text-[12px] font-medium border border-gold/30 bg-champagne-soft/60 text-gold-deep active:scale-[0.98] transition-transform"
           onClick={(e) => e.stopPropagation()}
         >
-          <MessageCircle size={10} />
+          <MessageCircle size={12} />
           相談
         </Link>
       </div>

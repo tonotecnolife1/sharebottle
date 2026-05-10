@@ -1,5 +1,6 @@
-import { Plus } from "lucide-react";
 import { ChatRoomList } from "@/features/team-chat/components/chat-room-list";
+import { NewDmSheet } from "@/features/team-chat/components/new-dm-sheet";
+import { getStoreCastsAction } from "@/features/team-chat/actions";
 import {
   mockChatMessages,
   mockChatRooms,
@@ -14,7 +15,10 @@ export const dynamic = "force-dynamic";
 export default async function ChatListPage() {
   const castId = await getCurrentCastId();
 
-  const rooms = await resolveRooms(castId);
+  const [rooms, storeCasts] = await Promise.all([
+    resolveRooms(castId),
+    getStoreCastsAction(),
+  ]);
 
   return (
     <div className="animate-fade-in">
@@ -27,12 +31,7 @@ export default async function ChatListPage() {
             チャット
           </h1>
         </div>
-        <button
-          type="button"
-          className="w-10 h-10 rounded-full bg-amethyst-muted text-amethyst-dark flex items-center justify-center"
-        >
-          <Plus size={20} />
-        </button>
+        <NewDmSheet storeCasts={storeCasts} />
       </div>
       <ChatRoomList rooms={rooms} currentCastId={castId} />
     </div>

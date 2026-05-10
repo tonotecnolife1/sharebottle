@@ -166,6 +166,123 @@ export async function loadChatRoom(
   );
 }
 
+export interface CastMember {
+  id: string;
+  name: string;
+}
+
+/**
+ * Fetch all cast members who belong to the same store as the given cast,
+ * excluding the cast themselves. Returns null when the schema is missing.
+ */
+export async function getStoreCastsForDm(
+  supabase: SupabaseClient,
+  castId: string,
+): Promise<CastMember[] | null> {
+  const { data: self, error: selfErr } = await supabase
+    .from("nightos_casts")
+    .select("store_id")
+    .eq("id", castId)
+    .maybeSingle();
+  if (selfErr || !self) return null;
+
+  const { data, error } = await supabase
+    .from("nightos_casts")
+    .select("id, name")
+    .eq("store_id", self.store_id)
+    .neq("id", castId);
+  if (error) return null;
+
+  return (data ?? []).map((r: { id: string; name: string }) => ({
+    id: r.id,
+    name: r.name ?? r.id,
+  }));
+}
+
+/**
+ * Find an existing DM room between two cast members, or create one.
+ * Returns the room ID, or null on failure.
+ */
+export async function findOrCreateDmRoom(
+  supabase: SupabaseClient,
+  castIdA: string,
+  castIdB: string,
+  storeId: string,
+): Promise<string | null> {
+  // Look for an existing DM room where both are members
+  const { data: membershipA } = await supabase
+    .from("team_chat_room_members")
+    .select("room_id")
+    .eq("cast_id", castIdA);
+
+  const { data: membershipB } = await supabase
+    .from("team_chat_room_members")
+    .select("room_id")
+    .eq("cast_id", castIdB);
+
+  if (membershipA && membershipB) {
+    const setA = new Set((membershipA).map((m: { room_id: string }) => m.room_id));
+    const sharedIds = (membershipB)
+      .map((m: { room_id: string }) => m.room_id)
+      .filter((id: string) => setA.has(id));
+
+    if (sharedIds.length > 0) {
+      // Check if any shared room is a DM type
+      const { data: rooms } = await supabase
+        .from("team_chat_rooms")
+        .select("id, type")
+        .in("id", sharedIds)
+        .eq("type", "dm");
+      if (rooms && rooms.length > 0) return rooms[0].id;
+    }
+  }
+
+  // Create a new DM room
+  const { data: room, error: roomErr } = await supabase
+    .from("team_chat_rooms")
+    .insert({ store_id: storeId, type: "dm", name: null })
+    .select("id")
+    .single();
+  if (roomErr || !room) return null;
+
+  const { error: memberErr } = await supabase
+    .from("team_chat_room_members")
+    .insert([
+      { room_id: room.id, cast_id: castIdA },
+      { room_id: room.id, cast_id: castIdB },
+    ]);
+  if (memberErr) return null;
+
+  return room.id;
+}
+
+/**
+ * Create a new channel-type group room with the given members.
+ * Returns the room ID, or null on failure.
+ */
+export async function createGroupRoom(
+  supabase: SupabaseClient,
+  creatorId: string,
+  memberIds: string[],
+  name: string,
+  storeId: string,
+): Promise<string | null> {
+  const { data: room, error: roomErr } = await supabase
+    .from("team_chat_rooms")
+    .insert({ store_id: storeId, type: "channel", name, visible_to_seniors: false })
+    .select("id")
+    .single();
+  if (roomErr || !room) return null;
+
+  const allMembers = Array.from(new Set([creatorId, ...memberIds]));
+  const { error: memberErr } = await supabase
+    .from("team_chat_room_members")
+    .insert(allMembers.map((castId) => ({ room_id: room.id, cast_id: castId })));
+  if (memberErr) return null;
+
+  return room.id;
+}
+
 /**
  * Load all messages for a room, ordered oldest → newest. Populates
  * reply_count from thread_parent_id references.

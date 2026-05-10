@@ -5,7 +5,9 @@ import {
   ArrowLeft,
   BookOpen,
   Check,
+  Clock,
   Copy,
+  Loader2,
   MessageCircle,
   MoreHorizontal,
   Pencil,
@@ -282,7 +284,7 @@ export function ChatRoomView({
   return (
     <div className="flex flex-col h-dvh">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-pearl-soft bg-pearl z-50 shrink-0">
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-ink/[0.06] bg-pearl z-50 shrink-0">
         <Link
           href="/cast/chat"
           className="flex items-center gap-1 text-ink-secondary shrink-0"
@@ -291,7 +293,7 @@ export function ChatRoomView({
           <span className="text-label-sm">戻る</span>
         </Link>
         <div className="flex-1 text-center">
-          <div className="text-body-md font-semibold text-ink">
+          <div className="text-body-md font-medium text-ink">
             {displayName}
           </div>
           <div className="text-label-sm text-ink-muted">{memberCount}人</div>
@@ -316,8 +318,8 @@ export function ChatRoomView({
       </header>
 
       {searchOpen && (
-        <div className="shrink-0 px-4 py-2 border-b border-pearl-soft bg-pearl-soft/40">
-          <label className="flex items-center gap-2 rounded-btn border border-pearl-soft bg-pearl px-3 py-2">
+        <div className="shrink-0 px-4 py-2 border-b border-ink/[0.06] bg-pearl-soft/40">
+          <label className="flex items-center gap-2 rounded-2xl border border-ink/[0.06] bg-pearl px-3 py-2">
             <Search size={14} className="text-ink-muted shrink-0" />
             <input
               autoFocus
@@ -360,7 +362,7 @@ export function ChatRoomView({
       {activeThread && (
         <div className="fixed inset-0 z-50 flex flex-col bg-pearl">
           {/* Thread header */}
-          <header className="flex items-center gap-3 px-4 py-3 border-b border-pearl-soft shrink-0">
+          <header className="flex items-center gap-3 px-4 py-3 border-b border-ink/[0.06] shrink-0">
             <button
               type="button"
               onClick={() => setThreadOpen(null)}
@@ -369,7 +371,7 @@ export function ChatRoomView({
               <ArrowLeft size={18} />
               <span className="text-label-sm">戻る</span>
             </button>
-            <div className="flex-1 text-center text-body-md font-semibold text-ink">
+            <div className="flex-1 text-center text-body-md font-medium text-ink">
               スレッド
             </div>
             <div className="w-14" />
@@ -416,7 +418,7 @@ export function ChatRoomView({
           {/* Thread input */}
           {/* Thread input — hidden while editing to avoid double composer. */}
           {editingId ? (
-            <div className="shrink-0 border-t border-pearl-soft bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
+            <div className="shrink-0 border-t border-ink/[0.06] bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
               <p className="text-label-sm text-ink-secondary">
                 メッセージを編集中...
               </p>
@@ -429,7 +431,7 @@ export function ChatRoomView({
               </button>
             </div>
           ) : (
-            <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
+            <div className="shrink-0 border-t border-ink/[0.06] bg-pearl px-4 py-3 pb-safe">
               <div className="flex items-end gap-2">
                 <button
                   type="button"
@@ -464,7 +466,7 @@ export function ChatRoomView({
                   aria-label="送信"
                   title="送信（⌘/Ctrl+Enter）"
                 >
-                  <Send size={16} />
+                  {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
               </div>
               <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
@@ -477,7 +479,28 @@ export function ChatRoomView({
 
       {/* Main message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-        {!isSearching && (
+        {!isSearching && topMessages.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-amethyst-muted flex items-center justify-center">
+              <MessageCircle size={24} className="text-amethyst-dark" />
+            </div>
+            <div>
+              <p className="text-body-md font-medium text-ink">
+                {room.type === "dm"
+                  ? `${displayName}さんへ最初のメッセージを送りましょう`
+                  : room.type === "coaching"
+                  ? "指導ノートを始めましょう"
+                  : `#${displayName} の最初のメッセージを送りましょう`}
+              </p>
+              <p className="text-body-sm text-ink-muted mt-1">
+                {room.type === "coaching"
+                  ? "目標・フィードバック・アドバイスをここに残せます"
+                  : "メンバー全員に届きます"}
+              </p>
+            </div>
+          </div>
+        )}
+        {!isSearching && topMessages.length > 0 && (
           <div className="text-center text-label-sm text-ink-muted py-4">
             これ以上メッセージはありません
           </div>
@@ -523,7 +546,7 @@ export function ChatRoomView({
                         ) : (
                           <div
                             key={r.id}
-                            className="w-5 h-5 rounded-full bg-pearl-soft border border-pearl text-[8px] flex items-center justify-center text-ink-secondary font-semibold"
+                            className="w-5 h-5 rounded-full bg-pearl-soft border border-ink/[0.06] text-[8px] flex items-center justify-center text-ink-secondary font-medium"
                           >
                             {r.sender_name.charAt(0)}
                           </div>
@@ -542,7 +565,7 @@ export function ChatRoomView({
 
       {/* Coaching quick-insert chips */}
       {isCoaching && (
-        <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 pt-2 flex gap-1.5 overflow-x-auto">
+        <div className="shrink-0 border-t border-ink/[0.06] bg-pearl px-4 pt-2 flex gap-1.5 overflow-x-auto">
           {COACHING_CHIPS.map((chip) => (
             <button
               key={chip}
@@ -559,7 +582,7 @@ export function ChatRoomView({
       {/* Input bar — hidden while editing so the inline edit box isn't
           competing with a live composer. */}
       {editingId ? (
-        <div className="shrink-0 border-t border-pearl-soft bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
+        <div className="shrink-0 border-t border-ink/[0.06] bg-pearl-soft/60 px-4 py-3 pb-safe text-center">
           <p className="text-label-sm text-ink-secondary">
             メッセージを編集中...
           </p>
@@ -572,7 +595,7 @@ export function ChatRoomView({
           </button>
         </div>
       ) : (
-        <div className="shrink-0 border-t border-pearl-soft bg-pearl px-4 py-3 pb-safe">
+        <div className="shrink-0 border-t border-ink/[0.06] bg-pearl px-4 py-3 pb-safe">
           <div className="flex items-end gap-2">
             <button
               type="button"
@@ -607,7 +630,7 @@ export function ChatRoomView({
               aria-label="送信"
               title="送信（⌘/Ctrl+Enter）"
             >
-              <Send size={16} />
+              {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
           </div>
           <p className="text-[10px] text-ink-muted mt-1.5 pl-1">
@@ -674,6 +697,18 @@ function MessageRow({
 
   const canEdit = isMe && !msg.is_bot && !isDeleted;
 
+  // Long-press to open action sheet on touch devices
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => setMenuOpen(true), 500);
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   return (
     <div id={`msg-${msg.id}`} className="flex items-start gap-3 py-2 group">
       {/* Avatar */}
@@ -682,13 +717,13 @@ function MessageRow({
       ) : (
         <div
           className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-body-sm font-semibold",
+            "w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-body-sm font-medium",
             isMe
               ? "bg-amethyst-muted text-amethyst-dark"
               : msg.sender_role === "mama"
-                ? "bg-gradient-champagne text-ink"
+                ? "bg-champagne-soft text-ink"
                 : msg.sender_role === "oneesan"
-                  ? "bg-roseGold/20 text-roseGold-dark"
+                  ? "bg-blush-soft text-blush-deep"
                   : "bg-pearl-soft text-ink-secondary",
           )}
         >
@@ -697,27 +732,35 @@ function MessageRow({
       )}
 
       {/* Message body */}
-      <div className="flex-1 min-w-0">
+      <div
+        className="flex-1 min-w-0"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchEnd}
+      >
         <div className="flex items-baseline gap-2">
-          <span className="text-body-sm font-semibold text-ink">
+          <span className="text-body-sm font-medium text-ink">
             {msg.sender_name}
           </span>
           {msg.is_bot && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amethyst-muted text-amethyst-dark">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-amethyst-muted text-amethyst-dark">
               BOT
             </span>
           )}
           {msg.sender_role === "mama" && !msg.is_bot && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-champagne-dark text-ink">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-champagne-dark text-ink">
               店長
             </span>
           )}
           {isCoaching && !msg.is_bot && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald/10 text-emerald border border-emerald/20">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-emerald/10 text-emerald border border-emerald/20">
               指導
             </span>
           )}
           <span className="text-label-sm text-ink-muted">{timeStr}</span>
+          {msg.id.startsWith("tmp_") && (
+            <Clock size={11} className="text-ink-muted animate-pulse" aria-label="送信中" />
+          )}
           {msg.edited_at && !isDeleted && (
             <span className="text-[10px] text-ink-muted">（編集済み）</span>
           )}
@@ -744,7 +787,7 @@ function MessageRow({
               }}
               autoFocus
               rows={2}
-              className="w-full resize-none rounded-btn border border-amethyst-border bg-pearl-warm px-3 py-2 text-body-md text-ink focus:outline-none"
+              className="w-full resize-none rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 py-2 text-body-md text-ink focus:outline-none focus:border-amethyst/40"
               style={{ fontSize: "16px" }}
             />
             <div className="flex items-center gap-2">
@@ -814,7 +857,7 @@ function MessageRow({
                   <MoreHorizontal size={14} />
                 </button>
                 {menuOpen && (
-                  <div className="absolute z-30 left-0 top-full mt-1 min-w-[140px] rounded-btn border border-pearl-soft bg-pearl shadow-soft-card overflow-hidden">
+                  <div className="absolute z-30 left-0 top-full mt-1 min-w-[140px] rounded-card border border-ink/[0.06] bg-pearl shadow-soft overflow-hidden">
                     <button
                       type="button"
                       onClick={() => {
@@ -832,7 +875,7 @@ function MessageRow({
                         setMenuOpen(false);
                         onDelete(msg.id);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-body-sm text-rose hover:bg-rose/5"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-body-sm text-[#c2575b] hover:bg-[#c2575b]/5"
                     >
                       <Trash2 size={13} />
                       取り消し
@@ -863,7 +906,7 @@ function renderContentParts(content: string, highlight?: string) {
       return (
         <span
           key={i}
-          className="px-1 py-0.5 rounded bg-amethyst-muted text-amethyst-dark font-semibold text-body-sm"
+          className="px-1 py-0.5 rounded bg-amethyst-muted text-amethyst-dark font-medium text-body-sm"
         >
           @さくらママ
         </span>
@@ -930,7 +973,7 @@ function ChatTextarea({
       }}
       placeholder={placeholder}
       rows={1}
-      className="w-full resize-none rounded-btn border border-pearl-soft bg-pearl-warm px-3 py-2 text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst-border"
+      className="w-full resize-none rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 py-2 text-body-md text-ink placeholder:text-ink-muted focus:outline-none focus:border-amethyst/40"
       style={{ fontSize: "16px", maxHeight: "160px" }}
     />
   );

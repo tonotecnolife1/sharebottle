@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, X } from "lucide-react";
+import { Download, Share2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   captureInstallPrompt,
@@ -70,11 +70,25 @@ export function InstallPrompt() {
     }
   };
 
+  // iOS Safari: navigator.share() opens the native share sheet where the user
+  // can tap "ホーム画面に追加". This is the closest iOS allows programmatically.
+  const shareToInstall = async () => {
+    if (typeof navigator === "undefined" || !navigator.share) return;
+    try {
+      await navigator.share({
+        title: "NIGHTOS",
+        url: window.location.origin,
+      });
+    } catch {
+      // user cancelled share sheet — ignore
+    }
+  };
+
   if (dismissed) return null;
 
   if (ready && getInstallPrompt()) {
     return (
-      <PromptCard onDismiss={dismiss}>
+      <PromptCard onDismiss={dismiss} onAction={install}>
         <div className="flex-1 min-w-0">
           <div className="text-body-sm font-medium text-ink">
             ホーム画面に追加できます
@@ -85,7 +99,7 @@ export function InstallPrompt() {
         </div>
         <button
           type="button"
-          onClick={install}
+          onClick={(e) => { e.stopPropagation(); void install(); }}
           className="shrink-0 inline-flex items-center gap-1 px-4 py-2 rounded-pill bg-gradient-blush text-ink text-[12px] font-medium shadow-soft hover:brightness-[1.02] transition"
         >
           <Download size={12} />
@@ -97,17 +111,23 @@ export function InstallPrompt() {
 
   if (showIosHint) {
     return (
-      <PromptCard onDismiss={dismiss}>
+      <PromptCard onDismiss={dismiss} onAction={shareToInstall}>
         <div className="flex-1 min-w-0">
           <div className="text-body-sm font-medium text-ink">
             ホーム画面に追加
           </div>
           <p className="text-[11px] text-ink-muted mt-0.5 leading-relaxed">
-            画面下の <span className="font-medium">共有</span> ボタン →
-            <span className="font-medium"> ホーム画面に追加 </span>
-            をタップしてください
+            「共有」→「ホーム画面に追加」をタップしてください
           </p>
         </div>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); void shareToInstall(); }}
+          className="shrink-0 inline-flex items-center gap-1 px-4 py-2 rounded-pill bg-gradient-blush text-ink text-[12px] font-medium shadow-soft hover:brightness-[1.02] transition"
+        >
+          <Share2 size={12} />
+          共有
+        </button>
       </PromptCard>
     );
   }
@@ -118,22 +138,25 @@ export function InstallPrompt() {
 function PromptCard({
   children,
   onDismiss,
+  onAction,
 }: {
   children: React.ReactNode;
   onDismiss: () => void;
+  onAction?: () => void;
 }) {
   return (
     <div
-      className="fixed left-3 right-3 z-50 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm"
+      className="fixed left-3 right-3 z-50 mx-auto max-w-md rounded-card border border-gold/30 bg-pearl-warm/95 backdrop-blur-md p-3 shadow-warm cursor-pointer"
       style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4.5rem)" }}
       role="dialog"
       aria-label="アプリのインストール"
+      onClick={onAction}
     >
       <div className="flex items-start gap-3">
         {children}
         <button
           type="button"
-          onClick={onDismiss}
+          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
           aria-label="閉じる"
           className="shrink-0 -mr-1 -mt-1 w-7 h-7 rounded-full text-ink-muted hover:text-ink hover:bg-pearl-soft flex items-center justify-center"
         >

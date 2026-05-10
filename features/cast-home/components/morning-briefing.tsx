@@ -108,7 +108,7 @@ export function MorningBriefing({ castId }: Props) {
       <div className="relative">
         <div className="flex items-center gap-2 mb-2">
           <RuriMamaAvatar size={28} />
-          <span className="font-display text-[13px] font-medium text-ink tracking-wide">
+          <span className="text-body-sm font-medium text-ink">
             今朝のさくらママから
           </span>
         </div>

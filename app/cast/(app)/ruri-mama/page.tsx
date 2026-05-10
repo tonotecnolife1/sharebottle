@@ -23,22 +23,22 @@ export default async function RuriMamaPage({ searchParams }: Props) {
         showBack
         tone="ruri"
         right={
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Link
               href="/cast/ruri-mama/history"
-              className="p-1.5 rounded-full hover:bg-white/15 text-pearl"
+              className="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg hover:bg-white/15 text-pearl"
               aria-label="相談履歴"
-              title="相談履歴"
             >
-              <History size={18} />
+              <History size={16} />
+              <span className="text-[9px] leading-none opacity-80">履歴</span>
             </Link>
             <Link
               href="/cast/avatars"
-              className="p-1.5 rounded-full hover:bg-white/15 text-pearl"
+              className="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg hover:bg-white/15 text-pearl"
               aria-label="イラスト変更"
-              title="イラスト変更"
             >
-              <ImageIcon size={18} />
+              <ImageIcon size={16} />
+              <span className="text-[9px] leading-none opacity-80">アバター</span>
             </Link>
           </div>
         }

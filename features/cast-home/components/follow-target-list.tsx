@@ -63,7 +63,7 @@ export function FollowTargetList({ targets }: { targets: FollowTarget[] }) {
       </div>
 
       {allDone && (
-        <div className="text-center py-2 rounded-btn bg-emerald/5 border border-emerald/15">
+        <div className="text-center py-2 rounded-card bg-emerald/5 border border-emerald/15">
           <p className="text-[11px] text-emerald font-medium">
             全員に連絡できた！おつかれさま🌸
           </p>
