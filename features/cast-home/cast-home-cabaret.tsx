@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { Bookmark, ChevronRight, Star, UserCircle, Users } from "lucide-react";
+import { Bookmark, Star, UserCircle, Users } from "lucide-react";
 import { StatCard } from "@/components/nightos/stat-card";
 import { RuriMamaEntryCard } from "./components/ruri-mama-entry-card";
 import { FollowTargetList } from "./components/follow-target-list";
 import { MorningBriefing } from "./components/morning-briefing";
 import { StoreMessageBanner } from "./components/store-message-banner";
 import { VisitNotificationPoller } from "./components/visit-notification-poller";
-import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import type { CastHomeData } from "@/types/nightos";
 
 interface Props {
@@ -84,26 +83,6 @@ export function CastHomeCabaret({ data, storeMessages }: Props) {
           <FollowTargetList targets={data.targets} />
         </section>
 
-        {/* ── チームリンク（フラット構造）── */}
-        <section className="space-y-3 pt-2">
-          <header className="flex items-baseline justify-between px-1">
-            <h2 className="font-display text-[20px] leading-tight font-medium text-ink flex items-center gap-1.5">
-              <Users size={15} className="text-gold-deep" />
-              チーム
-            </h2>
-          </header>
-          <Link
-            href="/cast/customers"
-            className="flex items-center justify-between px-4 py-3.5 rounded-card border border-ink/[0.06] bg-pearl-warm shadow-soft hover:-translate-y-px hover:border-gold/40 transition will-change-transform"
-          >
-            <span className="text-body-sm font-medium text-ink">
-              担当お客様一覧
-            </span>
-            <ChevronRight size={14} className="text-ink-muted" />
-          </Link>
-        </section>
-
-        <RoleSwitchLink />
       </div>
     </div>
   );
