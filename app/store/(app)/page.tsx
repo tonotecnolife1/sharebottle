@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Clock,
   Filter,
+  Users2,
   UserPlus,
   Users,
   Wine,
@@ -42,6 +43,28 @@ export default async function StoreHubPage() {
       </header>
 
       <div className="px-5 pt-5 pb-8 space-y-5">
+        {/* Registration shortcuts — 最頻使用アクションを最上部に */}
+        <section className="space-y-2.5">
+          <h2 className="text-body-sm text-ink-secondary px-1">登録</h2>
+          <div className="grid grid-cols-3 gap-2">
+            <ShortcutCard
+              href="/store/customers/new"
+              icon={<UserPlus size={20} className="text-gold-deep" />}
+              label="顧客"
+            />
+            <ShortcutCard
+              href="/store/visits/new"
+              icon={<CalendarPlus size={20} className="text-gold-deep" />}
+              label="来店"
+            />
+            <ShortcutCard
+              href="/store/bottles/new"
+              icon={<Wine size={20} className="text-gold-deep" />}
+              label="ボトル"
+            />
+          </div>
+        </section>
+
         {/* Quick stats — owner only */}
         <OwnerOnly>
           <div className="grid grid-cols-3 gap-2.5">
@@ -77,10 +100,29 @@ export default async function StoreHubPage() {
           <StoreBriefing />
         </OwnerOnly>
 
+        {/* No-casts guidance — owner only */}
+        {casts.length === 0 && (
+          <OwnerOnly>
+            <div className="rounded-card border border-ink/[0.06] bg-pearl-warm p-4 flex items-start gap-3">
+              <span className="w-10 h-10 rounded-full border border-gold/40 bg-champagne-soft flex items-center justify-center shrink-0">
+                <Users2 size={18} className="text-gold-deep" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-body-md font-medium text-ink">キャストがまだ登録されていません</div>
+                <div className="text-[11px] text-ink-muted mt-0.5">
+                  メンバーを追加すると、売上管理・連絡フォロー・メッセージ送信などの機能が使えるようになります。
+                </div>
+              </div>
+            </div>
+          </OwnerOnly>
+        )}
+
         {/* Send message to cast — owner only */}
-        <OwnerOnly>
-          <SendCastMessage casts={casts.map((c) => ({ id: c.id, name: c.name }))} />
-        </OwnerOnly>
+        {casts.length > 0 && (
+          <OwnerOnly>
+            <SendCastMessage casts={casts.map((c) => ({ id: c.id, name: c.name }))} />
+          </OwnerOnly>
+        )}
 
         {/* Issue coupon — owner only */}
         <OwnerOnly>
@@ -91,28 +133,6 @@ export default async function StoreHubPage() {
         <OwnerOnly>
           <ApprovalLink />
         </OwnerOnly>
-
-        {/* Registration shortcuts */}
-        <section className="space-y-2.5">
-          <h2 className="text-body-sm text-ink-secondary px-1">登録</h2>
-          <div className="grid grid-cols-3 gap-2">
-            <ShortcutCard
-              href="/store/customers/new"
-              icon={<UserPlus size={20} className="text-gold-deep" />}
-              label="顧客"
-            />
-            <ShortcutCard
-              href="/store/visits/new"
-              icon={<CalendarPlus size={20} className="text-gold-deep" />}
-              label="来店"
-            />
-            <ShortcutCard
-              href="/store/bottles/new"
-              icon={<Wine size={20} className="text-gold-deep" />}
-              label="ボトル"
-            />
-          </div>
-        </section>
 
         {/* Data management (both staff and owner) */}
         <section className="space-y-2.5">

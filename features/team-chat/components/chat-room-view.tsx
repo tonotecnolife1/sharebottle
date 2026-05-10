@@ -697,6 +697,18 @@ function MessageRow({
 
   const canEdit = isMe && !msg.is_bot && !isDeleted;
 
+  // Long-press to open action sheet on touch devices
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => setMenuOpen(true), 500);
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   return (
     <div id={`msg-${msg.id}`} className="flex items-start gap-3 py-2 group">
       {/* Avatar */}
@@ -720,7 +732,12 @@ function MessageRow({
       )}
 
       {/* Message body */}
-      <div className="flex-1 min-w-0">
+      <div
+        className="flex-1 min-w-0"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchEnd}
+      >
         <div className="flex items-baseline gap-2">
           <span className="text-body-sm font-medium text-ink">
             {msg.sender_name}

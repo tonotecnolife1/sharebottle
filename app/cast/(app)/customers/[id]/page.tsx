@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { CalendarPlus, Wine } from "lucide-react";
 import { PageHeader } from "@/components/nightos/page-header";
 import { ActionButtons } from "@/features/customer-card/components/action-buttons";
 import { ChangeManagerButton } from "@/features/customer-management/components/change-manager-button";
@@ -13,6 +15,7 @@ import { RefreshMemoButton } from "@/features/customer-card/components/refresh-m
 import { StoreInfoSection } from "@/features/customer-card/components/store-info-section";
 import { VisitHistory } from "@/features/customer-card/components/visit-history";
 import { CustomerPhotoUpload } from "@/features/customer-card/components/customer-photo-upload";
+import { CollapsibleSection } from "@/features/customer-card/components/collapsible-section";
 import { getCurrentCastId } from "@/lib/nightos/auth";
 import { mockCustomers } from "@/lib/nightos/mock-data";
 import {
@@ -89,6 +92,24 @@ export default async function CustomerCardPage({
 
         <CustomerStats context={context} />
 
+        {/* Quick-register shortcuts → store app */}
+        <div className="flex gap-2">
+          <Link
+            href={`/store/visits/new?customerId=${customer.id}`}
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-pill border border-ink/[0.12] bg-pearl-soft text-body-sm text-ink-secondary hover:border-gold/40 hover:bg-pearl-warm transition"
+          >
+            <CalendarPlus size={14} />
+            来店を記録
+          </Link>
+          <Link
+            href={`/store/bottles/new?customerId=${customer.id}`}
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-pill border border-ink/[0.12] bg-pearl-soft text-body-sm text-ink-secondary hover:border-gold/40 hover:bg-pearl-warm transition"
+          >
+            <Wine size={14} />
+            ボトルを記録
+          </Link>
+        </div>
+
         {/* LINE exchange action */}
         <LineExchangeButton
           customerId={customer.id}
@@ -97,29 +118,45 @@ export default async function CustomerCardPage({
           initialExchangedAt={customer.line_exchanged_at ?? null}
         />
 
-        <VisitHistory visits={context.visits} />
-        <StoreInfoSection context={context} />
-        <MemoSection customer={customer} memo={context.memo} />
+        {/* ── 来店・店舗情報（折りたたみ） ── */}
+        <div className="border-t border-ink/[0.06] pt-2">
+          <CollapsibleSection title="来店・店舗情報" defaultOpen>
+            <VisitHistory visits={context.visits} />
+            <StoreInfoSection context={context} />
+          </CollapsibleSection>
+        </div>
 
-        <RefreshMemoButton
-          customerId={customer.id}
-          castId={castId}
-          current={{
-            last_topic: context.memo?.last_topic ?? null,
-            service_tips: context.memo?.service_tips ?? null,
-            next_topics: context.memo?.next_topics ?? null,
-          }}
-        />
+        {/* ── メモ・AI提案（折りたたみ） ── */}
+        <div className="border-t border-ink/[0.06] pt-2">
+          <CollapsibleSection title="メモ・AI提案">
+            <MemoSection customer={customer} memo={context.memo} />
+            <RefreshMemoButton
+              customerId={customer.id}
+              castId={castId}
+              current={{
+                last_topic: context.memo?.last_topic ?? null,
+                service_tips: context.memo?.service_tips ?? null,
+                next_topics: context.memo?.next_topics ?? null,
+              }}
+            />
+          </CollapsibleSection>
+        </div>
 
-        <LineImportPanel
-          customer={customer}
-          memo={context.memo}
-          screenshots={screenshots}
-        />
-        <LineHistoryTimeline
-          screenshots={screenshots}
-          customerName={customer.name}
-        />
+        {/* ── LINE・連絡（折りたたみ） ── */}
+        <div className="border-t border-ink/[0.06] pt-2">
+          <CollapsibleSection title="LINE・連絡履歴">
+            <LineImportPanel
+              customer={customer}
+              memo={context.memo}
+              screenshots={screenshots}
+            />
+            <LineHistoryTimeline
+              screenshots={screenshots}
+              customerName={customer.name}
+            />
+          </CollapsibleSection>
+        </div>
+
         <ActionButtons customerId={customer.id} />
       </div>
     </div>

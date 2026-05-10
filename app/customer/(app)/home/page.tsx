@@ -293,6 +293,22 @@ function StoreCard({ overview: o }: { overview: CustomerStoreOverview }) {
           </div>
         </div>
 
+        {/* Rank progress bar */}
+        {o.rank.nextTierLabel && (
+          <div className="space-y-1">
+            <div className="h-1.5 rounded-full bg-pearl-soft overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-champagne-dark to-gold/60 transition-all"
+                style={{ width: `${Math.round(o.rank.progress * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[9px] text-ink-muted">
+              <span>{o.rank.label}</span>
+              <span>{Math.round(o.rank.progress * 100)}% → {o.rank.nextTierLabel}</span>
+            </div>
+          </div>
+        )}
+
         {o.bottles.length > 0 && (
           <div className="flex items-center gap-2 text-label-sm text-ink-secondary overflow-hidden">
             <Wine size={12} className="text-roseGold-dark shrink-0" />
