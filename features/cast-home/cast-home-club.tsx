@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Crown, UserCircle, Users } from "lucide-react";
+import { UserCircle } from "lucide-react";
 import { SummaryCards } from "./components/summary-cards";
 import { RuriMamaEntryCard } from "./components/ruri-mama-entry-card";
 import { FollowTargetList } from "./components/follow-target-list";
@@ -7,7 +7,6 @@ import { MorningBriefing } from "./components/morning-briefing";
 import { StoreMessageBanner } from "./components/store-message-banner";
 import { VisitNotificationPoller } from "./components/visit-notification-poller";
 import { DouhanTracker } from "./components/douhan-tracker";
-import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
 import type { CastHomeData } from "@/types/nightos";
 import type { Customer } from "@/types/nightos";
 
@@ -63,66 +62,7 @@ export function CastHomeClub({ data, storeMessages, customers }: Props) {
           <FollowTargetList targets={data.targets} />
         </section>
 
-        <section className="space-y-3 pt-2">
-          <header className="flex items-baseline justify-between px-1">
-            <h2 className="font-display text-[20px] leading-tight font-medium text-ink flex items-center gap-1.5">
-              <Crown size={15} className="text-gold-deep" />
-              メンバー管理
-            </h2>
-            <span className="text-[11px] text-ink-muted">管理者向け</span>
-          </header>
-          <div className="grid grid-cols-2 gap-2">
-            <TeamLink
-              href="/mama/team"
-              icon={<Crown size={16} className="text-gold-deep" />}
-              label="メンバー"
-              description="育成・目標設定"
-            />
-            <TeamLink
-              href="/mama/customers"
-              icon={<Users size={16} className="text-gold-deep" />}
-              label="全顧客"
-              description="一覧・相関図・ファネル"
-            />
-          </div>
-        </section>
-
-        <RoleSwitchLink />
       </div>
     </div>
-  );
-}
-
-function TeamLink({
-  href,
-  icon,
-  label,
-  description,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="block rounded-card border border-ink/[0.06] bg-pearl-warm shadow-soft hover:-translate-y-px hover:border-gold/40 transition will-change-transform"
-    >
-      <div className="p-3.5 flex items-start gap-2.5">
-        <span className="w-8 h-8 rounded-full border border-gold/40 bg-pearl-warm flex items-center justify-center shrink-0">
-          {icon}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="text-body-sm font-medium text-ink">{label}</div>
-            <ChevronRight size={12} className="text-ink-muted shrink-0" />
-          </div>
-          <div className="text-[10px] text-ink-muted truncate">
-            {description}
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 }
