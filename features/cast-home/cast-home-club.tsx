@@ -1,51 +1,46 @@
 import Link from "next/link";
-import { ChevronRight, Crown, Users } from "lucide-react";
-import { SummaryCards } from "@/features/cast-home/components/summary-cards";
-import { RuriMamaEntryCard } from "@/features/cast-home/components/ruri-mama-entry-card";
-
-import { FollowTargetList } from "@/features/cast-home/components/follow-target-list";
-import { MorningBriefing } from "@/features/cast-home/components/morning-briefing";
-import { StoreMessageBanner } from "@/features/cast-home/components/store-message-banner";
-import { VisitNotificationPoller } from "@/features/cast-home/components/visit-notification-poller";
-import { DouhanTracker } from "@/features/cast-home/components/douhan-tracker";
+import { ChevronRight, Crown, UserCircle, Users } from "lucide-react";
+import { SummaryCards } from "./components/summary-cards";
+import { RuriMamaEntryCard } from "./components/ruri-mama-entry-card";
+import { FollowTargetList } from "./components/follow-target-list";
+import { MorningBriefing } from "./components/morning-briefing";
+import { StoreMessageBanner } from "./components/store-message-banner";
+import { VisitNotificationPoller } from "./components/visit-notification-poller";
+import { DouhanTracker } from "./components/douhan-tracker";
 import { RoleSwitchLink } from "@/components/nightos/role-switch-link";
-import { fetchCastHomeData } from "@/features/cast-home/actions";
-import { getCurrentCastId } from "@/lib/nightos/auth";
-import {
-  getUnreadCastMessages,
-  getCustomersForCast,
-} from "@/lib/nightos/supabase-queries";
+import type { CastHomeData } from "@/types/nightos";
+import type { Customer } from "@/types/nightos";
 
-export default async function CastHomePage() {
-  const castId = await getCurrentCastId();
-  const [data, storeMessages, customers] = await Promise.all([
-    fetchCastHomeData(castId),
-    getUnreadCastMessages(castId),
-    getCustomersForCast(castId),
-  ]);
+interface Props {
+  data: CastHomeData;
+  storeMessages: { id: string; message: string; sent_at: string }[];
+  customers: Customer[];
+}
 
+export function CastHomeClub({ data, storeMessages, customers }: Props) {
   return (
     <div>
       <VisitNotificationPoller castId={data.cast.id} />
 
       {/* ── Hero ── */}
-      <div className="bg-gradient-hero px-5 pt-12 pb-6">
-        <p className="text-body-sm text-ink-secondary mb-1">
-          おかえりなさい
-        </p>
+      <div className="relative bg-gradient-hero px-5 pt-12 pb-6">
+        <p className="text-body-sm text-ink-secondary mb-1">おかえりなさい</p>
         <h1 className="font-display text-[26px] leading-[1.2] font-medium tracking-wide text-ink">
           {data.cast.name}さん
         </h1>
+        <Link
+          href="/cast/my"
+          aria-label="マイページ"
+          className="absolute top-12 right-5 w-9 h-9 rounded-full bg-pearl-warm/60 backdrop-blur-sm flex items-center justify-center hover:bg-pearl-warm/80 transition shadow-soft"
+        >
+          <UserCircle size={22} className="text-ink-secondary" />
+        </Link>
       </div>
 
       <div className="px-5 pt-5 pb-8 space-y-5">
         <StoreMessageBanner
           castId={data.cast.id}
-          initialMessages={storeMessages.map((m) => ({
-            id: m.id,
-            message: m.message,
-            sent_at: m.sent_at,
-          }))}
+          initialMessages={storeMessages}
         />
 
         <SummaryCards summary={data.summary} />

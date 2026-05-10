@@ -143,6 +143,26 @@ export async function getCurrentRole(): Promise<AccountRole | null> {
   return null;
 }
 
+/**
+ * Resolve the venue type for the current cast's store.
+ * Falls back to "club" for mock sessions and unauthenticated users.
+ */
+export async function getCurrentVenueType(): Promise<"club" | "cabaret"> {
+  const cast = await getCurrentCast();
+  if (!cast) return "club";
+
+  if (!isSupabaseConfigured()) {
+    return "club";
+  }
+
+  try {
+    const { getVenueTypeForCastReal } = await import("./supabase-real");
+    return await getVenueTypeForCastReal(cast.id);
+  } catch {
+    return "club";
+  }
+}
+
 /** Where the role is supposed to land after sign-in. */
 export function homePathForRole(role: AccountRole): string {
   switch (role) {
@@ -155,3 +175,4 @@ export function homePathForRole(role: AccountRole): string {
       return "/customer/home";
   }
 }
+

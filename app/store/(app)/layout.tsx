@@ -24,7 +24,7 @@ export default async function StoreLayout({
   if (!cast) {
     const role = await getCurrentRole();
     if (role) redirect(homePathForRole(role));
-    redirect("/auth/login");
+    redirect("/");
   }
   const userRole = cast.user_role ?? "cast";
   if (userRole !== "store_staff" && userRole !== "store_owner") {

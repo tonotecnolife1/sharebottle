@@ -35,6 +35,9 @@ export interface Cast {
   /** Account-level role (migration 008). Defaults to "cast" when absent
    *  (legacy mock data and rows from before 008 was applied). */
   user_role?: CastUserRole;
+  /** Whether this cast row is the user's currently-active membership at
+   *  this store (migration 009). Defaults to true for legacy data. */
+  is_active?: boolean;
   /** Club only: role in the hierarchy */
   club_role?: ClubRole;
   /** Club only: the oneesan this help is assigned to */
