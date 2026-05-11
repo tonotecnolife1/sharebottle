@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Check, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { Bot, Check, ChevronDown, ChevronUp, Crown, Users } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
 import { TextInput } from "@/components/nightos/input";
@@ -133,21 +133,38 @@ export function CustomerForm({
       />
 
       {/* 担当キャスト */}
-      {!lockedCastId && (
-        <div className="space-y-1.5">
-          <label className="text-label-md text-ink font-medium">担当キャスト</label>
-          <select
-            value={castId}
-            onChange={(e) => setCastId(e.target.value)}
-            className="w-full h-11 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-md text-ink"
-            style={{ fontSize: "16px" }}
-          >
-            {casts.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+      <div className="space-y-1.5">
+        <label className="text-label-md text-ink font-medium">担当キャスト</label>
+        <select
+          value={castId}
+          onChange={(e) => setCastId(e.target.value)}
+          className="w-full h-11 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-md text-ink"
+          style={{ fontSize: "16px" }}
+        >
+          {casts.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 管理者 */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <Crown size={13} className="text-amethyst-dark" />
+          <label className="text-label-md text-ink font-medium">管理者</label>
         </div>
-      )}
+        <select
+          value={managerId}
+          onChange={(e) => setManagerId(e.target.value)}
+          className="w-full h-11 rounded-2xl border border-ink/[0.06] bg-pearl-warm px-3 text-body-md text-ink"
+          style={{ fontSize: "16px" }}
+        >
+          <option value="">なし</option>
+          {casts.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
 
       {/* 顧客カテゴリ */}
       <div className="space-y-1.5">
