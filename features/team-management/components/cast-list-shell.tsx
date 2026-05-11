@@ -12,7 +12,7 @@ import type { Cast, Customer, DouhanPaceStats, DouhanPaceStatus } from "@/types/
 
 // ═══════════════ Types ═══════════════
 
-type SortKey = "risk" | "sales" | "nominations" | "repeat";
+type SortKey = "risk" | "sales" | "repeat";
 
 interface CastListShellProps {
   teamCasts: Cast[];
@@ -25,13 +25,8 @@ interface CastListShellProps {
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "risk", label: "要注意" },
   { key: "sales", label: "売上" },
-  { key: "nominations", label: "指名数" },
   { key: "repeat", label: "リピート" },
 ];
-
-const ROLE_BADGE: Record<string, { label: string; color: string }> = {
-  mama: { label: "ママ", color: "text-ink bg-champagne" },
-};
 
 const STATUS_ORDER: Record<DouhanPaceStatus, number> = {
   meeting_risk: 0,
@@ -62,18 +57,6 @@ export function CastListShell({
     return map;
   }, [teamCustomers]);
 
-  const helpCountByCast = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const c of teamCasts) {
-      if (c.assigned_oneesan_id) {
-        map.set(
-          c.assigned_oneesan_id,
-          (map.get(c.assigned_oneesan_id) ?? 0) + 1,
-        );
-      }
-    }
-    return map;
-  }, [teamCasts]);
 
   const filtered = useMemo(() => {
     let list = teamCasts;
@@ -97,9 +80,6 @@ export function CastListShell({
       }
       case "sales":
         sorted.sort((a, b) => b.monthly_sales - a.monthly_sales);
-        break;
-      case "nominations":
-        sorted.sort((a, b) => b.nomination_count - a.nomination_count);
         break;
       case "repeat":
         sorted.sort((a, b) => b.repeat_rate - a.repeat_rate);
@@ -162,9 +142,7 @@ export function CastListShell({
               key={cast.id}
               cast={cast}
               customerCount={customerCountByCast.get(cast.id) ?? 0}
-              helpCount={helpCountByCast.get(cast.id)}
               pace={paceById.get(cast.id)}
-              allCasts={teamCasts}
             />
           ))}
         </div>
@@ -178,24 +156,12 @@ export function CastListShell({
 interface CastCardProps {
   cast: Cast;
   customerCount: number;
-  helpCount?: number;
   pace?: DouhanPaceStats;
-  allCasts: Cast[];
 }
 
-function CastCard({
-  cast,
-  customerCount,
-  helpCount,
-  pace,
-  allCasts,
-}: CastCardProps) {
+function CastCard({ cast, customerCount, pace }: CastCardProps) {
   const repeatPct = Math.round(cast.repeat_rate * 100);
   const paceCfg = pace ? PACE_STATUS_CONFIG[pace.status as DouhanPaceStatus] : null;
-  const roleCfg = cast.club_role ? ROLE_BADGE[cast.club_role] ?? null : null;
-  const assignedOneesan = cast.assigned_oneesan_id
-    ? allCasts.find((c) => c.id === cast.assigned_oneesan_id)
-    : null;
 
   return (
     <Link
@@ -215,16 +181,6 @@ function CastCard({
               <h3 className="text-body-md font-semibold text-ink">
                 {cast.name}
               </h3>
-              {roleCfg && (
-                <span
-                  className={cn(
-                    "px-1.5 py-0.5 rounded-badge text-[9px] font-medium",
-                    roleCfg.color,
-                  )}
-                >
-                  {roleCfg.label}
-                </span>
-              )}
               {paceCfg && (
                 <span
                   className={cn(
@@ -239,20 +195,12 @@ function CastCard({
             </div>
             <div className="text-[10px] text-ink-muted mt-0.5">
               {customerCount}人担当
-              {helpCount !== undefined && helpCount > 0 && ` · キャスト${helpCount}人`}
-              {assignedOneesan && ` · ${assignedOneesan.name}さん付き`}
             </div>
           </div>
           <ChevronRight size={14} className="text-ink-muted shrink-0 mt-1" />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-btn bg-pearl-soft py-1.5 text-center">
-            <div className="font-display text-body-md text-ink">
-              {cast.nomination_count}
-            </div>
-            <div className="text-[9px] text-ink-muted">指名</div>
-          </div>
+        <div className="grid grid-cols-2 gap-2">
           <div className="rounded-btn bg-pearl-soft py-1.5 text-center">
             <div className="font-display text-body-md text-roseGold-dark">
               {(cast.monthly_sales / 10000).toFixed(0)}
@@ -263,7 +211,7 @@ function CastCard({
             <div className="font-display text-body-md text-amethyst-dark">
               {repeatPct}
             </div>
-            <div className="text-[9px] text-ink-muted">% リピート</div>
+            <div className="text-[9px] text-ink-muted">% 再来店</div>
           </div>
         </div>
       </Card>
