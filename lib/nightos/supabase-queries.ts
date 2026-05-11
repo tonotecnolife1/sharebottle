@@ -151,10 +151,7 @@ export async function getCustomersForCast(
   }
 }
 
-/**
- * For oneesan: returns own customers + all assigned help casts' customers,
- * plus a map of helpCastId → helpCastName for UI labeling.
- */
+/** For oneesan: own customers + assigned help casts' customers, plus a helpCastId→name map. */
 export async function getCustomersForOneesan(castId: string): Promise<{
   customers: Customer[];
   helpCastNames: Record<string, string>;

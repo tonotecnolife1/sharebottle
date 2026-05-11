@@ -18,10 +18,9 @@ export function CastTable({
 
   return (
     <Card className="p-4 space-y-3">
-      <div className="grid grid-cols-[1.2fr_0.55fr_0.7fr_0.7fr_0.55fr_0.9fr] gap-2 text-label-sm text-ink-muted border-b border-pearl-soft pb-2">
+      <div className="grid grid-cols-[1.4fr_0.8fr_0.8fr_0.6fr_1fr] gap-2 text-label-sm text-ink-muted border-b border-pearl-soft pb-2">
         <div>キャスト</div>
-        <div className="text-right">指名</div>
-        <div className="text-right">リピート</div>
+        <div className="text-right">再来店率</div>
         <div className="text-right">連絡率</div>
         <div className="text-right">担当</div>
         <div className="text-right">月売上</div>
@@ -36,7 +35,7 @@ export function CastTable({
         return (
           <div
             key={s.cast.id}
-            className="grid grid-cols-[1.2fr_0.55fr_0.7fr_0.7fr_0.55fr_0.9fr] gap-2 text-body-sm text-ink py-1.5 items-center"
+            className="grid grid-cols-[1.4fr_0.8fr_0.8fr_0.6fr_1fr] gap-2 text-body-sm text-ink py-1.5 items-center"
           >
             <div className="flex items-center gap-1 font-medium">
               {isTop && (
@@ -46,9 +45,6 @@ export function CastTable({
                 <TrendingDown size={12} className="text-amber shrink-0" />
               )}
               <span>{s.cast.name}</span>
-            </div>
-            <div className="text-right font-display text-body-lg">
-              {s.cast.nomination_count}
             </div>
             <div className="text-right">
               {Math.round(s.cast.repeat_rate * 100)}%

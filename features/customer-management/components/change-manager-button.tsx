@@ -53,9 +53,7 @@ export function ChangeManagerButton({
   const effectiveManagerId =
     override !== undefined ? override : currentManagerId;
 
-  const managers = allCasts.filter(
-    (c) => c.club_role === "mama" || c.club_role === "oneesan",
-  );
+  const managers = allCasts;
 
   const currentManager = effectiveManagerId
     ? allCasts.find((c) => c.id === effectiveManagerId)

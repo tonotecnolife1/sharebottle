@@ -4,7 +4,6 @@ import {
   BookOpen,
   Calendar,
   ChevronRight,
-  HandHelping,
   Heart,
   User,
 } from "lucide-react";
@@ -12,27 +11,17 @@ import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
 import { StatCard } from "@/components/nightos/stat-card";
 import { CancelledDouhanSection } from "@/features/team-management/components/cancelled-douhan-section";
-import { ClubRoleEditor } from "@/features/team-management/components/club-role-editor";
 import { GoalSettingCard } from "@/features/team-management/components/goal-setting-card";
 import {
-  getAllCasts,
   getCastGoal,
   getCastStatsData,
 } from "@/lib/nightos/supabase-queries";
 import {
-  MOCK_TODAY,
-  mockCastGoals,
   mockCasts,
   mockCustomers,
-  mockVisits,
 } from "@/lib/nightos/mock-data";
 import { getCurrentManagerId } from "@/lib/nightos/auth";
-import {
-  aggregateHelpVisitsByCustomer,
-  filterHelpVisitsByPeriod,
-  splitMasterAndHelp,
-} from "@/lib/nightos/master-help-split";
-import { formatCurrency, formatCustomerName } from "@/lib/utils";
+import { formatCustomerName } from "@/lib/utils";
 
 export default async function MamaTeamCastDetailPage({
   params,
@@ -43,60 +32,43 @@ export default async function MamaTeamCastDetailPage({
   const cast = mockCasts.find((c) => c.id === params.castId);
   if (!cast) notFound();
 
-  const [stats, allCasts] = await Promise.all([
+  const [stats, goal] = await Promise.all([
     getCastStatsData(params.castId),
-    getAllCasts(),
+    getCastGoal(params.castId),
   ]);
-  const goal = await getCastGoal(params.castId);
 
-  // Find coaching room between current manager and this cast
   const coachingRoomId = `coaching_${managerId}_${params.castId}`;
 
-  // Find the setter's name for the goal
   const setterCast = goal.setBy
     ? mockCasts.find((c) => c.id === goal.setBy)
     : null;
 
-  // Master + help split for this cast
-  const { masterCustomers, helpVisits } = splitMasterAndHelp({
-    castId: params.castId,
-    customers: mockCustomers,
-    visits: mockVisits,
-    allCasts,
-  });
-  const helpThisMonth = filterHelpVisitsByPeriod(helpVisits, {
-    thisMonth: true,
-    today: MOCK_TODAY,
-  });
-  const helpEntries = aggregateHelpVisitsByCustomer(helpThisMonth);
-
-  const roleLabel = cast.club_role === "mama" ? "店長" : cast.club_role === "oneesan" ? "姉さん" : "キャスト";
-  const oneesans = allCasts.filter(
-    (c) => (c.club_role === "oneesan" || c.club_role === "mama") && c.id !== params.castId,
+  const castCustomers = mockCustomers.filter(
+    (c) => c.cast_id === params.castId,
   );
 
   return (
     <div className="animate-fade-in">
-      <PageHeader title={`${cast.name}さん`} subtitle={roleLabel} showBack />
+      <PageHeader title={`${cast.name}さん`} subtitle="キャスト" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
         {/* Monthly stats */}
         <div className="grid grid-cols-3 gap-2.5">
           <StatCard
-            label="今月の指名"
-            value={cast.nomination_count}
-            unit="本"
+            label="今月の売上"
+            value={Math.round(cast.monthly_sales / 10000)}
+            unit="万円"
             tone="rose"
           />
           <StatCard
-            label="リピート率"
+            label="再来店率"
             value={Math.round(cast.repeat_rate * 100)}
             unit="%"
             tone="rose"
             icon={<Heart size={12} className="text-blush-dark" />}
           />
           <StatCard
-            label="新規"
+            label="新規顧客"
             value={stats.monthly.newCustomerCount}
             unit="人"
             tone="amethyst"
@@ -104,27 +76,11 @@ export default async function MamaTeamCastDetailPage({
         </div>
 
         <Card className="p-3 flex items-center justify-between">
-          <span className="text-body-sm text-ink-secondary">今月の売上</span>
-          <span className="text-body-md text-ink font-medium">
-            {formatCurrency(cast.monthly_sales)}
-          </span>
-        </Card>
-
-        <Card className="p-3 flex items-center justify-between">
           <span className="text-body-sm text-ink-secondary">連絡達成率</span>
           <span className="text-body-md text-ink font-medium">
             {Math.round(stats.monthly.followRate * 100)}%
           </span>
         </Card>
-
-        {/* Club role editor */}
-        <ClubRoleEditor
-          castId={params.castId}
-          castName={cast.name}
-          currentClubRole={cast.club_role as "mama" | "oneesan" | "help" | undefined}
-          currentAssignedOnesanId={cast.assigned_oneesan_id}
-          oneesans={oneesans}
-        />
 
         {/* Goal setting */}
         <GoalSettingCard
@@ -153,22 +109,20 @@ export default async function MamaTeamCastDetailPage({
           <ChevronRight size={14} className="text-ink-muted shrink-0" />
         </Link>
 
-        {/* Master customers */}
+        {/* Customers */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-display-sm text-ink">
-              管理しているお客様
-            </h2>
+            <h2 className="text-display-sm text-ink">担当のお客様</h2>
             <span className="text-label-sm text-ink-muted">
-              {masterCustomers.length}人
+              {castCustomers.length}人
             </span>
           </div>
-          {masterCustomers.length === 0 ? (
+          {castCustomers.length === 0 ? (
             <Card className="p-4 text-center text-body-sm text-ink-muted">
-              管理しているお客様はいません
+              担当しているお客様はいません
             </Card>
           ) : (
-            masterCustomers.map((c) => (
+            castCustomers.map((c) => (
               <Link
                 key={c.id}
                 href={`/mama/customers/${c.id}`}
@@ -204,55 +158,7 @@ export default async function MamaTeamCastDetailPage({
           )}
         </section>
 
-        {/* Help visits (other masters' customers) */}
-        <section className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-display-sm text-ink flex items-center gap-1.5">
-              <HandHelping size={15} className="text-champagne-dark" />
-              今月ヘルプに入ったお客様
-            </h2>
-            <span className="text-label-sm text-ink-muted">
-              {helpEntries.length}件
-            </span>
-          </div>
-          {helpEntries.length === 0 ? (
-            <Card className="p-4 text-center text-body-sm text-ink-muted">
-              今月はヘルプ実績がありません
-            </Card>
-          ) : (
-            helpEntries.map((e) => (
-              <Link
-                key={e.customer.id}
-                href={`/mama/customers/${e.customer.id}`}
-                className="block active:scale-[0.99] transition-transform"
-              >
-                <Card className="p-2.5 flex items-center gap-2.5 !bg-champagne/30">
-                  <div className="w-8 h-8 rounded-full bg-champagne-dark/30 flex items-center justify-center shrink-0">
-                    <User size={12} className="text-ink-secondary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className="text-body-sm font-medium text-ink truncate">
-                        {formatCustomerName(e.customer.name)}
-                      </span>
-                      {e.masterName && (
-                        <span className="text-[10px] text-ink-muted shrink-0">
-                          （{e.masterName}管理）
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-ink-muted">
-                      {e.visitCount}回接客
-                    </div>
-                  </div>
-                  <ChevronRight size={13} className="text-ink-muted shrink-0" />
-                </Card>
-              </Link>
-            ))
-          )}
-        </section>
-
-        {/* Cancelled douhans (client-side, syncs with cast's localStorage) */}
+        {/* Cancelled douhans */}
         <CancelledDouhanSection
           castId={params.castId}
           customers={mockCustomers}
