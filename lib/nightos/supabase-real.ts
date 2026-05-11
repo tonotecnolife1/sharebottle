@@ -82,7 +82,9 @@ export async function getCustomersForCastReal(
   return (data ?? []).map(rowToCustomer);
 }
 
-export async function getCustomersForOnesanReal(castId: string): Promise<Customer[]> {
+export async function getCustomersForOnesanReal(
+  castId: string,
+): Promise<Customer[]> {
   const supabase = createServerSupabaseClient();
   const { data: helps } = await supabase
     .from("nightos_casts")
@@ -99,7 +101,9 @@ export async function getCustomersForOnesanReal(castId: string): Promise<Custome
   return (data ?? []).map(rowToCustomer);
 }
 
-export async function getHelpCastNamesForOnesanReal(castId: string): Promise<Record<string, string>> {
+export async function getHelpCastNamesForOnesanReal(
+  castId: string,
+): Promise<Record<string, string>> {
   const supabase = createServerSupabaseClient();
   const { data } = await supabase
     .from("nightos_casts")

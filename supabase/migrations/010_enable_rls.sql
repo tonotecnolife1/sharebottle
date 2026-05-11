@@ -181,18 +181,39 @@ create policy "cast_goals: own or store manager"
   );
 
 -- ─── 10. cast_messages ポリシー ──────────────────────────────
+-- cast_messages は store_id を持たず cast_id のみ。
+-- 自分宛のメッセージ、または同店舗のメッセージをマネージャーが閲覧可。
 
-create policy "cast_messages: own store"
+create policy "cast_messages: own or store manager"
   on cast_messages
   for all
-  using (store_id = auth_cast_store_id());
+  using (
+    cast_id in (select id from nightos_casts where auth_user_id = auth.uid())
+    or
+    exists (
+      select 1 from nightos_casts nc
+       where nc.auth_user_id = auth.uid()
+         and nc.store_id = auth_cast_store_id()
+         and nc.club_role in ('mama', 'oneesan')
+    )
+  );
 
 -- ─── 11. cast_requests ポリシー ──────────────────────────────
+-- cast_requests も store_id を持たず cast_id のみ。
 
-create policy "cast_requests: own store"
+create policy "cast_requests: own or store manager"
   on cast_requests
   for all
-  using (store_id = auth_cast_store_id());
+  using (
+    cast_id in (select id from nightos_casts where auth_user_id = auth.uid())
+    or
+    exists (
+      select 1 from nightos_casts nc
+       where nc.auth_user_id = auth.uid()
+         and nc.store_id = auth_cast_store_id()
+         and nc.club_role in ('mama', 'oneesan')
+    )
+  );
 
 -- ─── 12. follow_logs ポリシー ────────────────────────────────
 
