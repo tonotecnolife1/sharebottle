@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Tell Next.js to run this middleware in Node.js runtime, not Edge.
+// @supabase/ssr uses Node.js crypto internally; the Edge runtime
+// rejects the bundle at build time.
+export const runtime = "nodejs";
+
 const PUBLIC_PATHS = [
   "/auth/",
   "/cast/auth/",
@@ -57,7 +62,7 @@ export async function middleware(request: NextRequest) {
             );
             response = NextResponse.next({ request });
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]),
+              response.cookies.set(name, value, options as any),
             );
           },
         },
