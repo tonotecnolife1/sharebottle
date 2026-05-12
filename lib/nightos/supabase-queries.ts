@@ -972,32 +972,25 @@ export async function deleteScreenshot(id: string): Promise<void> {
 export interface CastStatsData {
   cast: Cast;
   monthly: {
-    nominationCount: number;
     sales: number;
     repeatRate: number;
     followRate: number;
     newCustomerCount: number;
-    /** マスター管理顧客の人数 */
-    masterCustomerCount: number;
-    /** 今月のヘルプ実績件数（他姉さん管理顧客への接客） */
-    helpVisitCount: number;
+    /** 担当している顧客の総数 */
+    totalCustomerCount: number;
     /** 今月の同伴完了数 */
     douhanCount: number;
   };
   yearly: {
-    nominationCount: number;
     sales: number;
     repeatRate: number;
     newCustomerCount: number;
     douhanCount: number;
   };
   targets: {
-    nominationGoal: number;
     salesGoal: number;
     douhanGoal: number;
   };
-  /** Last 14 days of nomination counts for THIS cast only. */
-  nominationTrend: { date: string; count: number }[];
   /** Last 4 weeks of repeat rate for THIS cast only. */
   repeatTrend: { week: string; label: string; rate: number }[];
   /** A 0..1 follow streak score for the last 7 days. */
@@ -1019,10 +1012,6 @@ async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
   // Pick the matching column from the store-side trend fixtures.
   // あかり→cast1, ゆき→cast2 column, others fallback to cast2.
   const trendKey: "cast1" | "cast2" = castId === "cast1" ? "cast1" : "cast2";
-  const nominationTrend = MOCK_NOMINATION_TREND.map((p) => ({
-    date: p.date,
-    count: p[trendKey],
-  }));
   const repeatTrend = MOCK_REPEAT_TREND.map((p) => ({
     week: p.week,
     label: p.label,
@@ -1030,7 +1019,6 @@ async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
   }));
   const goal = await getCastGoal(castId);
   const targets = {
-    nominationGoal: 20,
     salesGoal: goal.salesGoal,
     douhanGoal: goal.douhanGoal,
   };
@@ -1039,7 +1027,7 @@ async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
   const followRate = MOCK_FOLLOW_RATE[castId] ?? 0;
   const followStreakDays = Math.round(followRate * 7);
 
-  // Monthly new customers
+  // Customers
   const myCustomers = mockCustomers.filter((c) => c.cast_id === castId);
   const now = MOCK_TODAY;
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1047,31 +1035,14 @@ async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
     (c) => new Date(c.created_at) >= monthStart,
   ).length;
 
-  // Yearly stats (approximated from mock data)
+  // Yearly stats
   const yearStart = new Date(now.getFullYear(), 0, 1);
-  const yearVisits = mockVisits.filter(
-    (v) => v.cast_id === castId && new Date(v.visited_at) >= yearStart,
-  );
-  const yearNominations = yearVisits.filter((v) => v.is_nominated).length;
   const yearNewCount = myCustomers.filter(
     (c) => new Date(c.created_at) >= yearStart,
   ).length;
   const yearDouhans = mockDouhans.filter(
     (d) => d.cast_id === castId && new Date(d.date) >= yearStart && d.status === "completed",
   ).length;
-
-  // Master vs help split
-  const { splitMasterAndHelp, filterHelpVisitsByPeriod } = require("./master-help-split") as typeof import("./master-help-split");
-  const split = splitMasterAndHelp({
-    castId,
-    customers: mockCustomers,
-    visits: mockVisits,
-    allCasts: mockCasts,
-  });
-  const helpThisMonth = filterHelpVisitsByPeriod(split.helpVisits, {
-    thisMonth: true,
-    today: MOCK_TODAY,
-  });
 
   const monthDouhansCompleted = mockDouhans.filter(
     (d) =>
@@ -1084,24 +1055,20 @@ async function getCastStatsDataMock(castId: string): Promise<CastStatsData> {
   return {
     cast,
     monthly: {
-      nominationCount: cast.nomination_count,
       sales: cast.monthly_sales,
       repeatRate: cast.repeat_rate,
       followRate,
       newCustomerCount: monthNewCount,
-      masterCustomerCount: split.masterCustomers.length,
-      helpVisitCount: helpThisMonth.length,
+      totalCustomerCount: myCustomers.length,
       douhanCount: monthDouhansCompleted,
     },
     yearly: {
-      nominationCount: yearNominations,
-      sales: cast.monthly_sales * 3, // approx 3 months of data
-      repeatRate: cast.repeat_rate - 0.03, // slightly lower avg
+      sales: cast.monthly_sales * 3,
+      repeatRate: cast.repeat_rate - 0.03,
       newCustomerCount: yearNewCount,
       douhanCount: yearDouhans,
     },
     targets,
-    nominationTrend,
     repeatTrend,
     followStreakDays,
   };

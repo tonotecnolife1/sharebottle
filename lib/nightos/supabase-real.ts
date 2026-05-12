@@ -854,9 +854,8 @@ export async function getCastStatsDataReal(
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const yearStart = new Date(now.getFullYear(), 0, 1);
-  const fourteenDaysAgo = new Date(now.getTime() - 14 * DAY_MS);
 
-  const [castRes, custsRes, visitsRes, goalRes, douhansRes, followRes, allCastsRes] =
+  const [castRes, custsRes, visitsRes, goalRes, douhansRes, followRes] =
     await Promise.all([
       supabase
         .from("nightos_casts")
@@ -886,17 +885,12 @@ export async function getCastStatsDataReal(
         .from("follow_logs")
         .select("cast_id, sent_at")
         .eq("cast_id", castId),
-      supabase
-        .from("nightos_casts")
-        .select("*")
-        .eq("store_id", storeId),
     ]);
 
   if (!castRes.data) throw new Error(`Cast not found: ${castId}`);
   const cast = rowToCast(castRes.data);
   const customers = (custsRes.data ?? []).map(rowToCustomer);
   const visits = (visitsRes.data ?? []).map(rowToVisit);
-  const allCasts = (allCastsRes.data ?? []).map(rowToCast);
 
   // Goal
   const goal = goalRes.data
@@ -919,12 +913,6 @@ export async function getCastStatsDataReal(
   const followStreakDays = Math.round(followRate * 7);
 
   // Monthly stats
-  const monthVisits = visits.filter(
-    (v) =>
-      v.cast_id === castId &&
-      new Date(v.visited_at).getTime() >= monthStart.getTime(),
-  );
-  const monthNominations = monthVisits.filter((v) => v.is_nominated).length;
   const monthNewCount = myCustomers.filter(
     (c) => new Date(c.created_at).getTime() >= monthStart.getTime(),
   ).length;
@@ -935,52 +923,13 @@ export async function getCastStatsDataReal(
       d.status === "completed",
   ).length;
 
-  // Master/help split
-  const { splitMasterAndHelp, filterHelpVisitsByPeriod } = await import(
-    "./master-help-split"
-  );
-  const split = splitMasterAndHelp({
-    castId,
-    customers,
-    visits,
-    allCasts,
-  });
-  const helpThisMonth = filterHelpVisitsByPeriod(split.helpVisits, {
-    thisMonth: true,
-    today: now,
-  });
-
   // Yearly stats
-  const yearVisits = visits.filter((v) => v.cast_id === castId);
-  const yearNominations = yearVisits.filter((v) => v.is_nominated).length;
   const yearNewCount = myCustomers.filter(
     (c) => new Date(c.created_at).getTime() >= yearStart.getTime(),
   ).length;
   const yearDouhans = (douhansRes.data ?? []).filter(
     (d: any) => d.status === "completed",
   ).length;
-
-  // Nomination trend (last 14 days)
-  const trendBuckets = new Map<string, number>();
-  for (let d = 0; d < 14; d++) {
-    const date = new Date(now.getTime() - (13 - d) * DAY_MS);
-    trendBuckets.set(date.toISOString().slice(0, 10), 0);
-  }
-  const recentNoms = visits.filter(
-    (v) =>
-      v.cast_id === castId &&
-      v.is_nominated &&
-      new Date(v.visited_at).getTime() >= fourteenDaysAgo.getTime(),
-  );
-  for (const v of recentNoms) {
-    const key = new Date(v.visited_at).toISOString().slice(0, 10);
-    if (trendBuckets.has(key)) {
-      trendBuckets.set(key, (trendBuckets.get(key) ?? 0) + 1);
-    }
-  }
-  const nominationTrend = Array.from(trendBuckets.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, count]) => ({ date, count }));
 
   // Repeat trend (4 weeks) — approximate from cast repeat_rate
   const repeatTrend = [1, 2, 3, 4].map((w) => ({
@@ -992,28 +941,23 @@ export async function getCastStatsDataReal(
   return {
     cast,
     monthly: {
-      nominationCount: monthNominations > 0 ? monthNominations : cast.nomination_count,
       sales: cast.monthly_sales,
       repeatRate: cast.repeat_rate,
       followRate,
       newCustomerCount: monthNewCount,
-      masterCustomerCount: split.masterCustomers.length,
-      helpVisitCount: helpThisMonth.length,
+      totalCustomerCount: myCustomers.length,
       douhanCount: monthDouhans,
     },
     yearly: {
-      nominationCount: yearNominations,
       sales: cast.monthly_sales * 3,
       repeatRate: Math.max(0, cast.repeat_rate - 0.03),
       newCustomerCount: yearNewCount,
       douhanCount: yearDouhans,
     },
     targets: {
-      nominationGoal: 20,
       salesGoal: goal.salesGoal,
       douhanGoal: goal.douhanGoal,
     },
-    nominationTrend,
     repeatTrend,
     followStreakDays,
   };
