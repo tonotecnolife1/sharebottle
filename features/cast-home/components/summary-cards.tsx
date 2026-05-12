@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, TrendingUp, UserPlus } from "lucide-react";
+import { Heart, MessageCircle, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/nightos/stat-card";
 import type { CastHomeSummary } from "@/types/nightos";
 
@@ -26,13 +26,16 @@ export function SummaryCards({ summary }: { summary: CastHomeSummary }) {
           className="h-full cursor-pointer hover:border-gold/30 hover:shadow-float hover:-translate-y-px transition will-change-transform"
         />
       </Link>
-      <StatCard
-        label="今月の新規"
-        value={summary.newCustomerCount}
-        unit="人"
-        icon={<UserPlus size={12} className="text-gold" />}
-        tone="amethyst"
-      />
+      <Link href="/cast/customers" className="block">
+        <StatCard
+          label="フォロー対象"
+          value={summary.followTargetCount}
+          unit="人"
+          icon={<MessageCircle size={12} className="text-gold" />}
+          tone="amethyst"
+          className="h-full cursor-pointer hover:border-amethyst/30 hover:shadow-float hover:-translate-y-px transition will-change-transform"
+        />
+      </Link>
     </div>
   );
 }
