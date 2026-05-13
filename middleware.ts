@@ -1,11 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Tell Next.js to run this middleware in Node.js runtime, not Edge.
-// @supabase/ssr uses Node.js crypto internally; the Edge runtime
-// rejects the bundle at build time.
-export const runtime = "nodejs";
-
 const PUBLIC_PATHS = [
   "/auth/",
   "/cast/auth/",
@@ -56,12 +51,13 @@ export async function middleware(request: NextRequest) {
           getAll() {
             return request.cookies.getAll();
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value),
             );
             response = NextResponse.next({ request });
             cookiesToSet.forEach(({ name, value, options }) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               response.cookies.set(name, value, options as any),
             );
           },
@@ -74,11 +70,9 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (user) {
-      // Session valid (tokens refreshed into response cookies if needed).
       return response;
     }
 
-    // No valid session → redirect to the appropriate login page.
     const loginPath = pathname.startsWith("/store")
       ? "/store/auth/login"
       : pathname.startsWith("/customer")
