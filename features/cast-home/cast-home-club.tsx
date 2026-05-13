@@ -44,11 +44,11 @@ export function CastHomeClub({ data, storeMessages, customers }: Props) {
 
         <SummaryCards summary={data.summary} />
 
-        <MorningBriefing castId={data.cast.id} />
-
         <DouhanTracker customers={customers} />
 
         <RuriMamaEntryCard />
+
+        <MorningBriefing castId={data.cast.id} />
 
         <section className="space-y-3">
           <header className="flex items-baseline justify-between px-1">
