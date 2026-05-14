@@ -4,6 +4,7 @@ import { Check, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
+import { BirthdayInput } from "@/components/nightos/birthday-input";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
@@ -103,12 +104,9 @@ export function EditCustomerForm({ customer, casts }: Props) {
         onChange={(e) => setName(e.target.value)}
         required
       />
-      <TextInput
-        label="誕生日"
-        name="birthday"
-        type="date"
+      <BirthdayInput
         value={birthday}
-        onChange={(e) => setBirthday(e.target.value)}
+        onChange={(v) => setBirthday(v)}
       />
       <TextInput
         label="職業"

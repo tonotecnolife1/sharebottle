@@ -3,6 +3,7 @@
 import { Check, ChevronDown, ChevronUp, Crown, MapPin, MessageCircle, UserPlus, Users } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
+import { BirthdayInput } from "@/components/nightos/birthday-input";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
@@ -246,12 +247,9 @@ export function CustomerForm({
 
       {showOptional && (
         <div className="space-y-4 pt-1">
-          <TextInput
-            label="誕生日"
-            name="birthday"
-            type="date"
+          <BirthdayInput
             value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
+            onChange={(v) => setBirthday(v)}
           />
 
           <TextInput
