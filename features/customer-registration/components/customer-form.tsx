@@ -3,6 +3,7 @@
 import { Bot, Check, ChevronDown, ChevronUp, Crown, Users } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
+import { BirthdayInput } from "@/components/nightos/birthday-input";
 import { TextInput } from "@/components/nightos/input";
 import { TextAreaInput } from "@/components/nightos/textarea";
 import { inferManagerCastId } from "@/lib/nightos/manager-assignment";
@@ -44,6 +45,7 @@ export function CustomerForm({
   const defaultCastId = lockedCastId ?? casts[0]?.id ?? "";
 
   const [name, setName] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [category, setCategory] = useState<CustomerCategory>("new");
   const [castId, setCastId] = useState(defaultCastId);
   const [storeMemo, setStoreMemo] = useState("");
@@ -60,6 +62,7 @@ export function CustomerForm({
 
   const reset = () => {
     setName("");
+    setBirthday("");
     setCategory("new");
     setCastId(defaultCastId);
     setStoreMemo("");
@@ -83,7 +86,7 @@ export function CustomerForm({
     startTransition(async () => {
       const res = await createCustomerAction({
         name: name.trim(),
-        birthday: null,
+        birthday: birthday || null,
         job: null,
         favorite_drink: null,
         category,
@@ -207,6 +210,11 @@ export function CustomerForm({
 
       {showOptional && (
         <div className="space-y-4 pt-1">
+          <BirthdayInput
+            value={birthday}
+            onChange={(v) => setBirthday(v)}
+          />
+
           {/* 紹介元 */}
           {referrerOptions.length > 0 && (
             <div className="space-y-1.5">
@@ -228,14 +236,14 @@ export function CustomerForm({
             </div>
           )}
 
-          {/* 店舗メモ */}
+          {/* 気をつけること */}
           <TextAreaInput
-            label="店舗メモ（任意）"
+            label="気をつけること（任意）"
             name="store_memo"
             value={storeMemo}
             onChange={(e) => setStoreMemo(e.target.value)}
-            placeholder="例: 息子さんの受験の話題はNG"
-            hint="全キャストと共有されます"
+            placeholder="例: 息子さんの受験の話題はNG、仕事の愚痴は聞き流して"
+            hint="全キャストと共有されます。接客前に必ず確認される項目です"
           />
         </div>
       )}

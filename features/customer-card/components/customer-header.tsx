@@ -55,7 +55,8 @@ export function CustomerHeader({ customer }: { customer: Customer }) {
 }
 
 function formatBirthday(raw: string): string {
-  const [, mo, da] = raw.split("-");
+  const [yr, mo, da] = raw.split("-");
   if (!mo || !da) return raw;
-  return `${parseInt(mo, 10)}月${parseInt(da, 10)}日`;
+  const base = `${parseInt(mo, 10)}月${parseInt(da, 10)}日`;
+  return yr && yr !== "0000" ? `${yr}年${base}` : base;
 }

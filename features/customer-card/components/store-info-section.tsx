@@ -4,8 +4,6 @@ import { cn, formatBottleRemainingPct } from "@/lib/utils";
 import type { Bottle, CustomerContext } from "@/types/nightos";
 import { BottleSuggestion } from "./bottle-suggestion";
 
-// remaining_glasses is now interpreted as a percentage (0-100). 25%
-// or less surfaces the "残りわずか" warning.
 const LOW_THRESHOLD = 25;
 
 export function StoreInfoSection({ context }: { context: CustomerContext }) {
@@ -19,39 +17,44 @@ export function StoreInfoSection({ context }: { context: CustomerContext }) {
 
   return (
     <StoreInfoCard title="店舗からの共有情報">
-      <dl className="space-y-2.5">
-        {customer.favorite_drink && (
+      {/* 気をつけること — 最上部に目立つ警告カードとして表示 */}
+      {customer.store_memo && (
+        <div className="flex gap-2.5 rounded-2xl bg-amber/10 border border-amber/40 px-3 py-2.5 mb-3">
+          <AlertTriangle size={15} className="text-amber shrink-0 mt-0.5" />
           <div>
-            <dt className="text-label-sm text-ink-secondary mb-0.5">
-              好きなお酒
-            </dt>
-            <dd className="text-body-md text-ink">{customer.favorite_drink}</dd>
-          </div>
-        )}
-        {bottles.length > 0 && (
-          <div>
-            <dt className="text-label-sm text-ink-secondary mb-0.5">
-              キープボトル
-            </dt>
-            <dd className="space-y-1">
-              {bottles.map((b) => (
-                <BottleRow key={b.id} bottle={b} />
-              ))}
-            </dd>
-            {hasLowBottle && <BottleSuggestion customerId={customer.id} />}
-          </div>
-        )}
-        {customer.store_memo && (
-          <div>
-            <dt className="text-label-sm text-ink-secondary mb-0.5">
-              店舗メモ
-            </dt>
-            <dd className="text-body-md text-ink leading-relaxed">
+            <p className="text-label-sm font-semibold text-amber mb-1">気をつけること</p>
+            <p className="text-body-sm text-ink leading-relaxed whitespace-pre-wrap">
               {customer.store_memo}
-            </dd>
+            </p>
           </div>
-        )}
-      </dl>
+        </div>
+      )}
+
+      {(customer.favorite_drink || bottles.length > 0) && (
+        <dl className="space-y-2.5">
+          {customer.favorite_drink && (
+            <div>
+              <dt className="text-label-sm text-ink-secondary mb-0.5">
+                好きなお酒
+              </dt>
+              <dd className="text-body-md text-ink">{customer.favorite_drink}</dd>
+            </div>
+          )}
+          {bottles.length > 0 && (
+            <div>
+              <dt className="text-label-sm text-ink-secondary mb-0.5">
+                キープボトル
+              </dt>
+              <dd className="space-y-1">
+                {bottles.map((b) => (
+                  <BottleRow key={b.id} bottle={b} />
+                ))}
+              </dd>
+              {hasLowBottle && <BottleSuggestion customerId={customer.id} />}
+            </div>
+          )}
+        </dl>
+      )}
     </StoreInfoCard>
   );
 }

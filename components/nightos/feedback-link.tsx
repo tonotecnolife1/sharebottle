@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquare } from "lucide-react";
+
+const CHAT_PATTERNS = [
+  /^\/cast\/ruri-mama/,
+  /^\/cast\/chat/,
+  /^\/mama\/ruri-mama/,
+  /^\/mama\/chat/,
+];
 
 /**
  * Floating feedback button that opens a simple text input.
  * Stores feedback to Supabase (if configured) or logs to console.
  */
 export function FeedbackLink() {
+  const pathname = usePathname() ?? "";
+  const isChat = CHAT_PATTERNS.some((re) => re.test(pathname));
+  const side = isChat ? "left-4" : "right-4";
+
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sent, setSent] = useState(false);
@@ -44,7 +56,7 @@ export function FeedbackLink() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 z-50 w-10 h-10 rounded-full bg-amethyst-dark text-pearl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+        className={`fixed bottom-20 ${side} z-50 w-10 h-10 rounded-full bg-amethyst-dark text-pearl flex items-center justify-center shadow-lg active:scale-95 transition-transform`}
         aria-label="フィードバック"
       >
         <MessageSquare size={18} />
@@ -53,7 +65,7 @@ export function FeedbackLink() {
   }
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 w-72 bg-white border border-pearl-soft rounded-card shadow-xl p-3 space-y-2 animate-fade-in">
+    <div className={`fixed bottom-20 ${side} z-50 w-72 bg-white border border-pearl-soft rounded-card shadow-xl p-3 space-y-2 animate-fade-in`}>
       <div className="flex items-center justify-between">
         <span className="text-body-sm font-semibold text-ink">
           フィードバック

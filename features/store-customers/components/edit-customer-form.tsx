@@ -4,6 +4,7 @@ import { Check, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/nightos/button";
+import { BirthdayInput } from "@/components/nightos/birthday-input";
 import { TextInput } from "@/components/nightos/input";
 import { SelectInput } from "@/components/nightos/select";
 import { TextAreaInput } from "@/components/nightos/textarea";
@@ -103,12 +104,9 @@ export function EditCustomerForm({ customer, casts }: Props) {
         onChange={(e) => setName(e.target.value)}
         required
       />
-      <TextInput
-        label="誕生日"
-        name="birthday"
-        type="date"
+      <BirthdayInput
         value={birthday}
-        onChange={(e) => setBirthday(e.target.value)}
+        onChange={(v) => setBirthday(v)}
       />
       <TextInput
         label="職業"
@@ -137,11 +135,12 @@ export function EditCustomerForm({ customer, casts }: Props) {
         options={casts.map((c) => ({ value: c.id, label: c.name }))}
       />
       <TextAreaInput
-        label="店舗メモ"
+        label="気をつけること"
         name="store_memo"
         value={storeMemo}
         onChange={(e) => setStoreMemo(e.target.value)}
-        hint="全キャストと共有されます（閲覧のみ）"
+        placeholder="例: 息子さんの受験の話題はNG、仕事の愚痴は聞き流して"
+        hint="全キャストと共有されます。接客前に必ず確認される項目です"
       />
 
       {error && (
