@@ -135,11 +135,12 @@ export function EditCustomerForm({ customer, casts }: Props) {
         options={casts.map((c) => ({ value: c.id, label: c.name }))}
       />
       <TextAreaInput
-        label="店舗メモ"
+        label="気をつけること"
         name="store_memo"
         value={storeMemo}
         onChange={(e) => setStoreMemo(e.target.value)}
-        hint="全キャストと共有されます（閲覧のみ）"
+        placeholder="例: 息子さんの受験の話題はNG、仕事の愚痴は聞き流して"
+        hint="全キャストと共有されます。接客前に必ず確認される項目です"
       />
 
       {error && (

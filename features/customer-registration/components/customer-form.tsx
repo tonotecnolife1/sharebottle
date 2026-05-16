@@ -236,14 +236,14 @@ export function CustomerForm({
             </div>
           )}
 
-          {/* 店舗メモ */}
+          {/* 気をつけること */}
           <TextAreaInput
-            label="店舗メモ（任意）"
+            label="気をつけること（任意）"
             name="store_memo"
             value={storeMemo}
             onChange={(e) => setStoreMemo(e.target.value)}
-            placeholder="例: 息子さんの受験の話題はNG"
-            hint="全キャストと共有されます"
+            placeholder="例: 息子さんの受験の話題はNG、仕事の愚痴は聞き流して"
+            hint="全キャストと共有されます。接客前に必ず確認される項目です"
           />
         </div>
       )}
