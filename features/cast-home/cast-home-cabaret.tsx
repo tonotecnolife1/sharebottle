@@ -6,14 +6,16 @@ import { FollowTargetList } from "./components/follow-target-list";
 import { MorningBriefing } from "./components/morning-briefing";
 import { StoreMessageBanner } from "./components/store-message-banner";
 import { VisitNotificationPoller } from "./components/visit-notification-poller";
-import type { CastHomeData } from "@/types/nightos";
+import { TodayScheduleCard } from "@/features/cast-schedule/today-schedule-card";
+import type { CastHomeData, Customer } from "@/types/nightos";
 
 interface Props {
   data: CastHomeData;
   storeMessages: { id: string; message: string; sent_at: string }[];
+  customers: Customer[];
 }
 
-export function CastHomeCabaret({ data, storeMessages }: Props) {
+export function CastHomeCabaret({ data, storeMessages, customers }: Props) {
   const repeatPct = Math.round(data.summary.repeatRate * 100);
 
   return (
@@ -65,6 +67,8 @@ export function CastHomeCabaret({ data, storeMessages }: Props) {
             tone="amethyst"
           />
         </div>
+
+        <TodayScheduleCard customers={customers} />
 
         <MorningBriefing castId={data.cast.id} />
 

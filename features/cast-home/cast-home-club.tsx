@@ -7,6 +7,7 @@ import { MorningBriefing } from "./components/morning-briefing";
 import { StoreMessageBanner } from "./components/store-message-banner";
 import { VisitNotificationPoller } from "./components/visit-notification-poller";
 import { DouhanTracker } from "./components/douhan-tracker";
+import { TodayScheduleCard } from "@/features/cast-schedule/today-schedule-card";
 import type { CastHomeData } from "@/types/nightos";
 import type { Customer } from "@/types/nightos";
 
@@ -44,11 +45,13 @@ export function CastHomeClub({ data, storeMessages, customers }: Props) {
 
         <SummaryCards summary={data.summary} />
 
+        <TodayScheduleCard customers={customers} />
+
+        <MorningBriefing castId={data.cast.id} />
+
         <DouhanTracker customers={customers} />
 
         <RuriMamaEntryCard />
-
-        <MorningBriefing castId={data.cast.id} />
 
         <section className="space-y-3">
           <header className="flex items-baseline justify-between px-1">

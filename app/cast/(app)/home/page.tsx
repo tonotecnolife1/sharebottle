@@ -26,7 +26,7 @@ export default async function CastHomePage() {
   }));
 
   if (venueType === "cabaret") {
-    return <CastHomeCabaret data={data} storeMessages={messages} />;
+    return <CastHomeCabaret data={data} storeMessages={messages} customers={customers} />;
   }
 
   return (

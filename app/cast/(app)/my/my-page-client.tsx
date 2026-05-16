@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { ArrowLeft, Building2, ChevronRight, Crown, Settings, UserCircle, Users } from "lucide-react";
+import { ArrowLeft, Building2, CalendarDays, ChevronRight, Crown, Settings, UserCircle, Users } from "lucide-react";
 import { mockLogout } from "@/app/auth/actions";
 import { InstallAppSection } from "@/components/nightos/install-app-section";
 import type { CastUserRole } from "@/types/nightos";
@@ -82,6 +82,18 @@ export function MyPageClient({ castName, storeName, userRole }: Props) {
             <div className="flex items-center gap-2.5">
               <Settings size={16} className="text-ink-muted shrink-0" />
               <span className="text-body-md text-ink">設定</span>
+            </div>
+            <span className="text-ink-muted text-[12px]">›</span>
+          </Link>
+
+          {/* スケジュール */}
+          <Link
+            href="/cast/schedule"
+            className="flex items-center justify-between w-full rounded-card border border-ink/[0.06] bg-pearl-warm p-4 shadow-soft hover:border-amethyst-border transition"
+          >
+            <div className="flex items-center gap-2.5">
+              <CalendarDays size={16} className="text-amethyst-dark shrink-0" />
+              <span className="text-body-md text-ink">スケジュール管理</span>
             </div>
             <span className="text-ink-muted text-[12px]">›</span>
           </Link>
