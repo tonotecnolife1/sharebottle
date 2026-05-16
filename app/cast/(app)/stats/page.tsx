@@ -3,9 +3,11 @@ import {
   Calendar,
   Flame,
   Heart,
+  MessageCircle,
   Sparkles,
   TrendingUp,
   UserPlus,
+  Users,
 } from "lucide-react";
 import { Card } from "@/components/nightos/card";
 import { PageHeader } from "@/components/nightos/page-header";
@@ -28,7 +30,7 @@ export default async function CastStatsPage() {
       <PageHeader title="あなたの成績" subtitle="今月のがんばり" showBack />
 
       <div className="px-5 pt-4 pb-6 space-y-5">
-        {/* Goal progress */}
+        {/* ── 目標進捗 ── */}
         <div className="grid grid-cols-1 gap-3">
           <GoalProgress
             label="今月の売上"
@@ -45,7 +47,7 @@ export default async function CastStatsPage() {
           />
         </div>
 
-        {/* Monthly quick stats */}
+        {/* ── 月次スコア ── */}
         <div className="grid grid-cols-3 gap-2.5">
           <div id="repeat">
             <StatCard
@@ -64,7 +66,7 @@ export default async function CastStatsPage() {
             icon={<TrendingUp size={12} className="text-amethyst-dark" />}
           />
           <StatCard
-            label="今月の新規お客様"
+            label="今月の新規"
             value={data.monthly.newCustomerCount}
             unit="人"
             tone="default"
@@ -72,37 +74,28 @@ export default async function CastStatsPage() {
           />
         </div>
 
-        <StatCard
-          label="連続連絡"
-          value={data.followStreakDays}
-          unit="日"
-          tone="default"
-          icon={<Flame size={12} className="text-amber" />}
-          className="!flex-row items-center justify-between"
-        />
-
-        {/* Master / Help split */}
+        {/* ── 担当・継続 ── */}
         <div className="grid grid-cols-2 gap-2.5">
           <StatCard
-            label="管理顧客"
-            value={data.monthly.masterCustomerCount}
+            label="担当顧客"
+            value={data.monthly.totalCustomerCount}
             unit="人"
             tone="rose"
-            hint="自分が管理している顧客"
+            icon={<Users size={12} className="text-blush-dark" />}
           />
           <StatCard
-            label="今月のヘルプ"
-            value={data.monthly.helpVisitCount}
-            unit="件"
+            label="連続連絡"
+            value={data.followStreakDays}
+            unit="日"
             tone="default"
-            hint="他の担当者顧客への接客"
+            icon={<Flame size={12} className="text-amber" />}
           />
         </div>
 
-        {/* AI usage */}
+        {/* ── AI usage ── */}
         <AiUsageSummary />
 
-        {/* Repeat trend */}
+        {/* ── 再来店率の動き ── */}
         <section>
           <div className="flex items-baseline justify-between mb-2">
             <h2 className="text-display-sm text-ink">再来店率の動き</h2>
@@ -113,7 +106,7 @@ export default async function CastStatsPage() {
           </Card>
         </section>
 
-        {/* ── Yearly stats ── */}
+        {/* ── 年間成績 ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Calendar size={16} className="text-ink-secondary" />
@@ -126,7 +119,7 @@ export default async function CastStatsPage() {
               tone="rose"
             />
             <StatCard
-              label="年間リピート"
+              label="年間再来店率"
               value={Math.round(data.yearly.repeatRate * 100)}
               unit="%"
               tone="default"
@@ -148,7 +141,7 @@ export default async function CastStatsPage() {
           </div>
         </section>
 
-        {/* Encouragement */}
+        {/* ── さくらママからの励まし ── */}
         <Card className="!bg-gradient-champagne !border-champagne-dark p-4">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-roseGold/20 flex items-center justify-center shrink-0">
@@ -174,16 +167,22 @@ function buildEncouragement(data: Awaited<ReturnType<typeof getCastStatsData>>):
   const salesPct = Math.round(
     (data.monthly.sales / data.targets.salesGoal) * 100,
   );
-  const rate = Math.round(data.monthly.followRate * 100);
+  const douhanPct = data.targets.douhanGoal > 0
+    ? Math.round((data.monthly.douhanCount / data.targets.douhanGoal) * 100)
+    : 0;
+  const followPct = Math.round(data.monthly.followRate * 100);
 
+  if (salesPct >= 100 && douhanPct >= 100) {
+    return `売上も同伴も目標達成🌸 今月は本当によく頑張ったわね。来月もこの調子で✨`;
+  }
   if (salesPct >= 100) {
-    return `今月の売上目標を達成🌸 この調子なら来月の目標も伸ばしてみていいかもね✨`;
+    return `今月の売上目標を達成🌸 同伴もあと少し。お客様との約束を大切にね✨`;
   }
-  if (salesPct >= 80) {
-    return `売上は目標の${salesPct}%まで来てるわ。大事なお客様に丁寧に連絡を続けましょ。`;
+  if (douhanPct >= 100) {
+    return `今月の同伴目標を達成！素晴らしいわ💕 売上も${salesPct}%まで来てるから、もう一息よ。`;
   }
-  if (rate < 50) {
-    return `連絡達成率${rate}%はちょっと寂しいわね💌 1日3人だけ、お礼LINEを送る習慣からスタートしてみて。`;
+  if (followPct < 50) {
+    return `連絡達成率${followPct}%はちょっと寂しいわね💌 1日3人だけ、お礼メッセージを送る習慣からスタートして。`;
   }
-  return `売上${salesPct}%の進捗ね。連続${data.followStreakDays}日お客様に連絡できてるから、このペースで続けましょ☕`;
+  return `売上${salesPct}%、同伴${data.monthly.douhanCount}回の進捗ね。連続${data.followStreakDays}日お客様に連絡できてるから、このペースで続けましょ☕`;
 }
