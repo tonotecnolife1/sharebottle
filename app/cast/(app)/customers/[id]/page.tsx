@@ -118,17 +118,23 @@ export default async function CustomerCardPage({
           initialExchangedAt={customer.line_exchanged_at ?? null}
         />
 
-        {/* ── 来店・店舗情報（折りたたみ） ── */}
+        {/* ── 来店履歴（折りたたみ） ── */}
         <div className="border-t border-ink/[0.06] pt-2">
-          <CollapsibleSection title="来店・店舗情報" defaultOpen>
+          <CollapsibleSection title="来店履歴" defaultOpen>
             <VisitHistory visits={context.visits} />
+          </CollapsibleSection>
+        </div>
+
+        {/* ── 店舗情報（折りたたみ） ── */}
+        <div className="border-t border-ink/[0.06] pt-2">
+          <CollapsibleSection title="店舗情報">
             <StoreInfoSection context={context} />
           </CollapsibleSection>
         </div>
 
-        {/* ── メモ・AI提案（折りたたみ） ── */}
+        {/* ── メモ（折りたたみ） ── */}
         <div className="border-t border-ink/[0.06] pt-2">
-          <CollapsibleSection title="メモ・AI提案">
+          <CollapsibleSection title="メモ">
             <MemoSection customer={customer} memo={context.memo} />
             <RefreshMemoButton
               customerId={customer.id}
